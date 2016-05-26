@@ -26,7 +26,7 @@
 #  include <config.h>
 #endif
 
-#if !(defined(USE_SDL) || defined(_3DS) || defined(PSP2) || defined(SWITCH))
+#if !(defined(USE_SDL) || defined(_3DS) || defined(PSP2) || defined(SWITCH) || defined(USE_LIBRETRO))
 #  error "This build doesn't target a backend"
 #endif
 
@@ -121,6 +121,11 @@
 
 #if defined(HAVE_LIBSAMPLERATE) || defined(HAVE_LIBSPEEXDSP)
 #  define USE_AUDIO_RESAMPLER
+#endif
+
+#ifdef USE_LIBRETRO
+#define SUPPORT_KEYBOARD
+
 #endif
 
 #endif
