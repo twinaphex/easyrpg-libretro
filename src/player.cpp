@@ -252,6 +252,8 @@ void Player::Run() {
 		hidScanInput();
 		Player::MainLoop();
 	}
+#elif defined(USE_LIBRETRO)
+	//Do nothing
 #else
 	while (Graphics::IsTransitionPending() || Scene::instance->type != Scene::Null)
 		MainLoop();
@@ -289,6 +291,9 @@ void Player::Update(bool update_scene) {
 	// Ticks in emscripten are unreliable due to how the main loop works:
 	// This function is only called 60 times per second instead of theoretical
 	// 1000s of times.
+	Graphics::Update(true);
+#elif defined(USE_LIBRETRO)
+	//Libretro ensures the fps
 	Graphics::Update(true);
 #else
 	// Time left before next frame? Let's render the current frame.
