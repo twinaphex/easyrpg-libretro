@@ -112,9 +112,11 @@
 #  endif
 #else
 // ifndef USE_SDL
-#  ifdef WANT_FMMIDI
-#    if WANT_FMMIDI != 1
-#      error "WANT_FMMIDI must be set to 1 for non-SDL builds"
+#  ifndef HAVE_SDL_MIXER
+#    ifdef WANT_FMMIDI
+#      if WANT_FMMIDI != 1
+#        error "WANT_FMMIDI must be set to 1 for non-SDL builds"
+#      endif
 #    endif
 #  endif
 #endif
@@ -124,8 +126,17 @@
 #endif
 
 #ifdef USE_LIBRETRO
-#define SUPPORT_KEYBOARD
-
+#  ifndef HAVE_SDL_MIXER
+#    define USE_LIBRETRO_AUDIO
+#  endif
+#  define SUPPORT_KEYBOARD
+#  define SUPPORT_AUDIO
+#  ifdef USE_SDL_MIXER
+#    define SUPPORT_WAV
+#    define SUPPORT_MID
+#    define SUPPORT_OGG
+#    define SUPPORT_MP3
+#  endif
 #endif
 
 #endif
