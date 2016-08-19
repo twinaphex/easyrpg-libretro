@@ -14,14 +14,15 @@ ifeq ($(platform),)
 endif
 
 TARGET_NAME := easyrpg
-CORE_DIR := .
+CORE_DIR    := .
+LIBS        := -lz
 
 # Unix
 ifeq ($(platform), unix)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(CORE_DIR)/link.T
-	LIBS := -lpthread
+	LIBS += -lpthread
 
 # OS X
 else ifeq ($(platform), osx)
@@ -166,7 +167,7 @@ else ifneq (,$(findstring armv,$(platform)))
 	CXXFLAGS += -DUSE_POSIX_MEMALIGN -D__RETRO_ARM__
 	TARGET := $(TARGET_NAME)_libretro.so
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(CORE_DIR)/link.T
-	LIBS := -lpthread
+	LIBS += -lpthread
 	fpic := -fPIC
 	ifneq (,$(findstring clang,$(platform)))
 		CC = clang

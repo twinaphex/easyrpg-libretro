@@ -2,6 +2,7 @@ EASYRPG_DIR       := $(CORE_DIR)/src
 LIBLCF_DIR        := $(CORE_DIR)/liblcf
 PIXMAN_DIR			:= $(CORE_DIR)/pixman
 LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
+LIBPNG_DIR        := $(CORE_DIR)/libpng
 
 COMMON_DEFINES := -DHAVE_PTHREADS
 
@@ -43,6 +44,7 @@ SOURCES_CXX := \
 	$(EASYRPG_DIR)/image_png.cpp \
 	$(EASYRPG_DIR)/image_xyz.cpp \
 	$(EASYRPG_DIR)/input.cpp \
+	$(EASYRPG_DIR)/input_buttons_desktop.cpp \
 	$(EASYRPG_DIR)/libretro_wrapper.cpp \
 	$(EASYRPG_DIR)/main.cpp \
 	$(EASYRPG_DIR)/main_data.cpp \
@@ -230,6 +232,22 @@ SOURCES_CXX += $(LIBLCF_DIR)/src/data.cpp \
 					$(LIBLCF_DIR)/src/generated/rpg_mapinfo.cpp
 
 SOURCES_C := $(LIBRETRO_COMM_DIR)/rthreads/rthreads.c
+
+SOURCES_C += $(LIBPNG_DIR)/png.c \
+				 $(LIBPNG_DIR)/pngerror.c \
+				 $(LIBPNG_DIR)/pngget.c \
+				 $(LIBPNG_DIR)/pngmem.c \
+				 $(LIBPNG_DIR)/pngpread.c \
+				 $(LIBPNG_DIR)/pngread.c \
+				 $(LIBPNG_DIR)/pngrio.c \
+				 $(LIBPNG_DIR)/pngrtran.c \
+				 $(LIBPNG_DIR)/pngrutil.c \
+				 $(LIBPNG_DIR)/pngset.c \
+				 $(LIBPNG_DIR)/pngtrans.c \
+				 $(LIBPNG_DIR)/pngwio.c \
+				 $(LIBPNG_DIR)/pngwrite.c \
+				 $(LIBPNG_DIR)/pngwtran.c \
+				 $(LIBPNG_DIR)/pngwutil.c
 
 SOURCES_C += $(PIXMAN_DIR)/pixman/pixman.c \
 				 $(PIXMAN_DIR)/pixman/pixman-access.c \
