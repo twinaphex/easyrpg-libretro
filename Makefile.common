@@ -1,8 +1,9 @@
 EASYRPG_DIR       := $(CORE_DIR)/src
 LIBLCF_DIR        := $(CORE_DIR)/liblcf
+PIXMAN_DIR			:= $(CORE_DIR)/pixman
 LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 
-INCDIR := -I$(EASYRPG_DIR) -I$(LIBLCF_DIR)/src -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
+INCDIR := -I$(EASYRPG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR)/pixman -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
 
 SOURCES_CXX := \
 	$(EASYRPG_DIR)/async_handler.cpp \
@@ -64,8 +65,6 @@ SOURCES_CXX := \
 	$(EASYRPG_DIR)/spriteset_battle.cpp \
 	$(EASYRPG_DIR)/tone.cpp \
 	$(EASYRPG_DIR)/utils.cpp \
-
-#SOURCES_CXX += \
 	$(EASYRPG_DIR)/background.cpp \
 	$(EASYRPG_DIR)/baseui.cpp \
 	$(EASYRPG_DIR)/battle_animation.cpp \
@@ -130,7 +129,7 @@ SOURCES_CXX := \
 	$(EASYRPG_DIR)/window_message.cpp \
 	$(EASYRPG_DIR)/window_name.cpp \
 	$(EASYRPG_DIR)/window_numberinput.cpp \
-	$(EASYRPG_DIR)/winow_savefile.cpp \
+	$(EASYRPG_DIR)/window_savefile.cpp \
 	$(EASYRPG_DIR)/window_selectable.cpp \
 	$(EASYRPG_DIR)/window_shop.cpp \
 	$(EASYRPG_DIR)/window_shopbuy.cpp \
