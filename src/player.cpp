@@ -821,7 +821,7 @@ std::string Player::GetEncoding() {
 			Output::Debug("Detected encoding: %s", encoding.c_str());
 		} else {
 			Output::Debug("Encoding not detected");
-			encoding = ReaderUtil::GetLocaleEncoding();
+			encoding = "ibm-5348_P100-1997";
 		}
 	}
 
