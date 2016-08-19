@@ -3,6 +3,8 @@ LIBLCF_DIR        := $(CORE_DIR)/liblcf
 PIXMAN_DIR			:= $(CORE_DIR)/pixman
 LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 
+COMMON_DEFINES := -DHAVE_PTHREADS
+
 INCDIR := -I$(EASYRPG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR)/pixman -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
 
 SOURCES_CXX := \
@@ -142,4 +144,117 @@ SOURCES_CXX := \
 	$(EASYRPG_DIR)/window_targetstatus.cpp \
 	$(EASYRPG_DIR)/window_varlist.cpp
 
+SOURCES_CXX += $(LIBLCF_DIR)/src/data.cpp \
+					$(LIBLCF_DIR)/src/reader_struct.cpp \
+					$(LIBLCF_DIR)/src/ini.cpp \
+					$(LIBLCF_DIR)/src/inireader.cpp \
+					$(LIBLCF_DIR)/src/ldb_equipment.cpp \
+					$(LIBLCF_DIR)/src/ldb_eventcommand.cpp \
+					$(LIBLCF_DIR)/src/ldb_parameters.cpp \
+					$(LIBLCF_DIR)/src/ldb_reader.cpp \
+					$(LIBLCF_DIR)/src/lmt_reader.cpp \
+					$(LIBLCF_DIR)/src/lmt_rect.cpp \
+					$(LIBLCF_DIR)/src/lmt_treemap.cpp \
+					$(LIBLCF_DIR)/src/lmu_movecommand.cpp \
+					$(LIBLCF_DIR)/src/lmu_reader.cpp \
+					$(LIBLCF_DIR)/src/lsd_reader.cpp \
+					$(LIBLCF_DIR)/src/reader_flags.cpp \
+					$(LIBLCF_DIR)/src/reader_lcf.cpp \
+					$(LIBLCF_DIR)/src/reader_util.cpp \
+					$(LIBLCF_DIR)/src/reader_xml.cpp \
+					$(LIBLCF_DIR)/src/rpg_fixup.cpp \
+					$(LIBLCF_DIR)/src/rpg_setup.cpp \
+					$(LIBLCF_DIR)/src/writer_lcf.cpp \
+					$(LIBLCF_DIR)/src/writer_xml.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_actor.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_animationcelldata.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_animation.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_animationframe.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_animationtiming.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_attribute.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_battlecommand.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_battlecommands.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_battleranimation.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_battleranimationdata.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_battleranimationextension.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_chipset.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_class.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_commonevent.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_database.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_enemyaction.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_enemy.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_itemanimation.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_item.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_learning.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_music.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_skill.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_sound.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_state.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_switch.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_system.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_terms.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_terrain.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_terrain_flags.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_testbattler.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_troop.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_troopmember.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_trooppagecondition.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_trooppagecondition_flags.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_trooppage.cpp \
+					$(LIBLCF_DIR)/src/generated/ldb_variable.cpp \
+					$(LIBLCF_DIR)/src/generated/lmt_encounter.cpp \
+					$(LIBLCF_DIR)/src/generated/lmt_mapinfo.cpp \
+					$(LIBLCF_DIR)/src/generated/lmt_start.cpp \
+					$(LIBLCF_DIR)/src/generated/lmu_event.cpp \
+					$(LIBLCF_DIR)/src/generated/lmu_eventpagecondition.cpp \
+					$(LIBLCF_DIR)/src/generated/lmu_eventpagecondition_flags.cpp \
+					$(LIBLCF_DIR)/src/generated/lmu_eventpage.cpp \
+					$(LIBLCF_DIR)/src/generated/lmu_map.cpp \
+					$(LIBLCF_DIR)/src/generated/lmu_moveroute.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_saveactor.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savecommonevent.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_save.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_saveeventcommands.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_saveeventdata.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_saveinventory.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savemapevent.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savemapinfo.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savepartylocation.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savepicture.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savescreen.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savesystem.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savetarget.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savetitle.cpp \
+					$(LIBLCF_DIR)/src/generated/lsd_savevehiclelocation.cpp \
+					$(LIBLCF_DIR)/src/generated/rpg_chipset.cpp \
+					$(LIBLCF_DIR)/src/generated/rpg_mapinfo.cpp
+
 SOURCES_C := $(LIBRETRO_COMM_DIR)/rthreads/rthreads.c
+
+SOURCES_C += $(PIXMAN_DIR)/pixman/pixman.c \
+				 $(PIXMAN_DIR)/pixman/pixman-access.c \
+				 $(PIXMAN_DIR)/pixman/pixman-access-accessors.c \
+				 $(PIXMAN_DIR)/pixman/pixman-combine32.c \
+				 $(PIXMAN_DIR)/pixman/pixman-combine-float.c \
+				 $(PIXMAN_DIR)/pixman/pixman-conical-gradient.c \
+				 $(PIXMAN_DIR)/pixman/pixman-filter.c \
+				 $(PIXMAN_DIR)/pixman/pixman-edge.c \
+				 $(PIXMAN_DIR)/pixman/pixman-edge-accessors.c \
+				 $(PIXMAN_DIR)/pixman/pixman-fast-path.c \
+				 $(PIXMAN_DIR)/pixman/pixman-glyph.c \
+				 $(PIXMAN_DIR)/pixman/pixman-general.c \
+				 $(PIXMAN_DIR)/pixman/pixman-gradient-walker.c	\
+				 $(PIXMAN_DIR)/pixman/pixman-image.c \
+				 $(PIXMAN_DIR)/pixman/pixman-implementation.c \
+				 $(PIXMAN_DIR)/pixman/pixman-linear-gradient.c	\
+				 $(PIXMAN_DIR)/pixman/pixman-matrix.c \
+				 $(PIXMAN_DIR)/pixman/pixman-noop.c \
+				 $(PIXMAN_DIR)/pixman/pixman-radial-gradient.c \
+				 $(PIXMAN_DIR)/pixman/pixman-region16.c \
+				 $(PIXMAN_DIR)/pixman/pixman-region32.c \
+				 $(PIXMAN_DIR)/pixman/pixman-solid-fill.c \
+				 $(PIXMAN_DIR)/pixman/pixman-bits-image.c \
+				 $(PIXMAN_DIR)/pixman/pixman-timer.c \
+				 $(PIXMAN_DIR)/pixman/pixman-trap.c \
+				 $(PIXMAN_DIR)/pixman/pixman-utils.c \
+				 $(PIXMAN_DIR)/pixman/pixman-x86.c

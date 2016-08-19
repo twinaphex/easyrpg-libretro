@@ -391,9 +391,15 @@ _pixman_choose_implementation (void)
 	imp = _pixman_implementation_create_fast_path (imp);
 
     imp = _pixman_x86_get_implementations (imp);
+#if defined(__arm__)
     imp = _pixman_arm_get_implementations (imp);
+#endif
+#if defined(GEKKO) || defined(__PPC__) || defined(__powerpc__)
     imp = _pixman_ppc_get_implementations (imp);
+#endif
+#ifdef __mips__
     imp = _pixman_mips_get_implementations (imp);
+#endif
 
     imp = _pixman_implementation_create_noop (imp);
 

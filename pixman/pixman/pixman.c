@@ -980,7 +980,7 @@ pixman_image_fill_boxes (pixman_op_t           op,
 PIXMAN_EXPORT int
 pixman_version (void)
 {
-    return PIXMAN_VERSION;
+   return 0340;
 }
 
 /**
@@ -997,7 +997,7 @@ pixman_version (void)
 PIXMAN_EXPORT const char*
 pixman_version_string (void)
 {
-    return PIXMAN_VERSION_STRING;
+   return "0.34.0";
 }
 
 /**

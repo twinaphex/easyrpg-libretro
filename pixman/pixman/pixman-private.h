@@ -17,10 +17,6 @@
 
 #ifndef __ASSEMBLER__
 
-#ifndef PACKAGE
-#  error config.h must be included before pixman-private.h
-#endif
-
 #define PIXMAN_DISABLE_DEPRECATED
 #define PIXMAN_USE_INTERNAL_API
 

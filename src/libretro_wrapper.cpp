@@ -307,4 +307,10 @@ RETRO_API void *retro_get_memory_data(unsigned id) {
 RETRO_API size_t retro_get_memory_size(unsigned id) {
     return 0;
 }
+
+#include "registry.h"
+
+std::string Registry::ReadStrValue(HKEY hkey, std::string const& key, std::string const& val) {
+   return std::string("");
+}
 #endif
