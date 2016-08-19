@@ -135,7 +135,7 @@ RETRO_API unsigned retro_api_version(void) {
 RETRO_API void retro_get_system_info(struct retro_system_info *info) {
     static const char lib_name[] = "EasyRPG";
     static const char lib_version[] = PLAYER_VERSION;
-    static const char lib_extensions[] = "rpg_rt.ini";
+    static const char lib_extensions[] = "ini";
     memset(info, 0, sizeof(*info));
     info->library_name = lib_name;
     info->library_version = lib_version;
@@ -230,9 +230,25 @@ RETRO_API void retro_cheat_set(unsigned index, bool enabled, const char *code) {
     //not used
 }
 
+static void extract_directory(char *buf, const char *path, size_t size)
+{
+   strncpy(buf, path, size - 1);
+   buf[size - 1] = '\0';
+
+   char *base = strrchr(buf, '/');
+   if (!base)
+      base = strrchr(buf, '\\');
+
+   if (base)
+      *base = '\0';
+   else
+      buf[0] = '\0';
+}
+
 /* Loads a game. */
 RETRO_API bool retro_load_game(const struct retro_game_info *game) {
 
+   char parent_dir[1024];
     enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
 #if defined(HAVE_OPENGL) || defined(HAVE_OPENGLES)
     glsm_ctx_params_t params = {0};
@@ -257,17 +273,18 @@ RETRO_API bool retro_load_game(const struct retro_game_info *game) {
  }
 #endif
 
-    std::string rpg_rt_ini_path = "";
-    if (game != 0) { std::string rpg_rt_ini_path = game->path; }
+    if (game != 0)
+       extract_directory(parent_dir, game->path, sizeof(parent_dir));
     Player::exit_flag = false;
 	
 	if(!DisplayUi){ //If player was exited before -> reiinitialize
 		reinit_easy_rpg();
 	}
+
+   log_cb(RETRO_LOG_INFO, "parent dir is: %s\n", parent_dir );
 	
-    size_t end = rpg_rt_ini_path.find_last_of("/\\");
-    if (end != std::string::npos) {
-        Main_Data::SetProjectPath(rpg_rt_ini_path.substr(0, end));
+    if (parent_dir[0] != '\0') {
+        Main_Data::SetProjectPath(parent_dir);
         Player::Run();
     } else {
         Main_Data::SetProjectPath(".");
