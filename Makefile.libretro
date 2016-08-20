@@ -30,7 +30,6 @@ else ifeq ($(platform), osx)
 	TARGET := $(TARGET_NAME)_libretro.dylib
 	fpic := -fPIC
 	SHARED := -dynamiclib
-	fpic += -mmacosx-version-min=10.2
 	ifndef ($(NOUNIVERSAL))
 		CFLAGS += $(ARCHFLAGS)
 		CXXFLAGS += $(ARCHFLAGS)
@@ -219,8 +218,8 @@ ifeq ($(RETRO_PROFILE),1)
 endif
 
 OBJECTS		= $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
-CXXFLAGS	   += -D__LIBRETRO__ -fpermissive $(fpic) $(INCDIR) -DUSE_LIBRETRO $(COMMON_DEFINES)
-CFLAGS		+= -std=gnu99 -D__LIBRETRO__ $(fpic) $(INCDIR) -DUSE_LIBRETRO $(COMMON_DEFINES)
+CXXFLAGS       += -std=c++11 -D__LIBRETRO__ -fpermissive $(fpic) $(INCDIR) -DUSE_LIBRETRO $(COMMON_DEFINES)
+CFLAGS	       += -std=gnu99 -D__LIBRETRO__ $(fpic) $(INCDIR) -DUSE_LIBRETRO $(COMMON_DEFINES)
 
 ifeq ($(platform), theos_ios)
 COMMON_FLAGS := -DIOS -DARM $(COMMON_DEFINES) $(INCFLAGS) -I$(THEOS_INCLUDE_PATH) -Wno-error

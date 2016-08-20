@@ -7,7 +7,7 @@ LIBSNDFILE_DIR    := $(CORE_DIR)/libsndfile
 
 COMMON_DEFINES := -DHAVE_PTHREADS
 
-INCDIR := -I$(EASYRPG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR)/pixman -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
+INCDIR := -I$(EASYRPG_DIR) -I$(LIBPNG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR)/pixman -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
 
 SOURCES_CXX := \
 	$(EASYRPG_DIR)/async_handler.cpp \
