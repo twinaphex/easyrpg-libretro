@@ -36,6 +36,14 @@
 #include "decoder_libsndfile.h"
 #endif
 
+#ifdef WANT_FASTWAV
+#include "decoder_wav.h"
+#endif
+
+#if defined(HAVE_TREMOR) || defined(HAVE_OGGVORBIS)
+#include "decoder_oggvorbis.h"
+#endif
+
 #ifdef USE_AUDIO_RESAMPLER
 #include "audio_resampler.h"
 #endif
@@ -143,6 +151,34 @@ std::unique_ptr<AudioDecoder> AudioDecoder::Create(FILE* file, const std::string
 	}
 
 	// Prevent false positives by checking for common headers
+   if (!strncmp(magic, "OggS", 4)) { // OGG
+#if defined(HAVE_TREMOR) || defined(HAVE_OGGVORBIS)
+#  ifdef USE_AUDIO_RESAMPLER
+      return std::unique_ptr<AudioDecoder>(new AudioResampler(new OggVorbisDecoder()));
+#  else
+      return std::unique_ptr<AudioDecoder>(new OggVorbisDecoder());
+#  endif
+#endif
+   }
+
+#ifdef WANT_FASTWAV
+   // Try to use a basic decoder for faster wav decoding if not ADPCM
+   if (!strncmp(magic, "RIFF", 4)) {
+      fseek(file, 20, SEEK_SET);
+      uint16_t raw_enc;
+      fread(&raw_enc, 2, 1, file);
+      fseek(file, 0, SEEK_SET);
+      if (raw_enc == 0x01)
+      { // Codec is normal PCM
+#  ifdef USE_AUDIO_RESAMPLER
+         return std::unique_ptr<AudioDecoder>(new AudioResampler(new WavDecoder()));
+#  else
+         return std::unique_ptr<AudioDecoder>(new WavDecoder());
+#  endif
+      }
+   }
+#endif
+
 	if (!strncmp(magic, "RIFF", 4) || // WAV
 		!strncmp(magic, "FORM", 4) || // WAV AIFF
 		!strncmp(magic, "OggS", 4) || // OGG

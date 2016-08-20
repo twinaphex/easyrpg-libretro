@@ -1,6 +1,7 @@
 DEBUG=0
 HAVE_LIBSNDFILE=0
 HAVE_TREMOR=1
+WANT_FASTWAV=1
 
 ifeq ($(platform),)
 	platform = unix

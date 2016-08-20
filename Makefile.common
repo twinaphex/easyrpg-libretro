@@ -7,7 +7,7 @@ LIBSNDFILE_DIR    := $(CORE_DIR)/libsndfile
 
 COMMON_DEFINES := -DHAVE_PTHREADS 
 
-INCDIR := -I$(EASYRPG_DIR) -I$(LIBPNG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR)/pixman -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
+INCDIR := -I$(CORE_DIR) -I$(EASYRPG_DIR) -I$(LIBPNG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR)/pixman -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
 
 SOURCES_CXX := \
 	$(EASYRPG_DIR)/async_handler.cpp \
@@ -357,6 +357,12 @@ SOURCES_C += $(LIBSNDFILE_DIR)/src/common.c \
 endif
 
 ifeq ($(HAVE_TREMOR), 1)
-	COMMON_DEFINES += -DHAVE_OGGVORBIS
+	COMMON_DEFINES += -DHAVE_OGGVORBIS -DHAVE_TREMOR
+	SOURCES_CXX += $(EASYRPG_DIR)/decoder_oggvorbis.cpp
    SOURCES_C += $(wildcard $(CORE_DIR)/tremor/*.c)
+endif
+
+ifeq ($(WANT_FASTWAV), 1)
+	COMMON_DEFINES += -DWANT_FASTWAV
+	SOURCES_CXX += $(EASYRPG_DIR)/decoder_wav.cpp
 endif
