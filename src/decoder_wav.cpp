@@ -56,6 +56,7 @@ bool WavDecoder::Open(FILE* file) {
 			output_format=Format::S32;
 			break;
 		default:
+         printf("Unsupported bitspersample: %d\n", bitspersample);
 			return false;
 			break;
 	}

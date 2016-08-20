@@ -165,7 +165,7 @@ bool LibretroAudio::PlayOnChannel(Channel & chan,std::string const & file, int v
 		return true;	
 	} else {
 		Output::Debug("Audioformat of %s not supported: %s", file.c_str(),path.c_str());
-		fclose(filehandle);
+		//fclose(filehandle);
 	}
 	
 	return false;
