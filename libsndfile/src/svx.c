@@ -104,8 +104,12 @@ svx_open	(SF_PRIVATE *psf)
 
 		psf->endian = SF_ENDIAN (psf->sf.format) ;
 
-		if (psf->endian == SF_ENDIAN_LITTLE || (CPU_IS_LITTLE_ENDIAN && psf->endian == SF_ENDIAN_CPU))
+		if (psf->endian == SF_ENDIAN_LITTLE)
+         return SFE_BAD_ENDIAN;
+#ifndef MSB_FIRST
+      if (psf->endian == SF_ENDIAN_CPU)
 			return SFE_BAD_ENDIAN ;
+#endif
 
 		psf->endian = SF_ENDIAN_BIG ;			/* All SVX files are big endian. */
 

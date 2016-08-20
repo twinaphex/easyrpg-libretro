@@ -81,18 +81,7 @@ dwd_open (SF_PRIVATE *psf)
 
 	if (psf->file.mode == SFM_WRITE || psf->file.mode == SFM_RDWR)
 	{
-		/*-psf->endian = SF_ENDIAN (psf->sf.format) ;
-		if (CPU_IS_LITTLE_ENDIAN && psf->endian == SF_ENDIAN_CPU)
-			psf->endian = SF_ENDIAN_LITTLE ;
-		else if (psf->endian != SF_ENDIAN_LITTLE)
-			psf->endian = SF_ENDIAN_BIG ;
-
-		if (! (encoding = dwd_write_header (psf, SF_FALSE)))
-			return psf->error ;
-
-		psf->write_header = dwd_write_header ;
-		-*/
-		} ;
+   } ;
 
 	psf->container_close = dwd_close ;
 

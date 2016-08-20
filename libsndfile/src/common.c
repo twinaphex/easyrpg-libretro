@@ -16,8 +16,6 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <config.h>
-
 #include <stdarg.h>
 #include <string.h>
 #if HAVE_UNISTD_H
@@ -290,18 +288,17 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 
 			case 'M': /* int2str */
 					d = va_arg (ap, int) ;
-					if (CPU_IS_LITTLE_ENDIAN)
-					{	istr [0] = d & 0xFF ;
-						istr [1] = (d >> 8) & 0xFF ;
-						istr [2] = (d >> 16) & 0xFF ;
-						istr [3] = (d >> 24) & 0xFF ;
-						}
-					else
-					{	istr [3] = d & 0xFF ;
-						istr [2] = (d >> 8) & 0xFF ;
-						istr [1] = (d >> 16) & 0xFF ;
-						istr [0] = (d >> 24) & 0xFF ;
-						} ;
+#ifdef MSB_FIRST
+               istr [3] = d & 0xFF ;
+               istr [2] = (d >> 8) & 0xFF ;
+               istr [1] = (d >> 16) & 0xFF ;
+               istr [0] = (d >> 24) & 0xFF ;
+#else
+               istr [0] = d & 0xFF ;
+               istr [1] = (d >> 8) & 0xFF ;
+               istr [2] = (d >> 16) & 0xFF ;
+               istr [3] = (d >> 24) & 0xFF ;
+#endif
 					istr [4] = 0 ;
 					strptr = istr ;
 					while (*strptr)
@@ -402,7 +399,7 @@ header_put_byte (SF_PRIVATE *psf, char x)
 		psf->header [psf->headindex++] = x ;
 } /* header_put_byte */
 
-#if (CPU_IS_BIG_ENDIAN == 1)
+#ifdef MSB_FIRST
 static inline void
 header_put_marker (SF_PRIVATE *psf, int x)
 {	if (psf->headindex < SIGNED_SIZEOF (psf->header) - 4)
@@ -412,8 +409,7 @@ header_put_marker (SF_PRIVATE *psf, int x)
 		psf->header [psf->headindex++] = x ;
 		} ;
 } /* header_put_marker */
-
-#elif (CPU_IS_LITTLE_ENDIAN == 1)
+#else
 static inline void
 header_put_marker (SF_PRIVATE *psf, int x)
 {	if (psf->headindex < SIGNED_SIZEOF (psf->header) - 4)
@@ -423,11 +419,7 @@ header_put_marker (SF_PRIVATE *psf, int x)
 		psf->header [psf->headindex++] = (x >> 24) ;
 		} ;
 } /* header_put_marker */
-
-#else
-#	error "Cannot determine endian-ness of processor."
 #endif
-
 
 static inline void
 header_put_be_short (SF_PRIVATE *psf, int x)
@@ -759,16 +751,12 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 **	If format is NULL, psf_binheader_readf returns the current offset.
 */
 
-#if (CPU_IS_BIG_ENDIAN == 1)
+#ifdef MSB_FIRST
 #define	GET_MARKER(ptr)	(	(((uint32_t) (ptr) [0]) << 24)	| ((ptr) [1] << 16) |	\
 							((ptr) [2] << 8)	| ((ptr) [3]))
-
-#elif (CPU_IS_LITTLE_ENDIAN == 1)
+#else
 #define	GET_MARKER(ptr)	(	((ptr) [0])			| ((ptr) [1] << 8) |	\
 							((ptr) [2] << 16)	| (((uint32_t) (ptr) [3]) << 24))
-
-#else
-#	error "Cannot determine endian-ness of processor."
 #endif
 
 #define	GET_LE_SHORT(ptr)	(((ptr) [1] << 8) | ((ptr) [0]))

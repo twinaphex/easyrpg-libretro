@@ -28,14 +28,13 @@
 #include	"sfendian.h"
 #include	"common.h"
 
-#if CPU_IS_LITTLE_ENDIAN
-	#define FLOAT32_READ	float32_le_read
-	#define FLOAT32_WRITE	float32_le_write
-#elif CPU_IS_BIG_ENDIAN
+#ifdef MSB_FIRST
 	#define FLOAT32_READ	float32_be_read
 	#define FLOAT32_WRITE	float32_be_write
+#else
+	#define FLOAT32_READ	float32_le_read
+	#define FLOAT32_WRITE	float32_le_write
 #endif
-
 /*--------------------------------------------------------------------------------------------
 **	Processor floating point capabilities. float32_get_capability () returns one of the
 **	latter four values.
@@ -428,7 +427,11 @@ float32_get_capability	(SF_PRIVATE *psf)
 	/* Floats are broken. Don't expect reading or writing to be fast. */
 	psf_log_printf (psf, "Using IEEE replacement code for float.\n") ;
 
-	return (CPU_IS_LITTLE_ENDIAN) ? FLOAT_BROKEN_LE : FLOAT_BROKEN_BE ;
+#ifdef MSB_FIRST
+   return FLOAT_BROKEN_BE;
+#else
+   return FLOAT_BROKEN_LE;
+#endif
 } /* float32_get_capability */
 
 /*=======================================================================================

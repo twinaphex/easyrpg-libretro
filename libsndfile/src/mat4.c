@@ -91,7 +91,7 @@ mat4_open	(SF_PRIVATE *psf)
 			return SFE_NO_PIPE_WRITE ;
 
 		psf->endian = SF_ENDIAN (psf->sf.format) ;
-		if (CPU_IS_LITTLE_ENDIAN && (psf->endian == SF_ENDIAN_CPU || psf->endian == 0))
+		if (!defined(MSB_FIRST) && (psf->endian == SF_ENDIAN_CPU || psf->endian == 0))
 			psf->endian = SF_ENDIAN_LITTLE ;
 		else if (CPU_IS_BIG_ENDIAN && (psf->endian == SF_ENDIAN_CPU || psf->endian == 0))
 			psf->endian = SF_ENDIAN_BIG ;

@@ -33,7 +33,6 @@
 #define SFCONFIG_H
 
 /* Include the Autoconf generated file. */
-#include "config.h"
 
 /* Now fiddle the values. */
 

@@ -101,7 +101,7 @@ mat5_open	(SF_PRIVATE *psf)
 			return SFE_NO_PIPE_WRITE ;
 
 		psf->endian = SF_ENDIAN (psf->sf.format) ;
-		if (CPU_IS_LITTLE_ENDIAN && (psf->endian == SF_ENDIAN_CPU || psf->endian == 0))
+		if (!defined(MSB_FIRST) && (psf->endian == SF_ENDIAN_CPU || psf->endian == 0))
 			psf->endian = SF_ENDIAN_LITTLE ;
 		else if (CPU_IS_BIG_ENDIAN && (psf->endian == SF_ENDIAN_CPU || psf->endian == 0))
 			psf->endian = SF_ENDIAN_BIG ;
@@ -279,7 +279,7 @@ mat5_read_header (SF_PRIVATE *psf)
 
 	if (endian == MI_MARKER)
 	{	psf->endian = psf->rwf_endian = SF_ENDIAN_BIG ;
-		if (CPU_IS_LITTLE_ENDIAN) version = ENDSWAP_16 (version) ;
+		if (!defined(MSB_FIRST)) version = ENDSWAP_16 (version) ;
 		}
 	else if (endian == IM_MARKER)
 	{	psf->endian = psf->rwf_endian = SF_ENDIAN_LITTLE ;
@@ -288,7 +288,7 @@ mat5_read_header (SF_PRIVATE *psf)
 	else
 		return SFE_MAT5_BAD_ENDIAN ;
 
-	if ((CPU_IS_LITTLE_ENDIAN && endian == IM_MARKER) ||
+	if ((!defined(MSB_FIRST) && endian == IM_MARKER) ||
 			(CPU_IS_BIG_ENDIAN && endian == MI_MARKER))
 		version = ENDSWAP_16 (version) ;
 

@@ -619,7 +619,7 @@ caf_write_header (SF_PRIVATE *psf, int calc_length)
 
 	if (CPU_IS_BIG_ENDIAN && (psf->endian == 0 || psf->endian == SF_ENDIAN_CPU))
 		psf->endian = SF_ENDIAN_BIG ;
-	else if (CPU_IS_LITTLE_ENDIAN && (psf->endian == SF_ENDIAN_LITTLE || psf->endian == SF_ENDIAN_CPU))
+	else if (!defined(MSB_FIRST) && (psf->endian == SF_ENDIAN_LITTLE || psf->endian == SF_ENDIAN_CPU))
 		psf->endian = SF_ENDIAN_LITTLE ;
 
 	if (psf->endian == SF_ENDIAN_LITTLE)

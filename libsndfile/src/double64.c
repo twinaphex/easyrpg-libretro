@@ -28,12 +28,12 @@
 #include	"sfendian.h"
 #include	"common.h"
 
-#if CPU_IS_LITTLE_ENDIAN
-	#define DOUBLE64_READ	double64_le_read
-	#define DOUBLE64_WRITE	double64_le_write
-#elif CPU_IS_BIG_ENDIAN
+#ifdef MSB_FIRST
 	#define DOUBLE64_READ	double64_be_read
 	#define DOUBLE64_WRITE	double64_be_write
+#else
+	#define DOUBLE64_READ	double64_le_read
+	#define DOUBLE64_WRITE	double64_le_write
 #endif
 
 /* A 32 number which will not overflow when multiplied by sizeof (double). */
@@ -478,7 +478,11 @@ double64_get_capability	(SF_PRIVATE *psf)
 	/* Doubles are broken. Don't expect reading or writing to be fast. */
 	psf_log_printf (psf, "Using IEEE replacement code for double.\n") ;
 
-	return (CPU_IS_LITTLE_ENDIAN) ? DOUBLE_BROKEN_LE : DOUBLE_BROKEN_BE ;
+#ifdef MSB_FIRST
+   return DOUBLE_BROKEN_BE;
+#else
+   return DOUBLE_BROKEN_LE;
+#endif
 } /* double64_get_capability */
 
 /*=======================================================================================

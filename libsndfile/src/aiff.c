@@ -1248,8 +1248,10 @@ aiff_write_header (SF_PRIVATE *psf, int calc_length)
 		} ;
 
 	endian = SF_ENDIAN (psf->sf.format) ;
-	if (CPU_IS_LITTLE_ENDIAN && endian == SF_ENDIAN_CPU)
+#ifndef MSB_FIRST
+	if (endian == SF_ENDIAN_CPU)
 		endian = SF_ENDIAN_LITTLE ;
+#endif
 
 	/* Standard value here. */
 	bit_width = psf->bytewidth * 8 ;

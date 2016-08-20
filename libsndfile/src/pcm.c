@@ -754,8 +754,9 @@ pcm_read_bes2s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 {	int		total ;
 
 	total = psf_fread (ptr, sizeof (short), len, psf) ;
-	if (CPU_IS_LITTLE_ENDIAN)
-		endswap_short_array (ptr, len) ;
+#ifndef MSB_FIRST
+   endswap_short_array (ptr, len) ;
+#endif
 
 	return total ;
 } /* pcm_read_bes2s */
@@ -999,8 +1000,9 @@ pcm_read_bei2i (SF_PRIVATE *psf, int *ptr, sf_count_t len)
 {	int		total ;
 
 	total = psf_fread (ptr, sizeof (int), len, psf) ;
-	if (CPU_IS_LITTLE_ENDIAN)
-		endswap_int_array	(ptr, len) ;
+#ifndef MSB_FIRST
+   endswap_int_array	(ptr, len) ;
+#endif
 
 	return total ;
 } /* pcm_read_bei2i */
@@ -1506,8 +1508,9 @@ pcm_write_s2les	(SF_PRIVATE *psf, const short *ptr, sf_count_t len)
 	int			bufferlen, writecount ;
 	sf_count_t	total = 0 ;
 
-	if (CPU_IS_LITTLE_ENDIAN)
-		return psf_fwrite (ptr, sizeof (short), len, psf) ;
+#ifndef MSB_FIRST
+   return psf_fwrite (ptr, sizeof (short), len, psf) ;
+#endif
 
 	bufferlen = ARRAY_LEN (ubuf.sbuf) ;
 
@@ -1779,8 +1782,9 @@ pcm_write_i2lei	(SF_PRIVATE *psf, const int *ptr, sf_count_t len)
 	int			bufferlen, writecount ;
 	sf_count_t	total = 0 ;
 
-	if (CPU_IS_LITTLE_ENDIAN)
-		return psf_fwrite (ptr, sizeof (int), len, psf) ;
+#ifndef MSB_FIRST
+   return psf_fwrite (ptr, sizeof (int), len, psf) ;
+#endif
 
 	bufferlen = ARRAY_LEN (ubuf.ibuf) ;
 

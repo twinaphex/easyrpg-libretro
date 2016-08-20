@@ -3,6 +3,7 @@ LIBLCF_DIR        := $(CORE_DIR)/liblcf
 PIXMAN_DIR			:= $(CORE_DIR)/pixman
 LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 LIBPNG_DIR        := $(CORE_DIR)/libpng
+LIBSNDFILE_DIR    := $(CORE_DIR)/libsndfile
 
 COMMON_DEFINES := -DHAVE_PTHREADS
 
@@ -276,3 +277,81 @@ SOURCES_C += $(PIXMAN_DIR)/pixman/pixman.c \
 				 $(PIXMAN_DIR)/pixman/pixman-trap.c \
 				 $(PIXMAN_DIR)/pixman/pixman-utils.c \
 				 $(PIXMAN_DIR)/pixman/pixman-x86.c
+
+ifeq ($(HAVE_LIBSNDFILE), 1)
+COMMON_DEFINES += -DHAVE_LIBSNDFILE
+SOURCES_C += $(LIBSNDFILE_DIR)/src/common.c \
+				 $(LIBSNDFILE_DIR)/src/file_io.c \
+				 $(LIBSNDFILE_DIR)/src/command.c \
+				 $(LIBSNDFILE_DIR)/src/pcm.c \
+				 $(LIBSNDFILE_DIR)/src/ulaw.c \
+				 $(LIBSNDFILE_DIR)/src/alaw.c \
+				 $(LIBSNDFILE_DIR)/src/float32.c \
+				 $(LIBSNDFILE_DIR)/src/double64.c \
+				 $(LIBSNDFILE_DIR)/src/ima_adpcm.c \
+				 $(LIBSNDFILE_DIR)/src/ms_adpcm.c \
+				 $(LIBSNDFILE_DIR)/src/gsm610.c \
+				 $(LIBSNDFILE_DIR)/src/dwvw.c \
+				 $(LIBSNDFILE_DIR)/src/vox_adpcm.c \
+				 $(LIBSNDFILE_DIR)/src/interleave.c \
+				 $(LIBSNDFILE_DIR)/src/strings.c \
+				 $(LIBSNDFILE_DIR)/src/dither.c \
+				 $(LIBSNDFILE_DIR)/src/broadcast.c \
+				 $(LIBSNDFILE_DIR)/src/audio_detect.c \
+				 $(LIBSNDFILE_DIR)/src/ima_oki_adpcm.c \
+				 $(LIBSNDFILE_DIR)/src/chunk.c \
+				 $(LIBSNDFILE_DIR)/src/ogg.c \
+				 $(LIBSNDFILE_DIR)/src/chanmap.c \
+				 $(LIBSNDFILE_DIR)/src/windows.c \
+				 $(LIBSNDFILE_DIR)/src/id3.c \
+				 $(LIBSNDFILE_DIR)/src/sndfile.c \
+				 $(LIBSNDFILE_DIR)/src/aiff.c \
+				 $(LIBSNDFILE_DIR)/src/au.c \
+				 $(LIBSNDFILE_DIR)/src/avr.c \
+				 $(LIBSNDFILE_DIR)/src/caf.c \
+				 $(LIBSNDFILE_DIR)/src/dwd.c \
+				 $(LIBSNDFILE_DIR)/src/flac.c \
+				 $(LIBSNDFILE_DIR)/src/g72x.c \
+				 $(LIBSNDFILE_DIR)/src/htk.c \
+				 $(LIBSNDFILE_DIR)/src/ircam.c \
+				 $(LIBSNDFILE_DIR)/src/macbinary3.c \
+				 $(LIBSNDFILE_DIR)/src/macos.c \
+				 $(LIBSNDFILE_DIR)/src/mat4.c \
+				 $(LIBSNDFILE_DIR)/src/mat5.c \
+				 $(LIBSNDFILE_DIR)/src/nist.c \
+				 $(LIBSNDFILE_DIR)/src/paf.c \
+				 $(LIBSNDFILE_DIR)/src/pvf.c \
+				 $(LIBSNDFILE_DIR)/src/raw.c \
+				 $(LIBSNDFILE_DIR)/src/rx2.c \
+				 $(LIBSNDFILE_DIR)/src/sd2.c \
+				 $(LIBSNDFILE_DIR)/src/sds.c \
+				 $(LIBSNDFILE_DIR)/src/svx.c \
+				 $(LIBSNDFILE_DIR)/src/txw.c \
+				 $(LIBSNDFILE_DIR)/src/voc.c \
+				 $(LIBSNDFILE_DIR)/src/wve.c \
+				 $(LIBSNDFILE_DIR)/src/w64.c \
+				 $(LIBSNDFILE_DIR)/src/wav_w64.c \
+				 $(LIBSNDFILE_DIR)/src/wav.c \
+				 $(LIBSNDFILE_DIR)/src/xi.c \
+				 $(LIBSNDFILE_DIR)/src/mpc2k.c \
+				 $(LIBSNDFILE_DIR)/src/rf64.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/add.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/code.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/decode.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/gsm_create.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/gsm_decode.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/gsm_destroy.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/gsm_encode.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/gsm_option.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/long_term.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/lpc.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/preprocess.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/rpe.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/short_term.c \
+				 $(LIBSNDFILE_DIR)/src/GSM610/table.c \
+				 $(LIBSNDFILE_DIR)/src/G72x/g721.c \
+				 $(LIBSNDFILE_DIR)/src/G72x/g723_16.c \
+				 $(LIBSNDFILE_DIR)/src/G72x/g723_24.c \
+				 $(LIBSNDFILE_DIR)/src/G72x/g723_40.c \
+				 $(LIBSNDFILE_DIR)/src/G72x/g72x.c
+endif

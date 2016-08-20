@@ -92,12 +92,10 @@ ENDSWAP_64 (uint64_t x)
 ** for these markers.
 */
 
-#if (CPU_IS_LITTLE_ENDIAN == 1)
-	#define	MAKE_MARKER(a, b, c, d)		((uint32_t) ((a) | ((b) << 8) | ((c) << 16) | (((uint32_t) (d)) << 24)))
-#elif (CPU_IS_BIG_ENDIAN == 1)
+#ifdef MSB_FIRST
 	#define	MAKE_MARKER(a, b, c, d)		((uint32_t) ((((uint32_t) (a)) << 24) | ((b) << 16) | ((c) << 8) | (d)))
 #else
-	#error "Target CPU endian-ness unknown. May need to hand edit src/sfconfig.h"
+	#define	MAKE_MARKER(a, b, c, d)		((uint32_t) ((a) | ((b) << 8) | ((c) << 16) | (((uint32_t) (d)) << 24)))
 #endif
 
 /*
@@ -107,18 +105,7 @@ ENDSWAP_64 (uint64_t x)
 ** both big and little endian CPUs.
 */
 
-#if (CPU_IS_LITTLE_ENDIAN == 1)
-	#define LE2H_16(x)			(x)
-	#define LE2H_32(x)			(x)
-
-	#define BE2H_16(x)			ENDSWAP_16 (x)
-	#define BE2H_32(x)			ENDSWAP_32 (x)
-	#define BE2H_64(x)			ENDSWAP_64 (x)
-
-	#define H2BE_16(x)			ENDSWAP_16 (x)
-	#define H2BE_32(x)			ENDSWAP_32 (x)
-
-#elif (CPU_IS_BIG_ENDIAN == 1)
+#ifdef MSB_FIRST
 	#define LE2H_16(x)			ENDSWAP_16 (x)
 	#define LE2H_32(x)			ENDSWAP_32 (x)
 
@@ -131,9 +118,16 @@ ENDSWAP_64 (uint64_t x)
 
 	#define H2LE_16(x)			ENDSWAP_16 (x)
 	#define H2LE_32(x)			ENDSWAP_32 (x)
-
 #else
-	#error "Target CPU endian-ness unknown. May need to hand edit src/sfconfig.h"
+	#define LE2H_16(x)			(x)
+	#define LE2H_32(x)			(x)
+
+	#define BE2H_16(x)			ENDSWAP_16 (x)
+	#define BE2H_32(x)			ENDSWAP_32 (x)
+	#define BE2H_64(x)			ENDSWAP_64 (x)
+
+	#define H2BE_16(x)			ENDSWAP_16 (x)
+	#define H2BE_32(x)			ENDSWAP_32 (x)
 #endif
 
 #define LET2H_16_PTR(x)			((x) [1] + ((x) [2] << 8))
