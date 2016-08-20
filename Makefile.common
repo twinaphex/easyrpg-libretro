@@ -5,7 +5,7 @@ LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 LIBPNG_DIR        := $(CORE_DIR)/libpng
 LIBSNDFILE_DIR    := $(CORE_DIR)/libsndfile
 
-COMMON_DEFINES := -DHAVE_PTHREADS
+COMMON_DEFINES := -DHAVE_PTHREADS 
 
 INCDIR := -I$(EASYRPG_DIR) -I$(LIBPNG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR)/pixman -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
 
@@ -354,4 +354,9 @@ SOURCES_C += $(LIBSNDFILE_DIR)/src/common.c \
 				 $(LIBSNDFILE_DIR)/src/G72x/g723_24.c \
 				 $(LIBSNDFILE_DIR)/src/G72x/g723_40.c \
 				 $(LIBSNDFILE_DIR)/src/G72x/g72x.c
+endif
+
+ifeq ($(HAVE_TREMOR), 1)
+	COMMON_DEFINES += -DHAVE_OGGVORBIS
+   SOURCES_C += $(wildcard $(CORE_DIR)/tremor/*.c)
 endif

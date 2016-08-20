@@ -1,5 +1,6 @@
 DEBUG=0
 HAVE_LIBSNDFILE=0
+HAVE_TREMOR=1
 
 ifeq ($(platform),)
 	platform = unix
