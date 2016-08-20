@@ -55,6 +55,9 @@ bool WavDecoder::Open(FILE* file) {
 		case 32:
 			output_format=Format::S32;
 			break;
+      case 45328: /* Hack, seems that we can't rely on bits per sample being read from here - sometimes this value is 22050 and/or 44100, indicating that sometimes we are reading the samplerate instead */
+			output_format=Format::S16;
+         break;
 		default:
          printf("Unsupported bitspersample: %d\n", bitspersample);
 			return false;
