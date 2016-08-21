@@ -2,6 +2,7 @@ DEBUG=0
 HAVE_LIBSNDFILE=0
 HAVE_TREMOR=1
 WANT_FASTWAV=1
+WANT_WILDMIDI=0
 
 ifeq ($(platform),)
 	platform = unix

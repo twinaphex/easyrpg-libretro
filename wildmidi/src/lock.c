@@ -22,8 +22,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
-
 #if !defined(WM_NO_LOCK)
 
 #include <retro_miscellaneous.h>

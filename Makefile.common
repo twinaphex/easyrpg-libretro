@@ -4,6 +4,7 @@ PIXMAN_DIR			:= $(CORE_DIR)/pixman
 LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 LIBPNG_DIR        := $(CORE_DIR)/libpng
 LIBSNDFILE_DIR    := $(CORE_DIR)/libsndfile
+WILDMIDI_DIR		:= $(CORE_DIR)/wildmidi
 
 COMMON_DEFINES := -DHAVE_PTHREADS 
 
@@ -365,4 +366,24 @@ endif
 ifeq ($(WANT_FASTWAV), 1)
 	COMMON_DEFINES += -DWANT_FASTWAV
 	SOURCES_CXX += $(EASYRPG_DIR)/decoder_wav.cpp
+endif
+
+ifeq ($(WANT_WILDMIDI), 1)
+	INCDIR += -I$(WILDMIDI_DIR)/include
+	SOURCES_C += $(WILDMIDI_DIR)/src/f_hmi.c \
+					 $(WILDMIDI_DIR)/src/f_hmp.c \
+					 $(WILDMIDI_DIR)/src/f_midi.c \
+					 $(WILDMIDI_DIR)/src/f_mus.c \
+					 $(WILDMIDI_DIR)/src/f_xmidi.c \
+					 $(WILDMIDI_DIR)/src/file_io.c \
+					 $(WILDMIDI_DIR)/src/gus_pat.c \
+					 $(WILDMIDI_DIR)/src/internal_midi.c \
+					 $(WILDMIDI_DIR)/src/lock.c \
+					 $(WILDMIDI_DIR)/src/mus2mid.c \
+					 $(WILDMIDI_DIR)/src/patches.c \
+					 $(WILDMIDI_DIR)/src/wildmidi_lib.c \
+					 $(WILDMIDI_DIR)/src/sample.c \
+					 $(WILDMIDI_DIR)/src/reverb.c \
+					 $(WILDMIDI_DIR)/src/wm_error.c \
+					 $(WILDMIDI_DIR)/src/xmi2mid.c
 endif

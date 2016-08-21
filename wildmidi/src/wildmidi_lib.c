@@ -23,8 +23,6 @@
 
 #define _WILDMIDI_LIB_C
 
-#include "config.h"
-
 #include <stdint.h>
 #include <errno.h>
 #include <math.h>
@@ -1510,7 +1508,7 @@ WM_SYMBOL int WildMidi_ConvertBufferToMidi (uint8_t *in, uint32_t insize,
 }
 
 WM_SYMBOL const char *WildMidi_GetString(uint16_t info) {
-    static char WM_Version[] = "WildMidi Processing Library " PACKAGE_VERSION;
+    static char WM_Version[] = "WildMidi Processing Library ";
     switch (info) {
     case WM_GS_VERSION:
         return WM_Version;

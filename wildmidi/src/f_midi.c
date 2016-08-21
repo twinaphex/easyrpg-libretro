@@ -21,8 +21,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
