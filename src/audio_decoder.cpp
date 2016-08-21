@@ -21,46 +21,30 @@
 #include "audio_decoder.h"
 #include "filefinder.h"
 #include "output.h"
-
 #include "system.h"
+#include "utils.h"
 
-#ifdef WANT_FMMIDI
 #include "decoder_fmmidi.h"
-#endif
-
-#ifdef HAVE_MPG123
 #include "decoder_mpg123.h"
-#endif
-
-#ifdef HAVE_WILDMIDI
-#include "decoder_wildmidi.h"
-#endif
-
-#ifdef HAVE_LIBSNDFILE
-#include "decoder_libsndfile.h"
-#endif
-
-#ifdef WANT_FASTWAV
-#include "decoder_wav.h"
-#endif
-
-#if defined(HAVE_TREMOR) || defined(HAVE_OGGVORBIS)
 #include "decoder_oggvorbis.h"
-#endif
-
-#ifdef USE_AUDIO_RESAMPLER
+#include "decoder_wildmidi.h"
+#include "decoder_libsndfile.h"
+#include "decoder_wav.h"
 #include "audio_resampler.h"
-#endif
 
 void AudioDecoder::Pause() {
 	paused = true;
- }
+}
 
 void AudioDecoder::Resume() {
 	paused = false;
 }
 
 int AudioDecoder::Decode(uint8_t* buffer, int length) {
+	return Decode(buffer, length, 0);
+}
+
+int AudioDecoder::Decode(uint8_t* buffer, int length, int recursion_depth) {
 	if (paused) {
 		memset(buffer, '\0', length);
 		return length;
@@ -74,16 +58,21 @@ int AudioDecoder::Decode(uint8_t* buffer, int length) {
 		memset(&buffer[res], '\0', length - res);
 	}
 
-	if (IsFinished() && looping) {
+	if (IsFinished() && looping && recursion_depth < 10) {
 		++loop_count;
 		Rewind();
 		if (length - res > 0) {
-			int res2 = Decode(&buffer[res], length - res);
+			int res2 = Decode(&buffer[res], length - res, ++recursion_depth);
 			if (res2 <= 0) {
 				return res;
 			}
 			return res + res2;
 		}
+	}
+
+	if (recursion_depth == 10 && loop_count < 50) {
+		// Only report this a few times in the hope that this is only a temporary problem and to prevent log spamming
+		Output::Debug("Audio Decoder: Recursion depth exceeded. Probably stream error.");
 	}
 
 	return res;
@@ -142,68 +131,85 @@ std::unique_ptr<AudioDecoder> AudioDecoder::Create(FILE* file, const std::string
 	fread(magic, 4, 1, file);
 	fseek(file, 0, SEEK_SET);
 
+	// Try to use MIDI decoder, use fallback(s) if available
 	if (!strncmp(magic, "MThd", 4)) {
-#ifdef HAVE_WILDMIDI
-   #ifdef USE_AUDIO_RESAMPLER
-		return std::unique_ptr<AudioDecoder>(new AudioResampler(new WildMidiDecoder(filename), false, AudioResampler::Quality::Low));
-	#else
-		return std::unique_ptr<AudioDecoder>(new WildMidiDecoder(filename));
-	#endif
-#elif WANT_FMMIDI == 1
-	#ifdef USE_AUDIO_RESAMPLER
-		return std::unique_ptr<AudioDecoder>(new AudioResampler(new FmMidiDecoder(),true,AudioResampler::Quality::Low));
-	#else
-		return std::unique_ptr<AudioDecoder>(new FmMidiDecoder());
-	#endif
+#ifndef HAVE_WILDMIDI
+		/* WildMidi is currently the only Audio_Decoder that needs the filename passed
+		 * directly, this avoids a warning about the possibly unused variable
+		 */
+		(void)filename;
 #else
-      /* No MIDI decoder available */
-      return nullptr;
+		static bool wildmidi_works = true;
+		if (wildmidi_works) {
+			AudioDecoder *mididec = nullptr;
+#  ifdef USE_AUDIO_RESAMPLER
+			mididec = new AudioResampler(new WildMidiDecoder(filename));
+#  else
+			mididec = new WildMidiDecoder(filename);
+#  endif
+			if (mididec) {
+				if (mididec->WasInited())
+					return std::unique_ptr<AudioDecoder>(mididec);
+
+				delete mididec;
+			}
+			wildmidi_works = false;
+		}
 #endif
+#if WANT_FMMIDI == 1
+#  ifdef USE_AUDIO_RESAMPLER
+		return std::unique_ptr<AudioDecoder>(new AudioResampler(new FmMidiDecoder(), true, AudioResampler::Quality::Low));
+#  else
+		return std::unique_ptr<AudioDecoder>(new FmMidiDecoder());
+#  endif
+#endif
+		// No MIDI decoder available
+		return nullptr;
 	}
 
-	// Prevent false positives by checking for common headers
-   if (!strncmp(magic, "OggS", 4)) { // OGG
+	// Try to use internal OGG decoder
+	if (!strncmp(magic, "OggS", 4)) { // OGG
 #if defined(HAVE_TREMOR) || defined(HAVE_OGGVORBIS)
 #  ifdef USE_AUDIO_RESAMPLER
-      return std::unique_ptr<AudioDecoder>(new AudioResampler(new OggVorbisDecoder()));
+		return std::unique_ptr<AudioDecoder>(new AudioResampler(new OggVorbisDecoder()));
 #  else
-      return std::unique_ptr<AudioDecoder>(new OggVorbisDecoder());
+		return std::unique_ptr<AudioDecoder>(new OggVorbisDecoder());
 #  endif
 #endif
-   }
-
+	}
+	
 #ifdef WANT_FASTWAV
-   // Try to use a basic decoder for faster wav decoding if not ADPCM
-   if (!strncmp(magic, "RIFF", 4)) {
-      fseek(file, 20, SEEK_SET);
-      uint16_t raw_enc;
-      fread(&raw_enc, 2, 1, file);
-      fseek(file, 0, SEEK_SET);
-      if (raw_enc == 0x01)
-      { // Codec is normal PCM
+	// Try to use a basic decoder for faster wav decoding if not ADPCM
+	if (!strncmp(magic, "RIFF", 4)) {
+		fseek(file, 20, SEEK_SET);
+		uint16_t raw_enc;
+		fread(&raw_enc, 2, 1, file);
+		Utils::SwapByteOrder(raw_enc);
+		fseek(file, 0, SEEK_SET);
+		if (raw_enc == 0x01) { // Codec is normal PCM
 #  ifdef USE_AUDIO_RESAMPLER
-         return std::unique_ptr<AudioDecoder>(new AudioResampler(new WavDecoder()));
+			return std::unique_ptr<AudioDecoder>(new AudioResampler(new WavDecoder()));
 #  else
-         return std::unique_ptr<AudioDecoder>(new WavDecoder());
+			return std::unique_ptr<AudioDecoder>(new WavDecoder());
 #  endif
-      }
-   }
-#endif
+		}
+	}
 
+#endif
+	
+	// Try to use libsndfile for common formats
 	if (!strncmp(magic, "RIFF", 4) || // WAV
 		!strncmp(magic, "FORM", 4) || // WAV AIFF
 		!strncmp(magic, "OggS", 4) || // OGG
-		!strncmp(magic, "fLaC", 4) // FLAC
-		) {
-	#ifdef HAVE_LIBSNDFILE
-		#ifdef USE_AUDIO_RESAMPLER
+		!strncmp(magic, "fLaC", 4)) { // FLAC
+#ifdef HAVE_LIBSNDFILE
+#  ifdef USE_AUDIO_RESAMPLER
 			return std::unique_ptr<AudioDecoder>(new AudioResampler(new LibsndfileDecoder()));
-		#else
+#  else
 			return std::unique_ptr<AudioDecoder>(new LibsndfileDecoder());
-		#endif
-	#else
+#  endif
+#endif
 		return nullptr;
-	#endif
 	}
 
 	// Inform about WMA issue
@@ -211,24 +217,44 @@ std::unique_ptr<AudioDecoder> AudioDecoder::Create(FILE* file, const std::string
 		return std::unique_ptr<AudioDecoder>(new WMAUnsupportedFormatDecoder());
 	}
 
+	// False positive MP3s should be prevented before by checking for common headers
 #ifdef HAVE_MPG123
-	if (strncmp(magic, "ID3", 3) == 0) {
-		#ifdef USE_AUDIO_RESAMPLER
-			return std::unique_ptr<AudioDecoder>(new AudioResampler(new Mpg123Decoder()));
-		#else
-			return std::unique_ptr<AudioDecoder>(new Mpg123Decoder());
-		#endif
-	}
+	static bool mpg123_works = true;
+	if (mpg123_works) {
+		AudioDecoder *mp3dec = nullptr;
+		if (strncmp(magic, "ID3", 3) == 0) {
+#  ifdef USE_AUDIO_RESAMPLER
+			mp3dec = new AudioResampler(new Mpg123Decoder());
+#  else
+			mp3dec = new Mpg123Decoder();
+#  endif
+			if (mp3dec) {
+				if (mp3dec->WasInited())
+					return std::unique_ptr<AudioDecoder>(mp3dec);
 
-	// Parsing MP3s seems to be the only reliable way to detect them
-	if (Mpg123Decoder::IsMp3(file)) {
-		Output::Debug("MP3 heuristic: %s", filename.c_str());
-		fseek(file, 0, SEEK_SET);
-		#ifdef USE_AUDIO_RESAMPLER
-			return std::unique_ptr<AudioDecoder>(new AudioResampler(new Mpg123Decoder()));
-		#else
-			return std::unique_ptr<AudioDecoder>(new Mpg123Decoder());
-		#endif
+				delete mp3dec;
+			}
+			mpg123_works = false;
+			return nullptr;
+		}
+
+		// Parsing MP3s seems to be the only reliable way to detect them
+		if (Mpg123Decoder::IsMp3(file)) {
+			fseek(file, 0, SEEK_SET);
+#  ifdef USE_AUDIO_RESAMPLER
+			mp3dec = new AudioResampler(new Mpg123Decoder());
+#  else
+			mp3dec = new Mpg123Decoder();
+#  endif
+			if (mp3dec) {
+				if(mp3dec->WasInited())
+					return std::unique_ptr<AudioDecoder>(mp3dec);
+
+				delete mp3dec;
+			}
+			mpg123_works = false;
+			return nullptr;
+		}
 	}
 #endif
 
@@ -323,11 +349,11 @@ bool AudioDecoder::Seek(size_t, Origin) {
 	return false;
 }
 
-size_t AudioDecoder::Tell() {
+size_t AudioDecoder::Tell() const {
 	return -1;
 }
 
-int AudioDecoder::GetTicks() {
+int AudioDecoder::GetTicks() const {
 	return 0;
 }
 

@@ -18,7 +18,11 @@
 // Headers
 #include "utils.h"
 #include <algorithm>
-#include <cctype>
+#include <random>
+
+namespace {
+	std::mt19937 rng;
+}
 
 std::string Utils::LowerCase(const std::string& str) {
 	std::string result = str;
@@ -30,6 +34,11 @@ std::string Utils::UpperCase(const std::string& str) {
 	std::string result = str;
 	std::transform(result.begin(), result.end(), result.begin(), toupper);
 	return result;
+}
+
+bool Utils::EndsWith(const std::string &str, const std::string &end) {
+	return str.length() >= end.length() &&
+		0 == str.compare(str.length() - end.length(), end.length(), end);
 }
 
 std::u16string Utils::DecodeUTF16(const std::string& str) {
@@ -277,10 +286,115 @@ std::string Utils::FromWideString(const std::wstring& str) {
 }
 
 bool Utils::IsBigEndian() {
-    union {
-        uint32_t i;
-        char c[4];
-    } d = {0x01020304};
+	static bool ran_once = false;
+	static bool is_big = false;
 
-    return(d.c[0] == 1);
+	if (ran_once) {
+		return is_big;
+	}
+
+	union {
+		uint32_t i;
+		char c[4];
+	} d = {0x01020304};
+
+	ran_once = true;
+	is_big = d.c[0] == 1;
+
+	return is_big;
+}
+
+void Utils::SwapByteOrder(uint16_t& us) {
+	if (!IsBigEndian()) {
+		return;
+	}
+
+	us =	(us >> 8) |
+			(us << 8);
+}
+
+void Utils::SwapByteOrder(uint32_t& ui) {
+	if (!IsBigEndian()) {
+		return;
+	}
+
+	ui =	(ui >> 24) |
+			((ui<<8) & 0x00FF0000) |
+			((ui>>8) & 0x0000FF00) |
+			(ui << 24);
+}
+
+void Utils::SwapByteOrder(double& d) {
+	if (!IsBigEndian()) {
+		return;
+	}
+
+	uint32_t *p = reinterpret_cast<uint32_t *>(&d);
+	SwapByteOrder(p[0]);
+	SwapByteOrder(p[1]);
+	uint32_t tmp = p[0];
+	p[0] = p[1];
+	p[1] = tmp;
+}
+
+int32_t Utils::GetRandomNumber(int32_t from, int32_t to) {
+	std::uniform_int_distribution<int32_t> dist(from, to);
+	return dist(rng);
+}
+
+void Utils::SeedRandomNumberGenerator(int32_t seed) {
+	rng.seed(seed);
+}
+
+#if (defined(_3DS) || defined(PSP2))
+#  define EOF -1
+#endif
+
+// via https://stackoverflow.com/questions/6089231/
+std::string Utils::ReadLine(std::istream &is) {
+	std::string out;
+
+	std::istream::sentry se(is, true);
+	std::streambuf* sb = is.rdbuf();
+
+	for(;;) {
+        	int c = sb->sbumpc();
+		switch (c) {
+			case '\n':
+			return out;
+		case '\r':
+			if (sb->sgetc() == '\n') {
+				sb->sbumpc();
+			}
+			return out;
+		case EOF:
+			// Also handle the case when the last line has no line ending
+			if (out.empty()) {
+				is.setstate(std::ios::eofbit);
+			}
+			return out;
+		default:
+			out += (char)c;
+		}
+	}
+}
+
+std::vector<std::string> Utils::Tokenize(const std::string &str_to_tokenize, const std::function<bool(char32_t)> predicate) {
+	std::u32string text = DecodeUTF32(str_to_tokenize);
+	std::vector<std::string> tokens;
+	std::u32string cur_token;	
+
+	for (char32_t& c : text) {
+		if (predicate(c)) {
+			tokens.push_back(EncodeUTF(cur_token));
+			cur_token.clear();
+			continue;
+		}
+
+		cur_token.push_back(c);
+	}
+
+	tokens.push_back(EncodeUTF(cur_token));
+
+	return tokens;
 }
