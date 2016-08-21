@@ -19,6 +19,10 @@
 
 #ifdef HAVE_WILDMIDI
 
+#ifdef __LIBRETRO__
+#include "libretro.h"
+#endif
+
 // Headers
 #include <cassert>
 #include <wildmidi_lib.h>
@@ -38,6 +42,8 @@ static void WildMidiDecoder_deinit(void) {
 }
 
 WildMidiDecoder::WildMidiDecoder(const std::string file_name) {
+   char wildmidi_cfg[1024];
+
 	music_type = "midi";
 	filename = file_name;
 
@@ -45,8 +51,25 @@ WildMidiDecoder::WildMidiDecoder(const std::string file_name) {
 	if (init)
 		return;
 
+   snprintf(wildmidi_cfg, sizeof(wildmidi_cfg), "%s", "wildmidi.cfg");
+#ifdef __LIBRETRO__
+   extern retro_environment_t environ_cb;
+   const char *dir = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
+   {
+#ifdef _WIN32
+      char slash = '\\';
+#else
+      char slash = '/';
+#endif
+      snprintf(wildmidi_cfg, sizeof(wildmidi_cfg), "%s%cwildmidi.cfg",
+            dir, slash);
+   }
+#endif
+
 	// FIXME: write some logic to find the configuration file in different paths
-	init = (WildMidi_Init("wildmidi.cfg", WILDMIDI_FREQ, WILDMIDI_OPTS) == 0);
+	init = (WildMidi_Init(wildmidi_cfg, WILDMIDI_FREQ, WILDMIDI_OPTS) == 0);
 	if (!init) {
 		error_message = "Could not initialize libWildMidi";
 		return;

@@ -24,8 +24,8 @@
 
 static const unsigned AUDIO_SAMPLERATE = 44100.0;
 
-static retro_environment_t retro_environment;
-static retro_input_poll_t retro_input_poll;
+retro_environment_t environ_cb;
+static retro_input_poll_t  poll_cb;
 
 
 RETRO_CALLCONV void retro_time_update(retro_usec_t usec) {
@@ -70,7 +70,7 @@ RETRO_API void retro_set_environment(retro_environment_t cb) {
 
     static struct retro_log_callback logging;
 
-    retro_environment = cb;
+    environ_cb = cb;
 
 
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_content);
@@ -98,7 +98,7 @@ RETRO_API void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb) {
 }
 
 RETRO_API void retro_set_input_poll(retro_input_poll_t cb) {
-    retro_input_poll = cb;
+    poll_cb = cb;
 }
 
 RETRO_API void retro_set_input_state(retro_input_state_t cb) {
@@ -189,13 +189,13 @@ static void check_variables(bool first_time_startup) {
  */
 
 RETRO_API void retro_run(void) {
-    retro_input_poll();
+    poll_cb();
 
     if (!Player::exit_flag) {
         Player::MainLoop();
 		if(!DisplayUi){ //Only occurs when the function Player::Exit() was called from within the game
 			Player::exit_flag=true;
-			retro_environment(RETRO_ENVIRONMENT_SHUTDOWN, 0);			
+			environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, 0);			
 		}
     }
 }
@@ -254,7 +254,7 @@ RETRO_API bool retro_load_game(const struct retro_game_info *game) {
     glsm_ctx_params_t params = {0};
 #endif
 
-    if (!retro_environment(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt)) {
+    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt)) {
         log_cb(RETRO_LOG_INFO, "XRGB8888 is not supported.\n");
         return false;
     }
@@ -262,7 +262,7 @@ RETRO_API bool retro_load_game(const struct retro_game_info *game) {
 #if defined(HAVE_OPENGL) || defined(HAVE_OPENGLES)
     params.context_reset         = LibretroUi::ResetRetroGLContext;
     params.context_destroy       = LibretroUi::DestroyRetroGLContext;
-    params.environ_cb        	= retro_environment;
+    params.environ_cb        	   = environ_cb;
     params.stencil               = false;
     params.imm_vbo_draw          = NULL;
     params.imm_vbo_disable       = NULL;
