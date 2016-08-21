@@ -365,7 +365,6 @@ static int WM_LoadConfig(const char *config_file) {
     struct _patch * tmp_patch;
     char **line_tokens = NULL;
     int token_count = 0;
-    char wildmidi_pat_dir[1024];
     const char *dir = NULL;
     char *config_buffer = (char *) _WM_BufferFile(config_file, &config_size);
 
@@ -397,6 +396,7 @@ static int WM_LoadConfig(const char *config_file) {
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
     {
+       char wildmidi_pat_dir[1024];
 #ifdef _WIN32
        char slash = '\\';
 #else
