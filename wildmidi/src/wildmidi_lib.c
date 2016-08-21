@@ -352,9 +352,11 @@ static char** WM_LC_Tokenize_Line(char *line_data) {
     return (token_data);
 }
 
+#include "libretro.h"
+extern retro_environment_t environ_cb;
+
 static int WM_LoadConfig(const char *config_file) {
     uint32_t config_size = 0;
-    char *config_buffer = NULL;
     const char *dir_end = NULL;
     char *config_dir = NULL;
     uint32_t config_ptr = 0;
@@ -363,9 +365,12 @@ static int WM_LoadConfig(const char *config_file) {
     struct _patch * tmp_patch;
     char **line_tokens = NULL;
     int token_count = 0;
+    char wildmidi_pat_dir[1024];
+    const char *dir = NULL;
+    char *config_buffer = (char *) _WM_BufferFile(config_file, &config_size);
 
-    config_buffer = (char *) _WM_BufferFile(config_file, &config_size);
-    if (!config_buffer) {
+    if (!config_buffer)
+    {
         WM_FreePatches();
         return (-1);
     }
@@ -390,6 +395,30 @@ static int WM_LoadConfig(const char *config_file) {
      * _WM_BufferFile() allocating the buffer with one extra byte */
     config_buffer[config_size] = '\n';
 
+    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
+    {
+#ifdef _WIN32
+       char slash = '\\';
+#else
+       char slash = '/';
+#endif
+       snprintf(wildmidi_pat_dir, sizeof(wildmidi_pat_dir), "%s%cpats",
+             dir, slash);
+
+       free(config_dir);
+       if (!(config_dir = wm_strdup(wildmidi_pat_dir)))
+       {
+          _WM_GLOBAL_ERROR(__FUNCTION__, __LINE__, WM_ERR_MEM, config_file, errno);
+          WM_FreePatches();
+          free(config_buffer);
+          return (-1);
+       }
+       if (!IS_DIR_SEPARATOR(config_dir[strlen(config_dir) - 1])) {
+          config_dir[strlen(config_dir) + 1] = '\0';
+          config_dir[strlen(config_dir)] = DIR_SEPARATOR_CHAR;
+       }
+    }
+
     while (config_ptr <= config_size) {
         if (config_buffer[config_ptr] == '\r' ||
             config_buffer[config_ptr] == '\n')
@@ -400,26 +429,7 @@ static int WM_LoadConfig(const char *config_file) {
                 _WM_Global_ErrorI = 0; /* because WM_LC_Tokenize_Line() can legitimately return NULL */
                 line_tokens = WM_LC_Tokenize_Line(&config_buffer[line_start_ptr]);
                 if (line_tokens) {
-                    if (wm_strcasecmp(line_tokens[0], "dir") == 0) {
-                        free(config_dir);
-                        if (!line_tokens[1]) {
-                            _WM_GLOBAL_ERROR(__FUNCTION__, __LINE__, WM_ERR_INVALID_ARG, "(missing name in dir line)", 0);
-                            WM_FreePatches();
-                            free(line_tokens);
-                            free(config_buffer);
-                            return (-1);
-                        } else if (!(config_dir = wm_strdup(line_tokens[1]))) {
-                            _WM_GLOBAL_ERROR(__FUNCTION__, __LINE__, WM_ERR_MEM, config_file, errno);
-                            WM_FreePatches();
-                            free(line_tokens);
-                            free(config_buffer);
-                            return (-1);
-                        }
-                        if (!IS_DIR_SEPARATOR(config_dir[strlen(config_dir) - 1])) {
-                            config_dir[strlen(config_dir) + 1] = '\0';
-                            config_dir[strlen(config_dir)] = DIR_SEPARATOR_CHAR;
-                        }
-                    } else if (wm_strcasecmp(line_tokens[0], "source") == 0) {
+                    if (wm_strcasecmp(line_tokens[0], "source") == 0) {
                         char *new_config = NULL;
                         if (!line_tokens[1]) {
                             _WM_GLOBAL_ERROR(__FUNCTION__, __LINE__, WM_ERR_INVALID_ARG, "(missing name in source line)", 0);
