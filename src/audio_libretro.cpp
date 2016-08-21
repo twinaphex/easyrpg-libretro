@@ -15,19 +15,17 @@ bool LibretroAudio::Muted=false;
 	
 
 LibretroAudio::LibretroAudio(){
-	if(mutex==0){
+	if(mutex==0)
 		mutex=slock_new();
-	}
-	for(unsigned i=0;i<nr_of_bgm_channels;i++){
+	for(unsigned i=0;i<nr_of_bgm_channels;i++)
 		BGM_Channels[i].decoder.reset();
-	}
-	for(unsigned i=0;i<nr_of_se_channels;i++){
+	for(unsigned i=0;i<nr_of_se_channels;i++)
 		SE_Channels[i].decoder.reset();
-	}
 	BGM_PlayedOnceIndicator=false;
 }
 LibretroAudio::~LibretroAudio(){
-	if(mutex!=0){
+	if(mutex!=0)
+   {
 		slock_free(mutex);
 		mutex=0;
 	}
@@ -85,28 +83,28 @@ unsigned LibretroAudio::BGM_GetTicks(){
 }
 void LibretroAudio::BGM_Fade(int fade){
 	slock_lock(mutex);
-	for(unsigned i=0;i<nr_of_bgm_channels;i++){
-		if(BGM_Channels[i].decoder){
+	for(unsigned i=0;i<nr_of_bgm_channels;i++)
+   {
+		if(BGM_Channels[i].decoder)
 			BGM_Channels[i].decoder->SetFade(BGM_Channels[i].decoder->GetVolume(),0,fade);
-		}
 	}
 	slock_unlock(mutex);
 }
 void LibretroAudio::BGM_Volume(int volume){
 	slock_lock(mutex);
-	for(unsigned i=0;i<nr_of_bgm_channels;i++){
-		if(BGM_Channels[i].decoder){
+	for(unsigned i=0;i<nr_of_bgm_channels;i++)
+   {
+		if(BGM_Channels[i].decoder)
 			BGM_Channels[i].decoder->SetVolume(volume);
-		}
 	}	
 	slock_unlock(mutex);
 }
 void LibretroAudio::BGM_Pitch(int pitch){
 	slock_lock(mutex);
-	for(unsigned i=0;i<nr_of_bgm_channels;i++){
-		if(BGM_Channels[i].decoder){
+	for(unsigned i=0;i<nr_of_bgm_channels;i++)
+   {
+		if(BGM_Channels[i].decoder)
 			BGM_Channels[i].decoder->SetPitch(pitch);
-		}
 	}
 	slock_unlock(mutex);
 }
@@ -146,6 +144,7 @@ bool LibretroAudio::PlayOnChannel(Channel & chan,std::string const & file, int v
 	}
 
 	chan.decoder = AudioDecoder::Create(filehandle, path);
+
 	if (chan.decoder && chan.decoder->Open(filehandle)) {
 		int samplerate=output_samplerate;
 		AudioDecoder::Format sampleformat=AudioDecoder::Format::F32;
@@ -165,7 +164,7 @@ bool LibretroAudio::PlayOnChannel(Channel & chan,std::string const & file, int v
 		return true;	
 	} else {
 		Output::Debug("Audioformat of %s not supported: %s", file.c_str(),path.c_str());
-		//fclose(filehandle);
+		fclose(filehandle);
 	}
 	
 	return false;
@@ -176,9 +175,8 @@ void LibretroAudio::EnableAudio(bool enabled){
 	Muted=!enabled;
 	if(Muted){
 		//Stop every Sound effect (background music may continue after unmute)
-		for(unsigned i=0;i<nr_of_se_channels;i++){
+		for(unsigned i=0;i<nr_of_se_channels;i++)
 			SE_Channels[i].stopped=true; //Stop all running sound effects
-		}						
 	}
 	slock_unlock(mutex);
 }
@@ -190,176 +188,197 @@ void LibretroAudio::AudioThreadCallback(){
 	static std::unique_ptr<float> mixer_buffer;
 	bool channel_active=false;
 	float total_volume=0;
-	if(RenderAudioFrames==0){
+
+	if(RenderAudioFrames==0)
 		return;
-	}
-	if(!sample_buffer){
+
+	if(!sample_buffer)
 		sample_buffer.reset(new int16_t[samples_per_frame*output_channels]);
-	}
-	if(!scrap_buffer){
+
+	if(!scrap_buffer)
+   {
 		scrap_buffer_size=samples_per_frame*output_channels*sizeof(uint32_t);
 		scrap_buffer.reset(new uint8_t[scrap_buffer_size]);
 	}
-	if(!mixer_buffer){
-		mixer_buffer.reset(new float[samples_per_frame*output_channels]);
-	}
-	
-	for(unsigned i=0;i< nr_of_bgm_channels+nr_of_se_channels;i++){
-	//Mix BGM and SE together;
-	bool is_bgm_channel=i<nr_of_bgm_channels;
-	Channel & currently_mixed_channel= (is_bgm_channel) ? BGM_Channels[i] : SE_Channels[i-nr_of_bgm_channels]; 
-	float current_master_volume=(is_bgm_channel) ? 1.0 : 1.0; //TODO: add libretro config variables to adjust music and se volume independently
-	
-		if(currently_mixed_channel.decoder && !currently_mixed_channel.paused){
-			if(currently_mixed_channel.stopped){
-				slock_lock(mutex);
-				currently_mixed_channel.decoder.reset();
-				slock_unlock(mutex);
-			} else {
-				
-				slock_lock(mutex);
-				currently_mixed_channel.decoder->Update(1000/60);	
-				float volume=current_master_volume*(currently_mixed_channel.decoder->GetVolume()/100.0);
-				unsigned channels=currently_mixed_channel.channels;
-				unsigned samplesize =currently_mixed_channel.samplesize;
-				AudioDecoder::Format sampleformat=currently_mixed_channel.sampleformat;
-				slock_unlock(mutex);
-				
-				if(volume <= 0){
-					//No volume -> no sound ->do nothing
-				} else {
-					total_volume+=volume;
-					
-					//determine how much data has to be read from this channel (but cap at the bounds of the scrap buffer)
-					unsigned bytes_to_read=(samplesize*channels*samples_per_frame);
-					bytes_to_read = (bytes_to_read<scrap_buffer_size) ? bytes_to_read : scrap_buffer_size; 
-					
-					int read_bytes=currently_mixed_channel.decoder->Decode(scrap_buffer.get(),bytes_to_read);
-					
-					if(read_bytes<0){
-						//An error occured when reading - the channel is faulty - discard
-						slock_lock(mutex);
-						currently_mixed_channel.decoder.reset();
-						slock_unlock(mutex);	
-						continue; //skip this loop run - there is nothing to mix
-					}
-					
-					unsigned read_bytes_u=(unsigned)read_bytes;
-					
-					//Now decide what to do when a channel has reached its end
-					if(currently_mixed_channel.decoder->IsFinished()){
-						if(is_bgm_channel){
-							//BGM is looping per default
-							currently_mixed_channel.decoder->Rewind();
-							currently_mixed_channel.decoder->SetLooping(true);
-							slock_lock(mutex);
-							//If another bgm is not just started this moment set the playonce flag
-							if(!currently_mixed_channel.stopped){
-								BGM_PlayedOnceIndicator=true;
-							}
-							slock_unlock(mutex);
-							if(read_bytes_u<bytes_to_read){
-								//There is still sound left to fill this frame
-								read_bytes=currently_mixed_channel.decoder->Decode(&((scrap_buffer.get())[read_bytes_u]),bytes_to_read-read_bytes_u);
-								if(read_bytes<0){
-									//The channel is now faulty - discard
-									slock_lock(mutex);
-									currently_mixed_channel.decoder.reset();
-									slock_unlock(mutex);	
-								} else {
-									//the remaining data to fill this frame is read sucessfully
-									read_bytes_u+=read_bytes;
-								}
-							}
-						} else {
-							//SE are only played once so free the se if finished
-							slock_lock(mutex);
-							currently_mixed_channel.decoder.reset();
-							slock_unlock(mutex);	
-						}
-					}
-					
-					//--------------------------------------------------------------------------------------------------------------------//
-					// From here downwards the currently_mixed_channel decoder may already be freed - so don't use it below this comment. //
-					//--------------------------------------------------------------------------------------------------------------------//
-					
-					for(unsigned ii=0;ii<read_bytes_u/(samplesize*channels);ii++){
-						
-						float vall=volume;
-						float valr=vall;	
-						
-						//Convert to floating point
-						switch(sampleformat){
-							case AudioDecoder::Format::S8:
-								vall*=(((int8_t*)scrap_buffer.get())[ii*channels]/128.0);
-								valr*=(((int8_t*)scrap_buffer.get())[ii*channels+1]/128.0);
-								break;
-							case AudioDecoder::Format::U8:
-								vall*=(((uint8_t*)scrap_buffer.get())[ii*channels]/128.0 - 1.0);
-								valr*=(((uint8_t*)scrap_buffer.get())[ii*channels+1]/128.0 - 1.0);
-								break;
-							case AudioDecoder::Format::S16:
-								vall*=(((int16_t*)scrap_buffer.get())[ii*channels]/32768.0);
-								valr*=(((int16_t*)scrap_buffer.get())[ii*channels+1]/32768.0);
-								break;
-							case AudioDecoder::Format::U16:
-								vall*=(((uint16_t*)scrap_buffer.get())[ii*channels]/32768.0 - 1.0);
-								valr*=(((uint16_t*)scrap_buffer.get())[ii*channels+1]/32768.0 - 1.0);
-								break;
-							case AudioDecoder::Format::S32:
-								vall*=(((int32_t*)scrap_buffer.get())[ii*channels]/2147483648.0);
-								valr*=(((int32_t*)scrap_buffer.get())[ii*channels+1]/2147483648.0);
-								break;
-							case AudioDecoder::Format::U32:
-								vall*=(((uint32_t*)scrap_buffer.get())[ii*channels]/2147483648.0 -1.0);
-								valr*=(((uint32_t*)scrap_buffer.get())[ii*channels+1]/2147483648.0 -1.0);
-								break;
-							case AudioDecoder::Format::F32:
-								vall*=(((float*)scrap_buffer.get())[ii*channels]);
-								valr*=(((float*)scrap_buffer.get())[ii*channels+1]);
-								break;
-						}
-						
-						if(!channel_active){
-							//first channel
-							mixer_buffer.get()[ii*output_channels]=vall;
-							if(channels>1)mixer_buffer.get()[ii*output_channels+1]=valr;
-							else mixer_buffer.get()[ii*output_channels+1]=mixer_buffer.get()[ii*output_channels];
-						} else {
-							mixer_buffer.get()[ii*output_channels]+=vall;
-							if(channels>1)mixer_buffer.get()[ii*output_channels+1]+=valr;
-							else mixer_buffer.get()[ii*output_channels+1]=mixer_buffer.get()[ii*output_channels];								
-						}
 
-					}
-					channel_active=true;
-				}
-			}
-		}
-	}
+	if(!mixer_buffer)
+		mixer_buffer.reset(new float[samples_per_frame*output_channels]);
+	
+	for(unsigned i=0;i< nr_of_bgm_channels+nr_of_se_channels;i++)
+   {
+      //Mix BGM and SE together;
+      bool is_bgm_channel=i<nr_of_bgm_channels;
+      Channel & currently_mixed_channel= (is_bgm_channel) ? BGM_Channels[i] : SE_Channels[i-nr_of_bgm_channels]; 
+      float current_master_volume=(is_bgm_channel) ? 1.0 : 1.0; //TODO: add libretro config variables to adjust music and se volume independently
+
+      if(currently_mixed_channel.decoder && !currently_mixed_channel.paused)
+      {
+         if(currently_mixed_channel.stopped)
+         {
+            slock_lock(mutex);
+            currently_mixed_channel.decoder.reset();
+            slock_unlock(mutex);
+         }
+         else
+         {
+            slock_lock(mutex);
+            currently_mixed_channel.decoder->Update(1000/60);	
+            float volume=current_master_volume*(currently_mixed_channel.decoder->GetVolume()/100.0);
+            unsigned channels=currently_mixed_channel.channels;
+            unsigned samplesize =currently_mixed_channel.samplesize;
+            AudioDecoder::Format sampleformat=currently_mixed_channel.sampleformat;
+            slock_unlock(mutex);
+
+            if(volume <= 0)
+            {
+               //No volume -> no sound ->do nothing
+            }
+            else
+            {
+               total_volume+=volume;
+
+               //determine how much data has to be read from this channel (but cap at the bounds of the scrap buffer)
+               unsigned bytes_to_read=(samplesize*channels*samples_per_frame);
+               bytes_to_read = (bytes_to_read<scrap_buffer_size) ? bytes_to_read : scrap_buffer_size; 
+
+               int read_bytes=currently_mixed_channel.decoder->Decode(scrap_buffer.get(),bytes_to_read);
+
+               if(read_bytes<0)
+               {
+                  //An error occured when reading - the channel is faulty - discard
+                  slock_lock(mutex);
+                  currently_mixed_channel.decoder.reset();
+                  slock_unlock(mutex);	
+                  continue; //skip this loop run - there is nothing to mix
+               }
+
+               unsigned read_bytes_u=(unsigned)read_bytes;
+
+               //Now decide what to do when a channel has reached its end
+               if(currently_mixed_channel.decoder->IsFinished())
+               {
+                  if(is_bgm_channel)
+                  {
+                     //BGM is looping per default
+                     currently_mixed_channel.decoder->Rewind();
+                     currently_mixed_channel.decoder->SetLooping(true);
+                     slock_lock(mutex);
+                     //If another bgm is not just started this moment set the playonce flag
+                     if(!currently_mixed_channel.stopped)
+                        BGM_PlayedOnceIndicator=true;
+
+                     slock_unlock(mutex);
+                     if(read_bytes_u<bytes_to_read)
+                     {
+                        //There is still sound left to fill this frame
+                        read_bytes=currently_mixed_channel.decoder->Decode(&((scrap_buffer.get())[read_bytes_u]),bytes_to_read-read_bytes_u);
+                        if(read_bytes<0)
+                        {
+                           //The channel is now faulty - discard
+                           slock_lock(mutex);
+                           currently_mixed_channel.decoder.reset();
+                           slock_unlock(mutex);	
+                        }
+                        else
+                        {
+                           //the remaining data to fill this frame is read sucessfully
+                           read_bytes_u+=read_bytes;
+                        }
+                     }
+                  } else {
+                     //SE are only played once so free the se if finished
+                     slock_lock(mutex);
+                     currently_mixed_channel.decoder.reset();
+                     slock_unlock(mutex);	
+                  }
+               }
+
+               //--------------------------------------------------------------------------------------------------------------------//
+               // From here downwards the currently_mixed_channel decoder may already be freed - so don't use it below this comment. //
+               //--------------------------------------------------------------------------------------------------------------------//
+
+               for(unsigned ii=0;ii<read_bytes_u/(samplesize*channels);ii++)
+               {
+                  float vall=volume;
+                  float valr=vall;	
+
+                  //Convert to floating point
+                  switch(sampleformat){
+                     case AudioDecoder::Format::S8:
+                        vall*=(((int8_t*)scrap_buffer.get())[ii*channels]/128.0);
+                        valr*=(((int8_t*)scrap_buffer.get())[ii*channels+1]/128.0);
+                        break;
+                     case AudioDecoder::Format::U8:
+                        vall*=(((uint8_t*)scrap_buffer.get())[ii*channels]/128.0 - 1.0);
+                        valr*=(((uint8_t*)scrap_buffer.get())[ii*channels+1]/128.0 - 1.0);
+                        break;
+                     case AudioDecoder::Format::S16:
+                        vall*=(((int16_t*)scrap_buffer.get())[ii*channels]/32768.0);
+                        valr*=(((int16_t*)scrap_buffer.get())[ii*channels+1]/32768.0);
+                        break;
+                     case AudioDecoder::Format::U16:
+                        vall*=(((uint16_t*)scrap_buffer.get())[ii*channels]/32768.0 - 1.0);
+                        valr*=(((uint16_t*)scrap_buffer.get())[ii*channels+1]/32768.0 - 1.0);
+                        break;
+                     case AudioDecoder::Format::S32:
+                        vall*=(((int32_t*)scrap_buffer.get())[ii*channels]/2147483648.0);
+                        valr*=(((int32_t*)scrap_buffer.get())[ii*channels+1]/2147483648.0);
+                        break;
+                     case AudioDecoder::Format::U32:
+                        vall*=(((uint32_t*)scrap_buffer.get())[ii*channels]/2147483648.0 -1.0);
+                        valr*=(((uint32_t*)scrap_buffer.get())[ii*channels+1]/2147483648.0 -1.0);
+                        break;
+                     case AudioDecoder::Format::F32:
+                        vall*=(((float*)scrap_buffer.get())[ii*channels]);
+                        valr*=(((float*)scrap_buffer.get())[ii*channels+1]);
+                        break;
+                  }
+
+                  if(!channel_active)
+                  {
+                     //first channel
+                     mixer_buffer.get()[ii*output_channels]=vall;
+                     if(channels>1)mixer_buffer.get()[ii*output_channels+1]=valr;
+                     else mixer_buffer.get()[ii*output_channels+1]=mixer_buffer.get()[ii*output_channels];
+                  }
+                  else
+                  {
+                     mixer_buffer.get()[ii*output_channels]+=vall;
+                     if(channels>1)mixer_buffer.get()[ii*output_channels+1]+=valr;
+                     else mixer_buffer.get()[ii*output_channels+1]=mixer_buffer.get()[ii*output_channels];								
+                  }
+
+               }
+               channel_active=true;
+            }
+         }
+      }
+   }
 	
 	
-	if(channel_active){
-		
-		if(total_volume>1.0){
-			float threshold=0.8;
-			for(unsigned i=0;i<samples_per_frame*2;i++){
-				float sample=mixer_buffer.get()[i];
-				float sign= (sample<0)? -1.0 : 1.0;
-				sample/=sign;
-				//dynamic range compression 
-				if(sample>threshold){
-					sample_buffer.get()[i]=sign*32768.0*(threshold+(1.0-threshold)*(sample-threshold)/(total_volume-threshold));
-				} else{
-					sample_buffer.get()[i]=sign*sample*32768.0;
-				}
-			}
-		} else {
-			//No dynamic range compression necessary
-			for(unsigned i=0;i<samples_per_frame*2;i++){
-				sample_buffer.get()[i]=mixer_buffer.get()[i]*32768.0;
-			}				
-		}
+	if(channel_active)
+   {
+		if(total_volume>1.0)
+      {
+         float threshold=0.8;
+         for(unsigned i=0;i<samples_per_frame*2;i++)
+         {
+            float sample=mixer_buffer.get()[i];
+            float sign= (sample<0)? -1.0 : 1.0;
+            sample/=sign;
+            //dynamic range compression 
+            if(sample>threshold)
+               sample_buffer.get()[i]=sign*32768.0*(threshold+(1.0-threshold)*(sample-threshold)/(total_volume-threshold));
+            else
+               sample_buffer.get()[i]=sign*sample*32768.0;
+         }
+      }
+      else
+      {
+         //No dynamic range compression necessary
+         for(unsigned i=0;i<samples_per_frame*2;i++)
+            sample_buffer.get()[i]=mixer_buffer.get()[i]*32768.0;
+      }
 		
 		RenderAudioFrames(sample_buffer.get(),samples_per_frame);
 	}

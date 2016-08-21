@@ -1945,10 +1945,15 @@ void _WM_freeMDI(struct _mdi *mdi) {
         }
     }
 
-    free(mdi->events);
-    _WM_free_reverb(mdi->reverb);
-    free(mdi->mix_buffer);
-    free(mdi);
+    if (mdi)
+    {
+       if (mdi->events)
+          free(mdi->events);
+       _WM_free_reverb(mdi->reverb);
+       if (mdi->mix_buffer)
+          free(mdi->mix_buffer);
+       free(mdi);
+    }
 }
 
 uint32_t _WM_SetupMidiEvent(struct _mdi *mdi, uint8_t * event_data, uint8_t running_event) {
