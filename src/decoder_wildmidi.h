@@ -15,26 +15,29 @@
  * along with EasyRPG Player. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _EASYRPG_AUDIO_DECODER_MPG123_H_
-#define _EASYRPG_AUDIO_DECODER_MPG123_H_
+#ifndef EASYRPG_AUDIO_DECODER_WILDMIDI_H
+#define EASYRPG_AUDIO_DECODER_WILDMIDI_H
 
 // Headers
-#include "audio_decoder.h"
 #include <string>
-#include <mpg123.h>
 #include <memory>
+#ifdef HAVE_WILDMIDI
+#include <wildmidi_lib.h>
+#endif
+#include "audio_decoder.h"
 
 /**
- * Audio decoder for MP3 powered by mpg123
+ * Audio decoder for MIDI powered by WildMidi
  */
-class Mpg123Decoder : public AudioDecoder {
+class WildMidiDecoder : public AudioDecoder {
 public:
-	Mpg123Decoder();
+	WildMidiDecoder(const std::string file_name);
 
-	~Mpg123Decoder();
+	~WildMidiDecoder();
 
-   bool WasInited() const override;
+	bool WasInited() const override;
 
+	// Audio Decoder interface
 	bool Open(FILE* file) override;
 
 	bool Seek(size_t offset, Origin origin) override;
@@ -45,18 +48,14 @@ public:
 
 	bool SetFormat(int frequency, AudioDecoder::Format format, int channels) override;
 
-	static bool IsMp3(FILE* stream);
+	bool SetPitch(int pitch) override;
 private:
 	int FillBuffer(uint8_t* buffer, int length) override;
 
-	std::unique_ptr<mpg123_handle, decltype(&mpg123_delete)> handle;
-	FILE* file_handle;
-	int err = 0;
-	bool finished = false;
-
-	int frequency = 44100;
-
-	bool init = false;
+	std::string filename;
+#ifdef HAVE_WILDMIDI
+	midi* handle = NULL;
+#endif
 };
 
 #endif

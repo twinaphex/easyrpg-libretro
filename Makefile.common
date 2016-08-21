@@ -369,7 +369,9 @@ ifeq ($(WANT_FASTWAV), 1)
 endif
 
 ifeq ($(WANT_WILDMIDI), 1)
+	COMMON_DEFINES += -DHAVE_WILDMIDI
 	INCDIR += -I$(WILDMIDI_DIR)/include
+	SOURCES_CXX += $(EASYRPG_DIR)/decoder_wildmidi.cpp
 	SOURCES_C += $(WILDMIDI_DIR)/src/f_hmi.c \
 					 $(WILDMIDI_DIR)/src/f_hmp.c \
 					 $(WILDMIDI_DIR)/src/f_midi.c \
