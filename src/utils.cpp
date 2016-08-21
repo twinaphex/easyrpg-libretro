@@ -286,6 +286,12 @@ std::string Utils::FromWideString(const std::wstring& str) {
 }
 
 bool Utils::IsBigEndian() {
+#ifdef MSB_FIRST
+   return true;
+#else
+#if 1
+   return false;
+#else
 	static bool ran_once = false;
 	static bool is_big = false;
 
@@ -302,32 +308,36 @@ bool Utils::IsBigEndian() {
 	is_big = d.c[0] == 1;
 
 	return is_big;
+#endif
+#endif
 }
 
 void Utils::SwapByteOrder(uint16_t& us) {
-	if (!IsBigEndian()) {
+#ifdef MSB_FIRST
+	if (!IsBigEndian())
 		return;
-	}
 
 	us =	(us >> 8) |
 			(us << 8);
+#endif
 }
 
 void Utils::SwapByteOrder(uint32_t& ui) {
-	if (!IsBigEndian()) {
+#ifdef MSB_FIRST
+	if (!IsBigEndian())
 		return;
-	}
 
 	ui =	(ui >> 24) |
 			((ui<<8) & 0x00FF0000) |
 			((ui>>8) & 0x0000FF00) |
 			(ui << 24);
+#endif
 }
 
 void Utils::SwapByteOrder(double& d) {
-	if (!IsBigEndian()) {
+#ifdef MSB_FIRST
+	if (!IsBigEndian())
 		return;
-	}
 
 	uint32_t *p = reinterpret_cast<uint32_t *>(&d);
 	SwapByteOrder(p[0]);
@@ -335,6 +345,7 @@ void Utils::SwapByteOrder(double& d) {
 	uint32_t tmp = p[0];
 	p[0] = p[1];
 	p[1] = tmp;
+#endif
 }
 
 int32_t Utils::GetRandomNumber(int32_t from, int32_t to) {
