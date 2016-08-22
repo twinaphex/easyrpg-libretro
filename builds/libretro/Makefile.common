@@ -11,7 +11,7 @@ LIBSAMPLERATE_DIR := $(DEPS_DIR)/libsamplerate
 
 COMMON_DEFINES := -DHAVE_PTHREADS 
 
-INCDIR := -I$(CORE_DIR) -I$(EASYRPG_DIR) -I$(DEPS_DIR) -I$(LIBPNG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR)/pixman -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
+INCDIR := -I$(CORE_DIR) -I$(EASYRPG_DIR) -I$(DEPS_DIR) -I$(LIBPNG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR) -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
 
 SOURCES_CXX := \
 	$(EASYRPG_DIR)/async_handler.cpp \
@@ -253,33 +253,33 @@ SOURCES_C += $(LIBPNG_DIR)/png.c \
 				 $(LIBPNG_DIR)/pngwtran.c \
 				 $(LIBPNG_DIR)/pngwutil.c
 
-SOURCES_C += $(PIXMAN_DIR)/pixman/pixman.c \
-				 $(PIXMAN_DIR)/pixman/pixman-access.c \
-				 $(PIXMAN_DIR)/pixman/pixman-access-accessors.c \
-				 $(PIXMAN_DIR)/pixman/pixman-combine32.c \
-				 $(PIXMAN_DIR)/pixman/pixman-combine-float.c \
-				 $(PIXMAN_DIR)/pixman/pixman-conical-gradient.c \
-				 $(PIXMAN_DIR)/pixman/pixman-filter.c \
-				 $(PIXMAN_DIR)/pixman/pixman-edge.c \
-				 $(PIXMAN_DIR)/pixman/pixman-edge-accessors.c \
-				 $(PIXMAN_DIR)/pixman/pixman-fast-path.c \
-				 $(PIXMAN_DIR)/pixman/pixman-glyph.c \
-				 $(PIXMAN_DIR)/pixman/pixman-general.c \
-				 $(PIXMAN_DIR)/pixman/pixman-gradient-walker.c	\
-				 $(PIXMAN_DIR)/pixman/pixman-image.c \
-				 $(PIXMAN_DIR)/pixman/pixman-implementation.c \
-				 $(PIXMAN_DIR)/pixman/pixman-linear-gradient.c	\
-				 $(PIXMAN_DIR)/pixman/pixman-matrix.c \
-				 $(PIXMAN_DIR)/pixman/pixman-noop.c \
-				 $(PIXMAN_DIR)/pixman/pixman-radial-gradient.c \
-				 $(PIXMAN_DIR)/pixman/pixman-region16.c \
-				 $(PIXMAN_DIR)/pixman/pixman-region32.c \
-				 $(PIXMAN_DIR)/pixman/pixman-solid-fill.c \
-				 $(PIXMAN_DIR)/pixman/pixman-bits-image.c \
-				 $(PIXMAN_DIR)/pixman/pixman-timer.c \
-				 $(PIXMAN_DIR)/pixman/pixman-trap.c \
-				 $(PIXMAN_DIR)/pixman/pixman-utils.c \
-				 $(PIXMAN_DIR)/pixman/pixman-x86.c
+SOURCES_C += $(PIXMAN_DIR)/pixman.c \
+				 $(PIXMAN_DIR)/pixman-access.c \
+				 $(PIXMAN_DIR)/pixman-access-accessors.c \
+				 $(PIXMAN_DIR)/pixman-combine32.c \
+				 $(PIXMAN_DIR)/pixman-combine-float.c \
+				 $(PIXMAN_DIR)/pixman-conical-gradient.c \
+				 $(PIXMAN_DIR)/pixman-filter.c \
+				 $(PIXMAN_DIR)/pixman-edge.c \
+				 $(PIXMAN_DIR)/pixman-edge-accessors.c \
+				 $(PIXMAN_DIR)/pixman-fast-path.c \
+				 $(PIXMAN_DIR)/pixman-glyph.c \
+				 $(PIXMAN_DIR)/pixman-general.c \
+				 $(PIXMAN_DIR)/pixman-gradient-walker.c	\
+				 $(PIXMAN_DIR)/pixman-image.c \
+				 $(PIXMAN_DIR)/pixman-implementation.c \
+				 $(PIXMAN_DIR)/pixman-linear-gradient.c	\
+				 $(PIXMAN_DIR)/pixman-matrix.c \
+				 $(PIXMAN_DIR)/pixman-noop.c \
+				 $(PIXMAN_DIR)/pixman-radial-gradient.c \
+				 $(PIXMAN_DIR)/pixman-region16.c \
+				 $(PIXMAN_DIR)/pixman-region32.c \
+				 $(PIXMAN_DIR)/pixman-solid-fill.c \
+				 $(PIXMAN_DIR)/pixman-bits-image.c \
+				 $(PIXMAN_DIR)/pixman-timer.c \
+				 $(PIXMAN_DIR)/pixman-trap.c \
+				 $(PIXMAN_DIR)/pixman-utils.c \
+				 $(PIXMAN_DIR)/pixman-x86.c
 
 ifeq ($(HAVE_LIBSNDFILE), 1)
 COMMON_DEFINES += -DHAVE_LIBSNDFILE
