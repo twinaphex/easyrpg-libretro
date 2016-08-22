@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
 #include "float_cast.h"
 #include "common.h"
 

@@ -501,25 +501,21 @@ src_int_to_float_array (const int *in, float *out, int len)
 } /* src_int_to_float_array */
 
 void
-src_float_to_int_array (const float *in, int *out, int len)
-{	double scaled_value ;
+src_float_to_int_array (const float *in, int *out, int samples)
+{
+   size_t i;
 
-	while (len)
-	{	len -- ;
+   for (i = 0; i < samples; i++)
+   {
+      float val = (float)in[i];
 
-		scaled_value = in [len] * (8.0 * 0x10000000) ;
-		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
-		{	out [len] = 0x7fffffff ;
-			continue ;
-			} ;
-		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
-		{	out [len] = -1 - 0x7fffffff ;
-			continue ;
-			} ;
-
-		out [len] = lrint (scaled_value) ;
-		} ;
-
+      if (val >= 1.0f)
+         out[i] = 32767.0f;
+      else if (val <= -1.0f)
+         out[i] = -32768.0f;
+      else
+         out[i] = floor(val * 32768.0f);
+   }
 } /* src_float_to_int_array */
 
 /*==============================================================================
