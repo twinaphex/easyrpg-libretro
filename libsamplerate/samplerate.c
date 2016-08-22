@@ -510,11 +510,11 @@ src_float_to_int_array (const float *in, int *out, int samples)
       float val = (float)in[i];
 
       if (val >= 1.0f)
-         out[i] = 32767.0f;
+         out[i] = 32767;
       else if (val <= -1.0f)
-         out[i] = -32768.0f;
+         out[i] = -32768;
       else
-         out[i] = floor(val * 32768.0f);
+         out[i] = floor(val * 32768);
    }
 } /* src_float_to_int_array */
 
