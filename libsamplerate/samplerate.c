@@ -479,36 +479,25 @@ src_short_to_float_array (const short *in, float *out, int len)
 } /* src_short_to_float_array */
 
 void
-src_float_to_short_array (const float *in, short *out, int len)
-{	double scaled_value ;
-
-	while (len)
-	{	len -- ;
-
-		scaled_value = in [len] * (8.0 * 0x10000000) ;
-		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
-		{	out [len] = 32767 ;
-			continue ;
-			} ;
-		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
-		{	out [len] = -32768 ;
-			continue ;
-			} ;
-
-		out [len] = (short) (lrint (scaled_value) >> 16) ;
-		} ;
-
+src_float_to_short_array (const float *in, short *out, int samples)
+{
+   size_t i;
+   for (i = 0; i < samples; i++)
+   {
+      int32_t val = (int32_t)(in[i] * 0x8000);
+      out[i]      = (val > 0x7FFF) ? 0x7FFF :
+         (val < -0x8000 ? -0x8000 : (int16_t)val);
+   }
 } /* src_float_to_short_array */
 
 void
 src_int_to_float_array (const int *in, float *out, int len)
 {
 	while (len)
-	{	len -- ;
-		out [len] = (float) (in [len] / (8.0 * 0x10000000)) ;
-		} ;
-
-	return ;
+   {
+      len -- ;
+      out [len] = (float) (in [len] / (8.0 * 0x10000000)) ;
+   }
 } /* src_int_to_float_array */
 
 void
