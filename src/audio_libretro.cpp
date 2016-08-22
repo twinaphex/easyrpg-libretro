@@ -5,7 +5,7 @@
 #include <rthreads/rthreads.h>
 
 
-static slock_t * mutex=0;
+static slock_t * mutex=NULL;
 
 LibretroAudio::Channel LibretroAudio::BGM_Channels[nr_of_bgm_channels];
 LibretroAudio::Channel LibretroAudio::SE_Channels[nr_of_se_channels];
@@ -15,7 +15,7 @@ bool LibretroAudio::Muted=false;
 	
 
 LibretroAudio::LibretroAudio(){
-	if(mutex==0)
+	if(mutex==NULL)
 		mutex=slock_new();
 	for(unsigned i=0;i<nr_of_bgm_channels;i++)
 		BGM_Channels[i].decoder.reset();
@@ -24,10 +24,10 @@ LibretroAudio::LibretroAudio(){
 	BGM_PlayedOnceIndicator=false;
 }
 LibretroAudio::~LibretroAudio(){
-	if(mutex!=0)
+	if(mutex!=NULL)
    {
 		slock_free(mutex);
-		mutex=0;
+		mutex=NULL;
 	}
 }
 
@@ -182,14 +182,14 @@ void LibretroAudio::EnableAudio(bool enabled){
 }
 
 void LibretroAudio::AudioThreadCallback(){
-	static std::unique_ptr<int16_t> sample_buffer;
-	static std::unique_ptr<uint8_t> scrap_buffer;
+	static std::unique_ptr<int16_t[]> sample_buffer;
+	static std::unique_ptr<uint8_t[]> scrap_buffer;
 	static unsigned scrap_buffer_size=0;
-	static std::unique_ptr<float> mixer_buffer;
+	static std::unique_ptr<float[]> mixer_buffer;
 	bool channel_active=false;
 	float total_volume=0;
 
-	if(RenderAudioFrames==0)
+	if(RenderAudioFrames==NULL)
 		return;
 
 	if(!sample_buffer)
