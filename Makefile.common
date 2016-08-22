@@ -5,6 +5,7 @@ LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro-common
 LIBPNG_DIR        := $(CORE_DIR)/libpng
 LIBSNDFILE_DIR    := $(CORE_DIR)/libsndfile
 WILDMIDI_DIR		:= $(CORE_DIR)/wildmidi
+LIBSAMPLERATE_DIR := $(CORE_DIR)/libsamplerate
 
 COMMON_DEFINES := -DHAVE_PTHREADS 
 
@@ -388,4 +389,12 @@ ifeq ($(WANT_WILDMIDI), 1)
 					 $(WILDMIDI_DIR)/src/reverb.c \
 					 $(WILDMIDI_DIR)/src/wm_error.c \
 					 $(WILDMIDI_DIR)/src/xmi2mid.c
+endif
+
+ifeq ($(WANT_LIBSAMPLERATE), 1)
+	INCDIR += -I$(LIBSAMPLERATE_DIR)
+	SOURCES_C += $(LIBSAMPLERATE_DIR)/samplerate.c \
+					 $(LIBSAMPLERATE_DIR)/src_linear.c \
+					 $(LIBSAMPLERATE_DIR)/src_sinc.c \
+					 $(LIBSAMPLERATE_DIR)/src_zoh.c
 endif
