@@ -507,14 +507,14 @@ src_float_to_int_array (const float *in, int *out, int samples)
 
    for (i = 0; i < samples; i++)
    {
-      float val = (float)in[i];
+      float val = in[i];
 
       if (val >= 1.0f)
-         out[i] = 32767;
+         out[i] = INT_MAX;
       else if (val <= -1.0f)
-         out[i] = -32768;
+         out[i] = -INT_MIN;
       else
-         out[i] = floor(val * 32768);
+         out[i] = floor(val * INT_MAX);
    }
 } /* src_float_to_int_array */
 
