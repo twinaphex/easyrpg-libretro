@@ -30,8 +30,8 @@
 **	Changing the FPU rounding mode causes the FPU pipeline to be flushed. It
 **	is this flushing of the pipeline which is so slow.
 **
-**	Fortunately the ISO C99 specifications define the functions lrint, lrintf,
-**	llrint and llrintf which fix this problem as a side effect.
+**	Fortunately the ISO C99 specifications define the functions lrint,
+**	llrint which fix this problem as a side effect.
 **
 **	On Unix-like systems, the configure process should have detected the
 **	presence of these functions. If they weren't found we have to replace them
@@ -39,9 +39,8 @@
 */
 
 /*
-**	The C99 prototypes for lrint and lrintf are as follows:
+**	The C99 prototypes for lrint and are as follows:
 **
-**		long int lrintf (float x) ;
 **		long int lrint  (double x) ;
 */
 
@@ -79,13 +78,11 @@
 	#define		HAVE_LRINT_REPLACEMENT	1
 
 	#undef	lrint
-	#undef	lrintf
 
 	#define	lrint	double2int
-	#define	lrintf	float2int
 
 	/*
-	**	The native CYGWIN lrint and lrintf functions are buggy:
+	**	The native CYGWIN lrint function are buggy:
 	**		http://sourceware.org/ml/cygwin/2005-06/msg00153.html
 	**		http://sourceware.org/ml/cygwin/2005-09/msg00047.html
 	**	and slow.
@@ -138,13 +135,6 @@
 	{
 		return _mm_cvtsd_si32(_mm_load_sd(&flt));
 	}
-
-	__inline long int
-	lrintf(float flt)
-	{
-		return _mm_cvtss_si32(_mm_load_ss(&flt));
-	}
-
 #elif (defined (WIN32) || defined (_WIN32))
 
 	#undef		HAVE_LRINT_REPLACEMENT
@@ -168,19 +158,6 @@
 
 		return intgr ;
 	}
-
-	__inline long int
-	lrintf (float flt)
-	{	int intgr ;
-
-		_asm
-		{	fld flt
-			fistp intgr
-			} ;
-
-		return intgr ;
-	}
-
 #elif (defined (__MWERKS__) && defined (macintosh))
 
 	/* This MacOS 9 solution was provided by Stephane Letz */
@@ -190,10 +167,8 @@
 	#include	<math.h>
 
 	#undef	lrint
-	#undef	lrintf
 
 	#define	lrint	double2int
-	#define	lrintf	float2int
 
 	inline int
 	float2int (register float in)
@@ -226,10 +201,8 @@
 	#include	<math.h>
 
 	#undef lrint
-	#undef lrintf
 
 	#define lrint	double2int
-	#define lrintf	float2int
 
 	inline static long
 	float2int (register float in)
@@ -263,14 +236,13 @@
 
 #else
 	#ifndef __sgi
-	#warning "Don't have the functions lrint() and lrintf()."
+	#warning "Don't have the functions lrint()."
 	#warning "Replacing these functions with a standard C cast."
 	#endif
 
 	#include	<math.h>
 
 	#define	lrint(dbl)		((long) (dbl))
-	#define	lrintf(flt)		((long) (flt))
 
 #endif
 
