@@ -141,7 +141,7 @@ int WavDecoder::FillBuffer(uint8_t* buffer, int length) {
 		real_length = length;
 	}
 
-	if (real_length == 0) {
+	if (real_length <= 0) {
 		finished = true;
 		return 0;
 	}
