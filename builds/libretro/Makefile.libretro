@@ -156,7 +156,7 @@ else ifeq ($(platform), wii)
 
 # Android
 else ifeq ($(platform), android)
-	TARGET := $(TARGET_NAME)_libretro_$(TARGET_NAME).so
+	TARGET := $(TARGET_NAME)_libretro_android.so
 	CC = arm-linux-androideabi-gcc$(EXE_EXT)
 	CXX = arm-linux-androideabi-g++$(EXE_EXT)
 	CXXFLAGS += -D__RETRO_ARM__
@@ -196,6 +196,11 @@ else ifneq (,$(findstring armv,$(platform)))
 		CXXFLAGS += -mfloat-abi=hard
 	endif
 	CXXFLAGS += -DARM
+
+# Emscripten
+else ifeq ($(platform), emscripten)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).bc
+	STATIC_LINKING = 1
 
 # Windows
 else
