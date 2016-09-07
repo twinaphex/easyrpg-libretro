@@ -214,7 +214,7 @@ else
 
 endif
 
-include Makefile.common
+include $(ROOT_DIR)/Makefile.common
 
 ifeq ($(DEBUG), 1)
 	CXXFLAGS += -g -O0
