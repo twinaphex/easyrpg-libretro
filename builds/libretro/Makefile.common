@@ -11,7 +11,7 @@ LIBSAMPLERATE_DIR := $(DEPS_DIR)/libsamplerate
 
 COMMON_DEFINES := -DHAVE_PTHREADS 
 
-INCDIR := -I$(CORE_DIR) -I$(EASYRPG_DIR) -I$(DEPS_DIR) -I$(LIBPNG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR) -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include
+INCDIR := -I$(CORE_DIR) -I$(EASYRPG_DIR) -I$(DEPS_DIR) -I$(LIBPNG_DIR) -I$(LIBLCF_DIR)/src -I$(PIXMAN_DIR) -I$(LIBLCF_DIR)/src/generated -I$(LIBRETRO_COMM_DIR)/include -I$(LIBRETRO_COMM_DIR)/include/compat
 
 SOURCES_CXX := \
 	$(EASYRPG_DIR)/async_handler.cpp \
@@ -400,3 +400,6 @@ ifeq ($(WANT_LIBSAMPLERATE), 1)
 					 $(LIBSAMPLERATE_DIR)/src_sinc.c \
 					 $(LIBSAMPLERATE_DIR)/src_zoh.c
 endif
+
+COMMON_DEFINES += -DWANT_ZLIB
+SOURCES_C += $(wildcard $(DEPS_DIR)/libz/*.c)

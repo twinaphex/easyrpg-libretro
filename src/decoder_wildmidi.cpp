@@ -19,6 +19,8 @@
 
 #ifdef HAVE_WILDMIDI
 
+#include <stdlib.h>
+
 #ifdef __LIBRETRO__
 #include "libretro.h"
 #endif
@@ -153,7 +155,7 @@ int WildMidiDecoder::FillBuffer(uint8_t* buffer, int length) {
 	if (!handle)
 		return -1;
 
-	return WildMidi_GetOutput(handle, reinterpret_cast<char*>(buffer), length);
+	return WildMidi_GetOutput(handle, reinterpret_cast<int8_t*>(buffer), length);
 }
 
 #endif

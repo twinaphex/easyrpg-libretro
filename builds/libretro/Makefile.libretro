@@ -21,7 +21,6 @@ endif
 TARGET_NAME := easyrpg
 ROOT_DIR    := .
 CORE_DIR    := ../..
-LIBS        := -lz
 
 # Unix
 ifeq ($(platform), unix)
