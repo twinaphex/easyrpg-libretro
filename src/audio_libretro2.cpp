@@ -73,11 +73,11 @@ LibretroAudio::~LibretroAudio() {
 }
 
 void LibretroAudio::LockMutex() const {
-	slock_lock(mutex)
+	slock_lock(mutex);
 }
 
 void LibretroAudio::UnlockMutex() const {
-	slock_unlock(mutex)
+	slock_unlock(mutex);
 }
 
 void LibretroAudio::SetRetroAudioCallback(retro_audio_sample_batch_t cb){
