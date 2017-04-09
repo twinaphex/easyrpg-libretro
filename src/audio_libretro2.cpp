@@ -18,12 +18,14 @@
 #if defined(USE_LIBRETRO) && defined(SUPPORT_AUDIO)
 #include "audio_libretro2.h"
 #include "output.h"
+#include "graphics.h"
 
 #include <vector>
 #include <cstdlib>
+#include <stddef.h>
 #include <rthreads/rthreads.h>
 
-retro_audio_sample_batch_t LibretroAudio::RenderAudioFrames=0;
+retro_audio_sample_batch_t RenderAudioFrames=0;
 
 static const unsigned AUDIO_SAMPLERATE = 44100.0;
 
