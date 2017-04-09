@@ -19,6 +19,7 @@
 
 #if defined(USE_LIBRETRO)
 
+#include "libretro.h"
 #include "audio_generic.h"
 
 class LibretroAudio : public GenericAudio {
@@ -26,10 +27,12 @@ public:
 	LibretroAudio();
 	~LibretroAudio();
 
+   void EnableAudio(bool enabled);
 	void LockMutex() const override;
 	void UnlockMutex() const override;
 
-  static void AudioThreadCallback();
+   void AudioThreadCallback();
+   void SetRetroAudioCallback(retro_audio_sample_batch_t cb);
 }; // class LibretroAudio
 
 #endif
