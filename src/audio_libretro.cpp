@@ -71,12 +71,14 @@ bool LibretroAudio::BGM_PlayedOnce(){
 	return BGM_PlayedOnceIndicator;
 }
 
+#if 0
 bool LibretroAudio::BGM_IsPlaying() {
  	for(unsigned i=0;i<nr_of_bgm_channels;i++){
  		if(!BGM_Channels[i].stopped) return true;
  	}
 	return false;
 }
+#endif
 
 unsigned LibretroAudio::BGM_GetTicks(){
 	unsigned ticks=0;

@@ -1,6 +1,8 @@
 #ifndef _S_CRC32_H
 #define _S_CRC32_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -78,6 +80,11 @@ extern "C" {
          DO1_CRC32(buf);
       } while (--len);
       return crc ^ 0xffffffffL;
+   }
+
+   const uint32_t *get_crc_table(void)
+   {
+      return (const uint32_t*)crc_table;
    }
 
 #ifdef __cplusplus
