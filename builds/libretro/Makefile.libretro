@@ -19,14 +19,13 @@ ifeq ($(platform),)
 endif
 
 TARGET_NAME := easyrpg
-ROOT_DIR    := .
 CORE_DIR    := ../..
 
 # Unix
 ifeq ($(platform), unix)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
-	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(ROOT_DIR)/link.T
+	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(CORE_DIR)/builds/libretro/link.T
 	LIBS += -lpthread
 
 # OS X
@@ -83,7 +82,7 @@ else ifneq (,$(findstring qnx,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro_$(platform).so
 
 	fpic := -fPIC
-	SHARED := -shared -Wl,--version-script=$(ROOT_DIR)/link.T
+	SHARED := -shared -Wl,--version-script=$(CORE_DIR)/builds/libretro/link.T
 	CC = qcc -Vgcc_ntoarmv7le
 	CXX = QCC -Vgcc_ntoarmv7le_cpp
 	AR = QCC -Vgcc_ntoarmv7le
@@ -160,7 +159,7 @@ else ifeq ($(platform), android)
 	CXX = arm-linux-androideabi-g++$(EXE_EXT)
 	CXXFLAGS += -D__RETRO_ARM__
 	fpic := -fPIC
-	SHARED := -shared -Wl,--version-script=$(ROOT_DIR)/link.T
+	SHARED := -shared -Wl,--version-script=$(CORE_DIR)/builds/libretro/link.T
 
 	ifeq ($(RETRO_PROFILE),1)
 		LDFLAGS += -llog
@@ -170,7 +169,7 @@ else ifeq ($(platform), android)
 else ifneq (,$(findstring armv,$(platform)))
 	CXXFLAGS += -DUSE_POSIX_MEMALIGN -D__RETRO_ARM__
 	TARGET := $(TARGET_NAME)_libretro.so
-	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(ROOT_DIR)/link.T
+	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(CORE_DIR)/builds/libretro/link.T
 	LIBS += -lpthread
 	fpic := -fPIC
 	ifneq (,$(findstring clang,$(platform)))
@@ -206,7 +205,7 @@ else
 	TARGET := $(TARGET_NAME)_libretro.dll
 	CC = gcc
 	CXX = g++
-	SHARED := -shared -static-libgcc -static-libstdc++ -Wl,--version-script=$(ROOT_DIR)/link.T
+	SHARED := -shared -static-libgcc -static-libstdc++ -Wl,--version-script=$(CORE_DIR)/builds/libretro/link.T
 	ifeq ($(DEBUG), 0)
 		SHARED += -s
 	endif
@@ -214,7 +213,7 @@ else
 
 endif
 
-include $(ROOT_DIR)/Makefile.common
+include $(CORE_DIR)/builds/libretro/Makefile.common
 
 ifeq ($(DEBUG), 1)
 	CXXFLAGS += -g -O0
