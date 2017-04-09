@@ -56,7 +56,7 @@ SOURCES_CXX := \
 	$(EASYRPG_DIR)/midisequencer.cpp \
 	$(EASYRPG_DIR)/midisynth.cpp \
 	$(EASYRPG_DIR)/rect.cpp \
-	$(EASYRPG_DIR)/registry_wine.cpp \
+	$(EASYRPG_DIR)/registry_libretro.cpp \
 	$(EASYRPG_DIR)/rtp_table.cpp \
 	$(EASYRPG_DIR)/scene.cpp \
 	$(EASYRPG_DIR)/scene_actortarget.cpp \
