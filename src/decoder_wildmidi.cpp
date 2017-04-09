@@ -29,7 +29,7 @@
 #include "utils.h"
 #include "decoder_wildmidi.h"
 
-#ifdef __LIBRETRO__
+#ifdef USE_LIBRETRO
 #include "libretro.h"
 #endif
 
@@ -62,7 +62,7 @@ WildMidiDecoder::WildMidiDecoder(const std::string file_name) {
 	/* find the configuration file in different paths on different platforms
 	 * FIXME: move this logic into some configuration class
 	 */
-#if defined(__LIBRETRO__)
+#if defined(USE_LIBRETRO)
    config_file = "wildmidi.cfg";
    extern retro_environment_t environ_cb;
    const char *dir = NULL;
