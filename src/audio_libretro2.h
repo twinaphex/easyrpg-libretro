@@ -27,12 +27,12 @@ public:
 	LibretroAudio();
 	~LibretroAudio();
 
-   void EnableAudio(bool enabled);
 	void LockMutex() const override;
 	void UnlockMutex() const override;
 
-   void AudioThreadCallback();
-   void SetRetroAudioCallback(retro_audio_sample_batch_t cb);
+   static void EnableAudio(bool enabled);
+   static void AudioThreadCallback();
+   static void SetRetroAudioCallback(retro_audio_sample_batch_t cb);
 }; // class LibretroAudio
 
 #endif

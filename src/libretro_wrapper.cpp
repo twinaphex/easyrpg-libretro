@@ -20,7 +20,7 @@
 #include "version.h"
 #include "options.h"
 #include "libretro_ui.h"
-#include "audio_libretro.h"
+#include "audio_libretro2.h"
 
 static const unsigned AUDIO_SAMPLERATE = 44100.0;
 
@@ -113,9 +113,6 @@ static void reinit_easy_rpg(void){
 
 /* Library global initialization/deinitialization. */
 RETRO_API void retro_init(void) {
-    LibretroAudio::SetNumberOfSamplesPerFrame(AUDIO_SAMPLERATE / Graphics::GetDefaultFps());
-    LibretroAudio::SetOutputSampleRate(AUDIO_SAMPLERATE);
-
 	reinit_easy_rpg();
 }
 
