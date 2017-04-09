@@ -29,6 +29,7 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/audio.cpp \
 						$(EASYRPG_DIR)/audio_decoder.cpp \
 						$(EASYRPG_DIR)/audio_resampler.cpp \
+						$(EASYRPG_DIR)/audio_secache.cpp \
 						$(EASYRPG_DIR)/audio_libretro.cpp \
 						$(EASYRPG_DIR)/color.cpp \
 						$(EASYRPG_DIR)/filefinder.cpp \
@@ -61,6 +62,7 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/image_xyz.cpp \
 						$(EASYRPG_DIR)/input.cpp \
 						$(EASYRPG_DIR)/input_buttons_desktop.cpp \
+						$(EASYRPG_DIR)/input_source.cpp \
 						$(EASYRPG_DIR)/libretro_wrapper.cpp \
 						$(EASYRPG_DIR)/main.cpp \
 						$(EASYRPG_DIR)/main_data.cpp \
@@ -80,8 +82,10 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/scene_shop.cpp \
 						$(EASYRPG_DIR)/scene_skill.cpp \
 						$(EASYRPG_DIR)/scene_status.cpp \
+						$(EASYRPG_DIR)/scene_teleport.cpp \
 						$(EASYRPG_DIR)/shinonome_gothic.cpp \
 						$(EASYRPG_DIR)/shinonome_mincho.cpp \
+						$(EASYRPG_DIR)/shinonome_wqy.cpp \
 						$(EASYRPG_DIR)/spriteset_battle.cpp \
 						$(EASYRPG_DIR)/tone.cpp \
 						$(EASYRPG_DIR)/utils.cpp \
@@ -90,13 +94,13 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/battle_animation.cpp \
 						$(EASYRPG_DIR)/bitmap.cpp \
 						$(EASYRPG_DIR)/cache.cpp \
-						$(EASYRPG_DIR)/effects.cpp \
 						$(EASYRPG_DIR)/font.cpp \
 						$(EASYRPG_DIR)/frame.cpp \
 						$(EASYRPG_DIR)/game_picture.cpp \
 						$(EASYRPG_DIR)/game_screen.cpp \
 						$(EASYRPG_DIR)/game_system.cpp \
 						$(EASYRPG_DIR)/graphics.cpp \
+						$(EASYRPG_DIR)/fps_overlay.cpp \
 						$(EASYRPG_DIR)/libretro_ui.cpp \
 						$(EASYRPG_DIR)/message_overlay.cpp \
 						$(EASYRPG_DIR)/output.cpp \
@@ -159,6 +163,7 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/window_shopstatus.cpp \
 						$(EASYRPG_DIR)/window_skill.cpp \
 						$(EASYRPG_DIR)/window_skillstatus.cpp \
+						$(EASYRPG_DIR)/window_teleport.cpp \
 						$(EASYRPG_DIR)/window_targetstatus.cpp \
 						$(EASYRPG_DIR)/window_varlist.cpp \
 						$(LIBLCF_DIR)/src/data.cpp \

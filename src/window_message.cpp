@@ -51,7 +51,6 @@ Window_Message::Window_Message(int ix, int iy, int iwidth, int iheight) :
 	gold_window(new Window_Gold(232, 0, 88, 32))
 {
 	SetContents(Bitmap::Create(width - 16, height - 16));
-	contents->SetTransparentColor(windowskin->GetTransparentColor());
 
 	if (Data::battlecommands.battle_type != RPG::BattleCommands::BattleType_traditional &&
 		Data::battlecommands.transparency == RPG::BattleCommands::Transparency_transparent) {
@@ -81,39 +80,48 @@ Window_Message::~Window_Message() {
 void Window_Message::StartMessageProcessing() {
 	contents->Clear();
 	text.clear();
-	for (size_t i = 0; i < Game_Message::texts.size(); ++i) {
-		text.append(Utils::DecodeUTF32(Game_Message::texts[i])).append(1, U'\n');
+	for (const std::string& line : Game_Message::texts) {
+		text.append(Utils::DecodeUTF32(line)).append(1, U'\n');
 	}
 	Game_Message::texts.clear();
 	item_max = min(4, Game_Message::choice_max);
 
-	text_index = text.begin();
+	text_index = text.end();
 	end = text.end();
 
-	// Apply commands that insert text
-	while (std::distance(text_index, end) > 1) {
-		if (*text_index++ == escape_char) {
-			switch (tolower(*text_index)) {
+	if (!text.empty()) {
+		// Move on first valid char
+		--text_index;
+
+		// Apply commands that insert text
+		while (std::distance(text_index, text.begin()) <= -1) {
+			switch (tolower(*text_index--)) {
 			case 'n':
 			case 'v':
 			{
+				if (*text_index != escape_char) {
+					continue;
+				}
+				++text_index;
+
 				auto start_code = text_index - 1;
-				std::u32string command_result = Utils::DecodeUTF32(ParseCommandCode());
-				if (command_result.empty()) {
-					text_index = start_code + 2;
+				bool success;
+				std::u32string command_result = Utils::DecodeUTF32(ParseCommandCode(success));
+				if (!success) {
+					text_index = start_code - 2;
 					continue;
 				}
 				text.replace(start_code, text_index + 1, command_result);
 				// Start from the beginning, the inserted text might add new commands
-				text_index = text.begin();
+				text_index = text.end();
 				end = text.end();
+
+				// Move on first valid char
+				--text_index;
+
 				break;
 			}
 			default:
-				if (*text_index == escape_char) {
-					// Do not replace this to avoid parsing \\v[1] as \v[1]
-					++text_index;
-				}
 				break;
 			}
 		}
@@ -327,15 +335,17 @@ void Window_Message::UpdateMessage() {
 	int loop_max = speed_table[speed_modifier] == 0 ? 2 : 1;
 
 	while (instant_speed || loop_count < loop_max) {
-		// It's assumed that speed_modifier is between 0 and 20
-		++speed_frame_counter;
+		if (!instant_speed) {
+			// It's assumed that speed_modifier is between 0 and 20
+			++speed_frame_counter;
 
-		if (speed_table[speed_modifier] != 0 &&
-			speed_table[speed_modifier] != speed_frame_counter) {
+			if (speed_table[speed_modifier] != 0 &&
+				speed_table[speed_modifier] != speed_frame_counter) {
 				break;
-		}
+			}
 
-		speed_frame_counter = 0;
+			speed_frame_counter = 0;
+		}
 
 		++loop_count;
 		if (text_index == end) {
@@ -350,7 +360,17 @@ void Window_Message::UpdateMessage() {
 		}
 
 		if (*text_index == '\n') {
-			instant_speed = false;
+			if (instant_speed) {
+				// instant_speed stops at the end of the line, unless
+				// there's a /> at the beginning of the next line
+				if (std::distance(text_index, end) > 2 &&
+					*(text_index + 1) == escape_char &&
+					*(text_index + 2) == '>') {
+					text_index += 2;
+				} else {
+					instant_speed = false;
+				}
+			}
 			InsertNewLine();
 		} else if (*text_index == '\f') {
 			instant_speed = false;
@@ -408,15 +428,20 @@ void Window_Message::UpdateMessage() {
 				break;
 			case '.':
 				// 1/4 second sleep
+				if (instant_speed) break;
 				sleep_until = Player::GetFrames() + 60 / 4;
 				++text_index;
 				return;
-				break;
 			case '|':
 				// Second sleep
+				if (instant_speed) break;
 				sleep_until = Player::GetFrames() + 60;
 				++text_index;
 				return;
+			case '\n':
+			case '\f':
+				// \ followed by linebreak, don't skip them
+				--text_index;
 				break;
 			default:
 				if (*text_index == escape_char) {
@@ -432,17 +457,21 @@ void Window_Message::UpdateMessage() {
 			std::string const glyph(Utils::EncodeUTF(std::u32string(text_index, std::next(text_index, 2))));
 			contents->TextDraw(contents_x, contents_y, text_color, glyph);
 			contents_x += 12;
+			++loop_count;
 			++text_index;
 		} else {
 			std::string const glyph(Utils::EncodeUTF(std::u32string(text_index, std::next(text_index))));
 
 			contents->TextDraw(contents_x, contents_y, text_color, glyph);
-			contents_x += contents->GetFont()->GetSize(glyph).width;
+			int glyph_width = contents->GetFont()->GetSize(glyph).width;
+			// Show full-width characters twice as slow as half-width characters
+			if (glyph_width >= 12)
+				loop_count++;
+			contents_x += glyph_width;
 		}
 
 		++text_index;
 	}
-	loop_count = 0;
 }
 
 int Window_Message::ParseParameter(bool& is_valid) {
@@ -511,13 +540,12 @@ int Window_Message::ParseParameter(bool& is_valid) {
 	return num;
 }
 
-std::string Window_Message::ParseCommandCode() {
+std::string Window_Message::ParseCommandCode(bool& success) {
 	int parameter;
 	bool is_valid;
-	// sub_code is used by chained arguments like \v[\v[1]]
-	// In that case sub_code contains the result from \v[1]
-	int sub_code = -1;
 	uint32_t cmd_char = *text_index;
+	success = true;
+
 	switch (tolower(cmd_char)) {
 	case 'n':
 		// Output Hero name
@@ -549,6 +577,7 @@ std::string Window_Message::ParseCommandCode() {
 	default:;
 		// When this happens text_index was not on a \ during calling
 	}
+	success = false;
 	return "";
 }
 

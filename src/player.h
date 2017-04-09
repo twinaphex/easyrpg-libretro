@@ -33,8 +33,10 @@ namespace Player {
 		EngineRpg2k = 1,
 		/** All versions of RPG Maker 2003 */
 		EngineRpg2k3 = 2,
+		/** RPG Maker 2000 v1.50 or newer, 2003 v1.05 or newer */
+		EngineMajorUpdated = 4,
 		/** RPG Maker 2003 v1.10 or newer (Official English translation) */
-		EngineRpg2k3E = 4
+		EngineRpg2k3E = 8
 	};
 
 	/**
@@ -134,19 +136,34 @@ namespace Player {
 	bool IsRPG2k();
 
 	/**
-	 * @return If engine is RPG2k3 v1.09 or older
+	 * @return If engine is RPG2k3 v1.09a or older
 	 */
 	bool IsRPG2k3Legacy();
 
 	/**
-	 * @return If engine is RPG2k3 or newer
+	 * @return If engine is RPG2k3
 	 */
 	bool IsRPG2k3();
+
+	/**
+	 * @return If engine is RPG2k v1.50 or newer, or RPG2k3 v1.05 or newer
+	 */
+	bool IsMajorUpdatedVersion();
 
 	/**
 	 * @return If engine is the official English release (v1.10) or newer.
 	 */
 	bool IsRPG2k3E();
+
+	/**
+	 * @return if encoding is CP932 or not
+	 */
+	bool IsCP932();
+
+	/**
+	 * @return Returns how fast EasyRPG currently runs (1: Normal speed, 2: double speed, 5: 5x speed, ...)
+	 */
+	int GetSpeedModifier();
 
 	/** Output program version on stdout */
 	void PrintVersion();
@@ -171,6 +188,12 @@ namespace Player {
 
 	/** FPS flag, if true will display frames per second counter. */
 	extern bool fps_flag;
+
+	/** Mouse flag, if true enables mouse click and scroll wheel */
+	extern bool mouse_flag;
+
+	/** Touch flag, if true enables finger taps */
+	extern bool touch_flag;
 
 	/** Battle Test flag, if true will run battle test. */
 	extern bool battle_test_flag;
@@ -211,8 +234,21 @@ namespace Player {
 	/** Currently interpreted engine. */
 	extern int engine;
 
+	/** Path to replay input log from */
+	extern std::string replay_input_path;
+
+	/** Path to record input log to */
+	extern std::string record_input_path;
+
 	/** Game title. */
 	extern std::string game_title;
+
+	/**
+	 * The default speed modifier applied when the speed up button is pressed
+	 *  Only used for configuring the speedup, don't read this var directly use
+	 *  GetSpeedModifier() instead.
+	 */
+	extern int speed_modifier;
 
 #ifdef EMSCRIPTEN
 	/** Name of game emscripten uses */
@@ -220,9 +256,6 @@ namespace Player {
 #endif
 
 #ifdef _3DS
-	/** Use DSP instead of CSND */
-	extern bool use_dsp;
-	
 	/** Is executed from a .3dsx (otherwise .cia) */
 	extern bool is_3dsx;
 #endif

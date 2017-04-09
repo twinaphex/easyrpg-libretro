@@ -30,16 +30,36 @@
 #ifdef _WIN32
 #  include <windows.h>
 #  include <shlobj.h>
+#  include <sys/types.h>
+#  include <sys/stat.h>
+#  define StatBuf struct _stat
+#  define GetStat _stat
 #  ifdef __MINGW32__
 #    include <dirent.h>
 #  elif defined(_MSC_VER)
 #    include "dirent_win.h"
 #  endif
 #else
-#  include <dirent.h>
+#  ifdef PSP2
+#    include <psp2/io/dirent.h>
+#    include <psp2/io/stat.h>
+#    define S_ISDIR SCE_S_ISDIR
+#    define opendir sceIoDopen
+#    define closedir sceIoDclose
+#    define dirent SceIoDirent
+#    define readdir sceIoDread
+#    define stat SceIoStat
+#    define lstat sceIoGetstat
+#    define StatBuf SceIoStat
+#    define GetStat sceIoGetstat
+#  else
+#    include <dirent.h>
+#    include <sys/stat.h>
+#    define StatBuf struct stat
+#    define GetStat stat
+#  endif
 #  include <unistd.h>
 #  include <sys/types.h>
-#  include <sys/stat.h>
 #endif
 
 #ifdef __ANDROID__
@@ -87,9 +107,26 @@ namespace {
 			return em_file;
 #endif
 
-		std::string const lower_dir = Utils::LowerCase(dir);
+		std::string lower_dir = Utils::LowerCase(dir);
 		std::string const escape_symbol = Player::escape_symbol;
 		std::string corrected_name = Utils::LowerCase(name);
+
+		std::string combined_path = MakePath(lower_dir, corrected_name);
+		std::string canon = MakeCanonical(combined_path, 1);
+		if (combined_path != canon) {
+			// Very few games (e.g. Yume2kki) use path traversal (..) in the filenames to point
+			// to files outside of the actual directory.
+			// Fix the path and search the file again with the correct root directory set.
+			Output::Debug("Path adjusted: %s -> %s", combined_path.c_str(), canon.c_str());
+			for (char const** c = exts; *c != NULL; ++c) {
+				std::string res = FileFinder::FindDefault(tree, canon + *c);
+				if (!res.empty()) {
+					return res;
+				}
+			}
+			return "";
+		}
+
 #ifdef _WIN32
 		if (escape_symbol != "\\") {
 #endif
@@ -205,7 +242,6 @@ void FileFinder::SetDirectoryTree(std::shared_ptr<FileFinder::DirectoryTree> dir
 
 std::shared_ptr<FileFinder::DirectoryTree> FileFinder::CreateDirectoryTree(std::string const& p, bool recursive) {
 	if(! (Exists(p) && IsDirectory(p))) { return std::shared_ptr<DirectoryTree>(); }
-
 	std::shared_ptr<DirectoryTree> tree = std::make_shared<DirectoryTree>();
 	tree->directory_path = p;
 
@@ -222,7 +258,6 @@ std::shared_ptr<FileFinder::DirectoryTree> FileFinder::CreateDirectoryTree(std::
 			GetDirectoryMembers(MakePath(tree->directory_path, i.second), RECURSIVE).files.swap(tree->sub_members[i.first]);
 		}
 	}
-
 	return tree;
 }
 
@@ -234,6 +269,48 @@ std::string FileFinder::MakePath(const std::string &dir, std::string const& name
 	std::replace(str.begin(), str.end(), '\\', '/');
 #endif
 	return str;
+}
+
+std::string FileFinder::MakeCanonical(std::string const& path, int initial_deepness) {
+	std::vector<std::string> path_components = SplitPath(path);
+	std::vector<std::string> path_can;
+	
+	for (std::string path_comp : path_components) {
+		if (path_comp == "..") {
+			if (path_can.size() > 0) {
+				path_can.pop_back();
+			} else if (initial_deepness > 0) {
+				// Ignore, we are in root
+				--initial_deepness;
+			} else {
+				Output::Debug("Path traversal out of game directory: %s", path.c_str());
+			}
+		} else if (path_comp == ".") {
+			// ignore
+		} else {
+			path_can.push_back(path_comp);
+		}
+	}
+
+	std::string ret;
+	for (std::string s : path_can) {
+		ret = MakePath(ret, s);
+	}
+	
+	return ret;
+}
+
+std::vector<std::string> FileFinder::SplitPath(std::string const& path) {
+	// Tokens are patch delimiters ("/" and encoding aware "\")
+	std::function<bool(char32_t)> f = [](char32_t t) {
+		char32_t escape_char_back = '\0';
+		if (!Player::escape_symbol.empty()) {
+			escape_char_back = Utils::DecodeUTF32(Player::escape_symbol).front();
+		}
+		char32_t escape_char_forward = Utils::DecodeUTF32("/").front();
+		return t == escape_char_back || t == escape_char_forward;
+	};
+	return Utils::Tokenize(path, f);
 }
 
 #ifdef _WIN32
@@ -330,19 +407,19 @@ static void add_rtp_path(std::string const& p) {
 }
 
 
-static void read_rtp_registry(const std::string& company, const std::string& version_str, const std::string& key) {
+static void read_rtp_registry(const std::string& company, const std::string& product, const std::string& key) {
 #if !(defined(GEKKO) || defined(__ANDROID__) || defined(EMSCRIPTEN))
-	std::string rtp_path = Registry::ReadStrValue(HKEY_CURRENT_USER, "Software\\" + company + "\\RPG" + version_str, key);
+	std::string rtp_path = Registry::ReadStrValue(HKEY_CURRENT_USER, "Software\\" + company + "\\" + product, key, KEY32);
 	if (!rtp_path.empty()) {
 		add_rtp_path(rtp_path);
 	}
 
-	rtp_path = Registry::ReadStrValue(HKEY_LOCAL_MACHINE, "Software\\" + company + "\\RPG" + version_str, key);
+	rtp_path = Registry::ReadStrValue(HKEY_LOCAL_MACHINE, "Software\\" + company + "\\" + product, key, KEY32);
 	if (!rtp_path.empty()) {
 		add_rtp_path(rtp_path);
 	}
 #else
-	(void)company; (void)version_str; (void)key;
+	(void)company; (void)product; (void)key;
 #endif
 }
 
@@ -366,6 +443,8 @@ void FileFinder::InitRtpPaths(bool warn_no_rtp_found) {
 #ifdef GEKKO
 	add_rtp_path("sd:/data/rtp/" + version_str + "/");
 	add_rtp_path("usb:/data/rtp/" + version_str + "/");
+#elif defined(PSP2)
+	add_rtp_path("ux0:/data/easyrpg-player/rtp/" + version_str + "/");
 #elif defined(__ANDROID__)
 	// Invoke "String getRtpPath()" in EasyRPG Activity via JNI
 	JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
@@ -383,36 +462,56 @@ void FileFinder::InitRtpPaths(bool warn_no_rtp_found) {
 
 	add_rtp_path(cs + "/" + version_str + "/");
 #else
+	// Windows/Wine
+	std::string const product = "RPG" + version_str;
 	if (Player::IsRPG2k()) {
 		// Prefer original 2000 RTP over Kadokawa, because there is no
 		// reliable way to detect this engine and much more 2k games
 		// use the non-English version
-		read_rtp_registry("ASCII", version_str, "RuntimePackagePath");
-		read_rtp_registry("KADOKAWA", version_str, "RuntimePackagePath");
+		read_rtp_registry("ASCII", product, "RuntimePackagePath");
+		read_rtp_registry("KADOKAWA", product, "RuntimePackagePath");
 	}
 	else if (Player::IsRPG2k3Legacy()) {
 		// Original 2003 RTP installer registry key is upper case
 		// and Wine registry is case insensitive but new 2k3v1.10 installer is not
 		// Prefer Enterbrain RTP over Kadokawa for old RPG2k3 (search order)
-		read_rtp_registry("Enterbrain", version_str, "RUNTIMEPACKAGEPATH");
-		read_rtp_registry("KADOKAWA", version_str, "RuntimePackagePath");
+		read_rtp_registry("Enterbrain", product, "RUNTIMEPACKAGEPATH");
+		read_rtp_registry("KADOKAWA", product, "RuntimePackagePath");
 	}
 	else if (Player::IsRPG2k3E()) {
 		// Prefer Kadokawa RTP over Enterbrain for new RPG2k3
-		read_rtp_registry("KADOKAWA", version_str, "RuntimePackagePath");
-		read_rtp_registry("Enterbrain", version_str, "RUNTIMEPACKAGEPATH");
+		read_rtp_registry("KADOKAWA", product, "RuntimePackagePath");
+		read_rtp_registry("Enterbrain", product, "RUNTIMEPACKAGEPATH");
 	}
+
+	// Our RTP is for all engines
+	read_rtp_registry("EasyRPG", "RTP", "path");
 
 	add_rtp_path("/data/rtp/" + version_str + "/");
 #endif
+	std::vector<std::string> env_paths;
+
+	// Windows paths are split by semicolon, Unix paths by colon
+	std::function<bool(char32_t)> f = [](char32_t t) {
+#ifdef _WIN32
+		return t == ';';
+#else
+		return t == ':';
+#endif
+	};
 
 	if (Player::IsRPG2k() && getenv("RPG2K_RTP_PATH"))
-		add_rtp_path(getenv("RPG2K_RTP_PATH"));
+		env_paths = Utils::Tokenize(getenv("RPG2K_RTP_PATH"), f);
 	else if (Player::IsRPG2k3() && getenv("RPG2K3_RTP_PATH"))
-		add_rtp_path(getenv("RPG2K3_RTP_PATH"));
+		env_paths = Utils::Tokenize(getenv("RPG2K3_RTP_PATH"), f);
 
 	if (getenv("RPG_RTP_PATH")) {
-		add_rtp_path(getenv("RPG_RTP_PATH"));
+		std::vector<std::string> tmp = Utils::Tokenize(getenv("RPG_RTP_PATH"), f);
+		env_paths.insert(env_paths.end(), tmp.begin(), tmp.end());
+	}
+
+	for (const std::string p : env_paths) {
+		add_rtp_path(p);
 	}
 
 	if (warn_no_rtp_found && search_paths.empty()) {
@@ -476,6 +575,20 @@ std::string FileFinder::FindDefault(const DirectoryTree& tree, const std::string
 
 std::string FileFinder::FindDefault(const DirectoryTree& tree, const std::string& name) {
 	DirectoryTree const& p = tree;
+
+	std::vector<std::string> path_comps = SplitPath(name);
+	if (path_comps.size() > 1) {
+		// When the searched name contains a directory search in this directory
+		// instead of the root
+
+		std::string f;
+		for (auto it = path_comps.begin() + 1; it != path_comps.end(); ++it) {
+			f = MakePath(f, *it);
+		}
+
+		return FindDefault(path_comps[0], f);
+	}
+
 	string_map const& files = p.files;
 
 	string_map::const_iterator const it = files.find(Utils::LowerCase(name));
@@ -503,7 +616,7 @@ bool FileFinder::IsEasyRpgProject(DirectoryTree const& dir){
 	return(ldb_it != dir.files.end() && lmt_it != dir.files.end());
 }
 
-bool FileFinder::HasSavegame(DirectoryTree const& dir) {
+bool FileFinder::HasSavegame() {
 	std::shared_ptr<FileFinder::DirectoryTree> tree = FileFinder::CreateSaveDirectoryTree();
 
 	for (int i = 1; i <= 15; i++) {
@@ -564,13 +677,15 @@ bool FileFinder::Exists(std::string const& filename) {
 		fclose(tmp);
 		return true;
 	}
+#elif defined(PSP2)
+	struct SceIoStat sb;
+	return (sceIoGetstat(filename.c_str(), &sb) >= 0);
 #else
 	return ::access(filename.c_str(), F_OK) != -1;
 #endif
 }
 
 bool FileFinder::IsDirectory(std::string const& dir) {
-
 #ifdef _3DS
 	DIR* d = opendir(dir.c_str());
 	if(d) {
@@ -585,23 +700,25 @@ bool FileFinder::IsDirectory(std::string const& dir) {
 		}
 	}
 	return false;
+#elif defined(GEKKO)
+	struct stat sb;
+	if (::stat(dir.c_str(), &sb) == 0)
+		return S_ISDIR(sb.st_mode);
+	return false;
 #else
 	if (!Exists(dir)) {
 		return false;
 	}
-#endif
-#ifdef _WIN32
+
+#  ifdef _WIN32
 	int attribs = ::GetFileAttributesW(Utils::ToWideString(dir).c_str());
 	return (attribs & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT))
 	      == FILE_ATTRIBUTE_DIRECTORY;
-#else
+#  else
 	struct stat sb;
-#   if (defined(GEKKO) || defined(_3DS))
-	::stat(dir.c_str(), &sb);
-#   else
 	::lstat(dir.c_str(), &sb);
-#endif
 	return S_ISDIR(sb.st_mode);
+#  endif
 #endif
 }
 
@@ -625,9 +742,13 @@ FileFinder::Directory FileFinder::GetDirectoryMembers(const std::string& path, F
 #else
 #  define wpath path
 #endif
-
+	#ifdef PSP2
+	int dir = opendir(wpath.c_str());
+	if (dir < 0) {
+	#else
 	std::shared_ptr< ::DIR> dir(::opendir(wpath.c_str()), ::closedir);
 	if (!dir) {
+	#endif
 		Output::Debug("Error opening dir %s: %s", path.c_str(),
 					  ::strerror(errno));
 		return result;
@@ -635,16 +756,29 @@ FileFinder::Directory FileFinder::GetDirectoryMembers(const std::string& path, F
 
 	static bool has_fast_dir_stat = true;
 
+#ifdef PSP2
+	struct dirent ent;
+	while (readdir(dir, &ent) > 0) {
+#else
 	struct dirent* ent;
 	while ((ent = ::readdir(dir.get())) != NULL) {
+#endif
 #ifdef _WIN32
 		std::string const name = Utils::FromWideString(ent->d_name);
 #else
+	#ifdef PSP2
+		std::string const name = ent.d_name;
+	#else
 		std::string const name = ent->d_name;
+	#endif
 #endif
 		bool is_directory;
 		if (has_fast_dir_stat) {
+			#ifdef PSP2
+			is_directory = S_ISDIR(ent.d_stat.st_mode);
+			#else
 			is_directory = ent->d_type == DT_DIR;
+			#endif
 		} else {
 			is_directory = IsDirectory(MakePath(path, name));
 		}
@@ -694,6 +828,63 @@ FileFinder::Directory FileFinder::GetDirectoryMembers(const std::string& path, F
 #  undef readdir
 #endif
 #undef wpath
-
+#ifdef PSP2
+	closedir(dir);
+#endif
 	return result;
+}
+
+Offset FileFinder::GetFileSize(std::string const& file) {
+	StatBuf sb;
+	int result = GetStat(file.c_str(), &sb);
+	return (result == 0) ? sb.st_size : -1;
+}
+
+bool FileFinder::IsMajorUpdatedTree() {
+	Offset size;
+
+	// Find an MP3 music file only when official Harmony.dll exists
+	// in the gamedir or the file doesn't exist because
+	// the detection doesn't return reliable results for games created with
+	// "RPG2k non-official English translation (older engine) + MP3 patch"
+	bool find_mp3 = true;
+	std::string harmony = FindDefault("Harmony.dll");
+	if (!harmony.empty()) {
+		size = GetFileSize(harmony);
+		if (size != -1 && size != KnownFileSize::OFFICIAL_HARMONY_DLL) {
+			Output::Debug("Non-official Harmony.dll found, skipping MP3 test");
+			find_mp3 = false;
+		}
+	}
+	if (find_mp3) {
+		const std::shared_ptr<DirectoryTree> tree = GetDirectoryTree();
+		string_map::const_iterator const music_it = tree->directories.find("music");
+		if (music_it != tree->directories.end()) {
+			string_map mem = tree->sub_members["music"];
+			for (auto& i : mem) {
+				std::string file = mem[i.first];
+				if (Utils::EndsWith(Utils::LowerCase(file), ".mp3")) {
+					Output::Debug("MP3 file (%s) found", file.c_str());
+					return true;
+				}
+			}
+		}
+	}
+
+	// Compare the size of RPG_RT.exe with threshold
+	std::string rpg_rt = FindDefault("RPG_RT.exe");
+	if (!rpg_rt.empty()) {
+		size = GetFileSize(rpg_rt);
+		if (size != -1) {
+			return size > (Player::IsRPG2k() ? RpgrtMajorUpdateThreshold::RPG2K : RpgrtMajorUpdateThreshold::RPG2K3);
+		}
+	}
+	Output::Debug("Could not get the size of RPG_RT.exe");
+
+	// Assume the most popular version
+	// Japanese or RPG2k3 games: newer engine
+	// non-Japanese RPG2k games: older engine
+	bool assume_newer = Player::IsCP932() || Player::IsRPG2k3();
+	Output::Debug("Assuming %s engine", assume_newer ? "newer" : "older");
+	return assume_newer;
 }

@@ -22,6 +22,7 @@
 #include "cache.h"
 #include "main_data.h"
 #include "player.h"
+#include "output.h"
 #include "rpg_battleranimation.h"
 #include "rpg_battleranimationextension.h"
 
@@ -35,8 +36,6 @@ Sprite_Battler::Sprite_Battler(Game_Battler* battler) :
 	flash_counter(0),
 	old_hidden(false),
 	idling(true) {
-
-	CreateSprite();
 }
 
 Sprite_Battler::~Sprite_Battler() {
@@ -51,8 +50,9 @@ void Sprite_Battler::SetBattler(Game_Battler* new_battler) {
 }
 
 void Sprite_Battler::Update() {
-	if (sprite_name != battler->GetSpriteName() ||
-		hue != battler->GetHue()) {
+	if (GetVisible() &&
+		(sprite_name != battler->GetSpriteName() ||
+		hue != battler->GetHue())) {
 
 		CreateSprite();
 	}
@@ -60,8 +60,7 @@ void Sprite_Battler::Update() {
 	if (!battler->IsHidden() && old_hidden != battler->IsHidden()) {
 		SetOpacity(255);
 		SetVisible(true);
-		SetAnimationState(AnimationState_Idle);
-		idling = true;
+		DoIdleAnimation();
 	}
 
 	old_hidden = battler->IsHidden();
@@ -72,6 +71,10 @@ void Sprite_Battler::Update() {
 
 	if (battler->GetBattleAnimationId() <= 0) {
 		// Animations for monster
+		if (anim_state != AnimationState_Dead) {
+			fade_out = 255;
+		}
+
 		if (anim_state == AnimationState_Idle) {
 			SetOpacity(255);
 			idling = true;
@@ -87,16 +90,14 @@ void Sprite_Battler::Update() {
 		else if (anim_state == AnimationState_Damage) {
 			flash_counter = (flash_counter + 1) % 10;
 			SetOpacity(flash_counter > 5 ? 50 : 255);
-			if (cycle == 60) {
-				SetAnimationState(AnimationState_Idle);
-				idling = true;
+			if (cycle == 30) {
+				DoIdleAnimation();
 				cycle = 0;
 			}
 		}
 		else {
 			if (cycle == 60) {
-				SetAnimationState(AnimationState_Idle);
-				idling = true;
+				DoIdleAnimation();
 				cycle = 0;
 			}
 		}
@@ -112,6 +113,9 @@ void Sprite_Battler::Update() {
 					} else if (loop_state == LoopState_LoopAnimation) {
 						animation->SetFrame(0);
 					} else if (loop_state == LoopState_WaitAfterFinish) {
+						if (animation->GetFrames() > 0) {
+							animation->SetFrame(animation->GetFrames() - 1);
+						}
 						idling = true;
 					}
 				}
@@ -148,6 +152,10 @@ void Sprite_Battler::Update() {
 			}
 		}
 	}
+
+	SetX(battler->GetDisplayX());
+	SetY(battler->GetDisplayY());
+	SetZ(battler->GetBattleY());
 }
 
 void Sprite_Battler::SetAnimationState(int state, LoopState loop) {
@@ -176,8 +184,13 @@ void Sprite_Battler::SetAnimationState(int state, LoopState loop) {
 
 			if (ext.animation_type == RPG::BattlerAnimationExtension::AnimType_animation) {
 				SetBitmap(BitmapRef());
-				animation.reset(new BattleAnimationBattlers(Data::animations[ext.animation_id - 1], *battler));
-				animation->SetZ(GetZ());
+				if (ext.animation_id < 1 || ext.animation_id > Data::animations.size()) {
+					Output::Warning("Invalid battle animation: %d", ext.animation_id);
+					animation.reset();
+				} else {
+					animation.reset(new BattleAnimationBattlers(Data::animations[ext.animation_id - 1], *battler));
+					animation->SetZ(GetZ());
+				}
 			}
 			else {
 				animation.reset();
@@ -196,9 +209,7 @@ void Sprite_Battler::SetAnimationLoop(LoopState loop) {
 }
 
 void Sprite_Battler::DetectStateChange() {
-	if (battler->IsDead() && anim_state != AnimationState_Dead) {
-		SetAnimationState(AnimationState_Dead);
-	} else if (idling) {
+	if (idling) {
 		DoIdleAnimation();
 	}
 }
@@ -209,7 +220,7 @@ bool Sprite_Battler::IsIdling() {
 
 void Sprite_Battler::Flash(int duration) {
 	if (animation) {
-		animation->GetSprite()->Flash(duration);
+		animation->Flash(duration);
 	} else {
 		Sprite::Flash(duration);
 	}
@@ -217,7 +228,7 @@ void Sprite_Battler::Flash(int duration) {
 
 void Sprite_Battler::Flash(Color color, int duration) {
 	if (animation) {
-		animation->GetSprite()->Flash(color, duration);
+		animation->Flash(color, duration);
 	} else {
 		Sprite::Flash(color, duration);
 	}
@@ -225,7 +236,7 @@ void Sprite_Battler::Flash(Color color, int duration) {
 
 bool Sprite_Battler::GetVisible() const {
 	if (animation) {
-		return animation->GetSprite()->GetVisible();
+		return animation->GetVisible();
 	} else {
 		return Sprite::GetVisible();
 	}
@@ -233,21 +244,21 @@ bool Sprite_Battler::GetVisible() const {
 
 void Sprite_Battler::SetVisible(bool nvisible) {
 	if (animation) {
-		animation->GetSprite()->SetVisible(nvisible);
+		animation->SetVisible(nvisible);
 	}
 	Sprite::SetVisible(nvisible);
 }
 
 int Sprite_Battler::GetWidth() const {
 	if (animation) {
-		return animation->GetSprite()->GetWidth();
+		return animation->GetWidth();
 	}
 	return Sprite::GetWidth();
 }
 
 int Sprite_Battler::GetHeight() const {
 	if (animation) {
-		return animation->GetSprite()->GetHeight();
+		return animation->GetHeight();
 	}
 	return Sprite::GetHeight();
 }
@@ -256,8 +267,8 @@ void Sprite_Battler::CreateSprite() {
 	sprite_name = battler->GetSpriteName();
 	hue = battler->GetHue();
 
-	SetX(battler->GetBattleX());
-	SetY(battler->GetBattleY());
+	SetX(battler->GetDisplayX());
+	SetY(battler->GetDisplayY());
 	SetZ(battler->GetBattleY()); // Not a typo
 
 	// Not animated -> Monster
@@ -285,8 +296,26 @@ void Sprite_Battler::CreateSprite() {
 }
 
 void Sprite_Battler::DoIdleAnimation() {
+	if (battler->IsDefending()) {
+		SetAnimationState(AnimationState_Defending);
+		idling = true;
+		return;
+	}
+
 	const RPG::State* state = battler->GetSignificantState();
-	int idling_anim = state ? state->battler_animation_id + 1 : AnimationState_Idle;
+	int idling_anim;
+	if (battler->GetBattleAnimationId() <= 0) {
+		// Monster
+		// Only visually different state is Death
+		if (state && state->ID == 1) {
+			idling_anim = AnimationState_Dead;
+		} else {
+			idling_anim = AnimationState_Idle;
+		}
+	} else {
+		idling_anim = state ? state->battler_animation_id + 1 : AnimationState_Idle;
+	}
+
 	if (idling_anim == 101)
 		idling_anim = 7;
 

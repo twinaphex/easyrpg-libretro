@@ -19,20 +19,26 @@
 
 #ifdef HAVE_WILDMIDI
 
+// Headers
+#include <cassert>
 #include <stdlib.h>
+#include <wildmidi_lib.h>
+#include "audio_decoder.h"
+#include "output.h"
+#include "filefinder.h"
+#include "utils.h"
+#include "decoder_wildmidi.h"
 
 #ifdef __LIBRETRO__
 #include "libretro.h"
 #endif
 
-// Headers
-#include <cassert>
-#include <wildmidi_lib.h>
-#include "audio_decoder.h"
-#include "output.h"
-#include "decoder_wildmidi.h"
+#if defined(GEKKO) || defined(_3DS)
+#  define WILDMIDI_FREQ 22050
+#else
+#  define WILDMIDI_FREQ 44100
+#endif
 
-#define WILDMIDI_FREQ 44100
 /* possible options include: WM_MO_REVERB|WM_MO_ENHANCED_RESAMPLING
  * however, they cause high cpu usage, so not using them for now.
  */
@@ -44,34 +50,148 @@ static void WildMidiDecoder_deinit(void) {
 }
 
 WildMidiDecoder::WildMidiDecoder(const std::string file_name) {
-   char wildmidi_cfg[1024];
-
 	music_type = "midi";
 	filename = file_name;
+	std::string config_file = "";
+	bool found = false;
 
 	// only initialize once
 	if (init)
 		return;
 
-   snprintf(wildmidi_cfg, sizeof(wildmidi_cfg), "%s", "wildmidi.cfg");
-#ifdef __LIBRETRO__
+
+	/* find the configuration file in different paths on different platforms
+	 * FIXME: move this logic into some configuration class
+	 */
+#ifdef GEKKO
+	// preferred under /data
+	config_file = "usb:/data/wildmidi/wildmidi.cfg";
+	found = FileFinder::Exists(config_file);
+	if (!found) {
+		config_file = "sd:/data/wildmidi/wildmidi.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+
+	// app directory
+	if (!found) {
+		config_file = "wildmidi.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+
+	// same, but legacy from SDL_mixer's timidity
+	if (!found) {
+		config_file = "usb:/data/timidity/timidity.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+	if (!found) {
+		config_file = "sd:/data/timidity/timidity.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+	if (!found) {
+		config_file = "timidity.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+#elif _3DS
+	// Only wildmidi paths, no timidity because there was never timidity used on 3DS
+
+	// Shipped in a romfs (for CIA files)
+	config_file = "romfs:/wildmidi.cfg";
+	found = FileFinder::Exists(config_file);
+
+	// preferred SD card directory
+	if (!found) {
+		config_file = "sdmc:/3ds/easyrpg-player/wildmidi.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+
+	// Current directory
+	if (!found) {
+		config_file = "wildmidi.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+#elif defined(__LIBRETRO__)
+   config_file = "wildmidi.cfg";
    extern retro_environment_t environ_cb;
    const char *dir = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
    {
 #ifdef _WIN32
-      char slash = '\\';
+      config_file = std::string(dir) + "\\wildmidi.cfg";
 #else
-      char slash = '/';
+      config_file = std::string(dir) + "/wildmidi.cfg";
 #endif
-      snprintf(wildmidi_cfg, sizeof(wildmidi_cfg), "%s%cwildmidi.cfg",
-            dir, slash);
    }
+#else
+	// Prefer wildmidi in current directory
+	config_file = "wildmidi.cfg";
+	found = FileFinder::Exists(config_file);
+
+	// Use Timidity strategy used in SDL mixer
+
+	// Environment variable
+	const char *env = getenv("TIMIDITY_CFG");
+	if (env) {
+		config_file = env;
+		found = FileFinder::Exists(config_file);
+	}
+
+	if (!found) {
+		config_file = "timidity.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+
+#	ifdef _WIN32
+	// Probably not too useful
+	if (!found) {
+		config_file = "C:\\TIMIDITY\\timidity.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+
+	// TODO: We need some installer which creates registry keys for wildmidi
+#	else
+	if (!found) {
+		config_file = "/etc/timidity.cfg";
+		found = FileFinder::Exists(config_file);
+	}
+
+	if (!found) {
+		// Folders used in timidity code
+		const std::vector<std::string> folders = {
+			"/etc/timidity",
+			"/usr/share/timidity",
+			"/usr/local/share/timidity",
+			"/usr/local/lib/timidity"
+		};
+
+		for (const std::string& s : folders) {
+			config_file = s + "/timidity.cfg";
+			found = FileFinder::Exists(config_file);
+
+			if (found) {
+				break;
+			}
+
+			// Some distributions have it in timidity++
+			config_file = s + "++/timidity.cfg";
+			found = FileFinder::Exists(config_file);
+
+			if (found) {
+				break;
+			}
+		}
+	}
+#	endif
 #endif
 
-	// FIXME: write some logic to find the configuration file in different paths
-	init = (WildMidi_Init(wildmidi_cfg, WILDMIDI_FREQ, WILDMIDI_OPTS) == 0);
+	// bail, if nothing found
+	if (!found) {
+		error_message = "WildMidi: Could not find configuration file.";
+		return;
+	}
+	Output::Debug("WildMidi: Using %s as configuration file...", config_file.c_str());
+
+	init = (WildMidi_Init(config_file.c_str(), WILDMIDI_FREQ, WILDMIDI_OPTS) == 0);
 	if (!init) {
 		error_message = "Could not initialize libWildMidi";
 		return;
@@ -144,18 +264,25 @@ bool WildMidiDecoder::SetFormat(int freq, AudioDecoder::Format format, int chann
 	return true;
 }
 
-bool WildMidiDecoder::SetPitch(int pitch) {
-	if (pitch != 100)
-		return false;
-
-	return true;
-}
-
 int WildMidiDecoder::FillBuffer(uint8_t* buffer, int length) {
 	if (!handle)
 		return -1;
 
-	return WildMidi_GetOutput(handle, reinterpret_cast<int8_t*>(buffer), length);
+	/* Old wildmidi (< 0.4.0) did output only in little endian and had a different API,
+	 * this inverts the buffer. The used version macro exists since 0.4.0.
+	 */
+#ifndef LIBWILDMIDI_VERSION
+	int res = WildMidi_GetOutput(handle, reinterpret_cast<char*>(buffer), length);
+	if (Utils::IsBigEndian() && res > 0) {
+		uint16_t* buffer_16 = reinterpret_cast<uint16_t*>(buffer);
+		for (int i = 0; i < res / 2; ++i) {
+			Utils::SwapByteOrder(buffer_16[i]);
+		}
+	}
+#else
+	int res = WildMidi_GetOutput(handle, reinterpret_cast<int8_t*>(buffer), length);
+#endif
+	return res;
 }
 
 #endif

@@ -108,7 +108,7 @@ RETRO_API void retro_set_input_state(retro_input_state_t cb) {
 static void reinit_easy_rpg(void){
 	Player::Init(0, 0);
     Graphics::Init();
-    Input::Init();
+    Input::Init("", "");
 }
 
 /* Library global initialization/deinitialization. */

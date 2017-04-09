@@ -17,11 +17,16 @@
 
 // Headers
 #include "utils.h"
+#include <cassert>
+#include <stdio.h>
 #include <algorithm>
 #include <random>
 
 namespace {
 	std::mt19937 rng;
+
+	/** Gets a random number uniformly distributed in [0, U32_MAX] */
+	uint32_t GetRandomU32() { return rng(); }
 }
 
 std::string Utils::LowerCase(const std::string& str) {
@@ -286,12 +291,6 @@ std::string Utils::FromWideString(const std::wstring& str) {
 }
 
 bool Utils::IsBigEndian() {
-#ifdef MSB_FIRST
-   return true;
-#else
-#if 1
-   return false;
-#else
 	static bool ran_once = false;
 	static bool is_big = false;
 
@@ -308,36 +307,32 @@ bool Utils::IsBigEndian() {
 	is_big = d.c[0] == 1;
 
 	return is_big;
-#endif
-#endif
 }
 
 void Utils::SwapByteOrder(uint16_t& us) {
-#ifdef MSB_FIRST
-	if (!IsBigEndian())
+	if (!IsBigEndian()) {
 		return;
+	}
 
 	us =	(us >> 8) |
 			(us << 8);
-#endif
 }
 
 void Utils::SwapByteOrder(uint32_t& ui) {
-#ifdef MSB_FIRST
-	if (!IsBigEndian())
+	if (!IsBigEndian()) {
 		return;
+	}
 
 	ui =	(ui >> 24) |
 			((ui<<8) & 0x00FF0000) |
 			((ui>>8) & 0x0000FF00) |
 			(ui << 24);
-#endif
 }
 
 void Utils::SwapByteOrder(double& d) {
-#ifdef MSB_FIRST
-	if (!IsBigEndian())
+	if (!IsBigEndian()) {
 		return;
+	}
 
 	uint32_t *p = reinterpret_cast<uint32_t *>(&d);
 	SwapByteOrder(p[0]);
@@ -345,19 +340,53 @@ void Utils::SwapByteOrder(double& d) {
 	uint32_t tmp = p[0];
 	p[0] = p[1];
 	p[1] = tmp;
-#endif
+}
+
+/** Generate a random number in the range [0,max] */
+static uint32_t GetRandomUnsigned(uint32_t max)
+{
+	if (max == 0xffffffffull) return GetRandomU32();
+
+	// Rejection sampling:
+	// 1. Divide the range of uint32 into blocks of max+1
+	//    numbers each, with rem numbers left over.
+	// 2. Generate a random u32. If it belongs to a block,
+	//    mod it into the range [0,max] and accept it.
+	// 3. If it fell into the range of rem leftover numbers,
+	//    reject it and go back to step 2.
+	uint32_t m = max + 1;
+	uint32_t rem = -m % m; // = 2^32 mod m
+	while (true) {
+		uint32_t n = GetRandomU32();
+		if (n >= rem)
+			return n % m;
+	}
 }
 
 int32_t Utils::GetRandomNumber(int32_t from, int32_t to) {
-	std::uniform_int_distribution<int32_t> dist(from, to);
-	return dist(rng);
+	assert(from <= to);
+	// Don't use uniform_int_distribution--the algorithm used isn't
+	// portable between stdlibs.
+	// We do from + (rand int in [0, to-from]). The miracle of two's
+	// complement let's us do this all in unsigned and then just cast
+	// back.
+	uint32_t ufrom = uint32_t(from);
+	uint32_t uto = uint32_t(to);
+	uint32_t urange = uto - ufrom;
+	uint32_t ures = ufrom + GetRandomUnsigned(urange);
+	return int32_t(ures);
+}
+
+bool Utils::ChanceOf(int32_t n, int32_t m) {
+	assert(n >= 0 && m > 0);
+	return GetRandomNumber(1, m) <= n;
 }
 
 void Utils::SeedRandomNumberGenerator(int32_t seed) {
 	rng.seed(seed);
 }
 
-#if (defined(_3DS) || defined(PSP2))
+#if defined(PSP2)
 #  define EOF -1
 #endif
 
@@ -393,7 +422,7 @@ std::string Utils::ReadLine(std::istream &is) {
 std::vector<std::string> Utils::Tokenize(const std::string &str_to_tokenize, const std::function<bool(char32_t)> predicate) {
 	std::u32string text = DecodeUTF32(str_to_tokenize);
 	std::vector<std::string> tokens;
-	std::u32string cur_token;	
+	std::u32string cur_token;
 
 	for (char32_t& c : text) {
 		if (predicate(c)) {

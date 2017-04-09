@@ -18,20 +18,18 @@ endif
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/$(PLAYER_PATH)/src \
-	$(LOCAL_PATH)/$(PLAYER_PATH)/lib/liblcf/src \
-	$(LOCAL_PATH)/$(PLAYER_PATH)/lib/liblcf/src/generated \
 	$(EASYRPG_TOOLCHAIN_DIR)/include \
 	$(EASYRPG_TOOLCHAIN_DIR)/include/liblcf \
 	$(EASYRPG_TOOLCHAIN_DIR)/include/pixman-1 \
 	$(EASYRPG_TOOLCHAIN_DIR)/include/freetype2 \
 	$(EASYRPG_TOOLCHAIN_DIR)/include/libpng16 \
+	$(EASYRPG_TOOLCHAIN_DIR)/include/libxmp-lite \
 	$(EASYRPG_TOOLCHAIN_DIR)/include/SDL2
 
 # Add your application source files here...
 LOCAL_SRC_FILES := SDL_android_main.c \
 	org_easyrpg_player_player_EasyRpgPlayerActivity.cpp \
-	$(patsubst $(LOCAL_PATH)/%, %, $(wildcard $(LOCAL_PATH)/$(PLAYER_PATH)/src/*.cpp)) \
-	$(patsubst $(LOCAL_PATH)/%, %, $(wildcard $(LOCAL_PATH)/$(PLAYER_PATH)/src/*.c))
+	$(patsubst $(LOCAL_PATH)/%, %, $(wildcard $(LOCAL_PATH)/$(PLAYER_PATH)/src/*.cpp))
 
 LOCAL_SHARED_LIBRARIES := SDL2
 
@@ -39,12 +37,15 @@ LOCAL_STATIC_LIBRARIES := cpufeatures
 
 LOCAL_LDLIBS := -L$(LOCAL_PATH)/../../obj/local/$(TARGET_ARCH_ABI) \
 		-L$(EASYRPG_TOOLCHAIN_DIR)/lib -lGLESv1_CM -llog -lz \
-		-llcf -lSDL2_mixer -lmad -lvorbisfile -lvorbis -logg -lmodplug \
-		-lmpg123 -lfreetype -lpixman-1 -lpng -licui18n -licuuc -licudata \
+		-lSDL2_mixer -lvorbisfile -lvorbis -logg -lxmp-lite \
+		-lmpg123 -lfreetype -lpixman-1 -lpng -lspeexdsp -lsndfile \
+		-llcf -lexpat -licui18n -licuuc -licudata \
 		-lcpufeatures
 
 LOCAL_CFLAGS := -O2 -Wall -Wextra -fno-rtti -DUSE_SDL \
-		-DHAVE_SDL_MIXER -DHAVE_MPG123 -DWANT_FMMIDI=2 -DLCF_SUPPORT_ICU
+		-DHAVE_SDL_MIXER -DHAVE_MPG123 -DWANT_FMMIDI=2 \
+		-DHAVE_OGGVORBIS -DHAVE_XMP -DHAVE_LIBSNDFILE \
+		-DHAVE_LIBSPEEXDSP -DSUPPORT_AUDIO
 
 		LOCAL_CPPFLAGS	=	$(LOCAL_C_FLAGS) -std=c++11
 

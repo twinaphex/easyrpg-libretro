@@ -433,7 +433,11 @@
     <ClCompile Include="..\..\src\audio.cpp" />
     <ClCompile Include="..\..\src\audio_al.cpp" />
     <ClCompile Include="..\..\src\audio_decoder.cpp" />
+    <ClCompile Include="..\..\src\audio_generic.cpp" />
+    <ClCompile Include="..\..\src\audio_resampler.cpp" />
+    <ClCompile Include="..\..\src\audio_sdl_mixer.cpp" />
     <ClCompile Include="..\..\src\audio_sdl.cpp" />
+    <ClCompile Include="..\..\src\audio_secache.cpp" />
     <ClCompile Include="..\..\src\background.cpp" />
     <ClCompile Include="..\..\src\baseui.cpp" />
     <ClCompile Include="..\..\src\battle_animation.cpp" />
@@ -441,8 +445,10 @@
     <ClCompile Include="..\..\src\cache.cpp" />
     <ClCompile Include="..\..\src\color.cpp" />
     <ClCompile Include="..\..\src\decoder_fmmidi.cpp" />
+    <ClCompile Include="..\..\src\decoder_libsndfile.cpp" />
     <ClCompile Include="..\..\src\decoder_mpg123.cpp" />
-    <ClCompile Include="..\..\src\effects.cpp" />
+    <ClCompile Include="..\..\src\decoder_wav.cpp" />
+    <ClCompile Include="..\..\src\decoder_oggvorbis.cpp" />
     <ClCompile Include="..\..\src\filefinder.cpp" />
     <ClCompile Include="..\..\src\font.cpp" />
     <ClCompile Include="..\..\src\frame.cpp" />
@@ -480,9 +486,9 @@
     <ClCompile Include="..\..\src\input.cpp" />
     <ClCompile Include="..\..\src\input_buttons_desktop.cpp" />
     <ClCompile Include="..\..\src\input_buttons_gekko.cpp" />
-    <ClCompile Include="..\..\src\input_buttons_gph.cpp" />
     <ClCompile Include="..\..\src\input_buttons_opendingux.cpp" />
     <ClCompile Include="..\..\src\input_buttons_psp.cpp" />
+    <ClCompile Include="..\..\src\input_source.cpp" />
     <ClCompile Include="..\..\src\main_data.cpp" />
     <ClCompile Include="..\..\src\message_overlay.cpp" />
     <ClCompile Include="..\..\src\midisequencer.cpp" />
@@ -515,11 +521,13 @@
     <ClCompile Include="..\..\src\scene_shop.cpp" />
     <ClCompile Include="..\..\src\scene_skill.cpp" />
     <ClCompile Include="..\..\src\scene_status.cpp" />
+    <ClCompile Include="..\..\src\scene_teleport.cpp" />
     <ClCompile Include="..\..\src\scene_title.cpp" />
     <ClCompile Include="..\..\src\screen.cpp" />
     <ClCompile Include="..\..\src\sdl_ui.cpp" />
     <ClCompile Include="..\..\src\shinonome_gothic.cpp" />
     <ClCompile Include="..\..\src\shinonome_mincho.cpp" />
+    <ClCompile Include="..\..\src\shinonome_wqy.cpp" />
     <ClCompile Include="..\..\src\sprite.cpp" />
     <ClCompile Include="..\..\src\spriteset_battle.cpp" />
     <ClCompile Include="..\..\src\spriteset_map.cpp" />
@@ -531,6 +539,7 @@
     <ClCompile Include="..\..\src\tilemap.cpp" />
     <ClCompile Include="..\..\src\tilemap_layer.cpp" />
     <ClCompile Include="..\..\src\tone.cpp" />
+    <ClCompile Include="..\..\src\fps_overlay.cpp" />
     <ClCompile Include="..\..\src\utils.cpp" />
     <ClCompile Include="..\..\src\util_win.cpp" />
     <ClCompile Include="..\..\src\weather.cpp" />
@@ -569,6 +578,7 @@
     <ClCompile Include="..\..\src\window_skill.cpp" />
     <ClCompile Include="..\..\src\window_skillstatus.cpp" />
     <ClCompile Include="..\..\src\window_targetstatus.cpp" />
+    <ClCompile Include="..\..\src\window_teleport.cpp" />
     <ClCompile Include="..\..\src\window_varlist.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -576,7 +586,11 @@
     <ClInclude Include="..\..\src\audio.h" />
     <ClInclude Include="..\..\src\audio_al.h" />
     <ClInclude Include="..\..\src\audio_decoder.h" />
+    <ClInclude Include="..\..\src\audio_generic.h" />
+    <ClInclude Include="..\..\src\audio_resampler.h" />
+    <ClInclude Include="..\..\src\audio_sdl_mixer.h" />
     <ClInclude Include="..\..\src\audio_sdl.h" />
+    <ClInclude Include="..\..\src\audio_secache.h" />
     <ClInclude Include="..\..\src\background.h" />
     <ClInclude Include="..\..\src\baseui.h" />
     <ClInclude Include="..\..\src\battle_animation.h" />
@@ -584,8 +598,11 @@
     <ClInclude Include="..\..\src\bitmap_hslrgb.h" />
     <ClInclude Include="..\..\src\cache.h" />
     <ClInclude Include="..\..\src\color.h" />
+    <ClInclude Include="..\..\src\decoder_libsndfile.h" />
+    <ClInclude Include="..\..\src\decoder_oggvorbis.h" />
     <ClInclude Include="..\..\src\default_graphics.h" />
     <ClInclude Include="..\..\src\decoder_fmmidi.h" />
+    <ClInclude Include="..\..\src\decoder_wav.h" />
     <ClInclude Include="..\..\src\decoder_mpg123.h" />
     <ClInclude Include="..\..\src\dirent_win.h" />
     <ClInclude Include="..\..\src\drawable.h" />
@@ -627,11 +644,11 @@
     <ClInclude Include="..\..\src\image_xyz.h" />
     <ClInclude Include="..\..\src\input.h" />
     <ClInclude Include="..\..\src\input_buttons.h" />
+    <ClInclude Include="..\..\src\input_source.h" />
     <ClInclude Include="..\..\src\keys.h" />
     <ClInclude Include="..\..\src\logo.h" />
     <ClInclude Include="..\..\src\main_data.h" />
     <ClInclude Include="..\..\src\map_data.h" />
-    <ClInclude Include="..\..\src\matrix.h" />
     <ClInclude Include="..\..\src\memory_management.h" />
     <ClInclude Include="..\..\src\message_overlay.h" />
     <ClInclude Include="..\..\src\midiprogram.h" />
@@ -668,6 +685,7 @@
     <ClInclude Include="..\..\src\scene_shop.h" />
     <ClInclude Include="..\..\src\scene_skill.h" />
     <ClInclude Include="..\..\src\scene_status.h" />
+    <ClInclude Include="..\..\src\scene_teleport.h" />
     <ClInclude Include="..\..\src\scene_title.h" />
     <ClInclude Include="..\..\src\screen.h" />
     <ClInclude Include="..\..\src\sdl_ui.h" />
@@ -683,7 +701,9 @@
     <ClInclude Include="..\..\src\text.h" />
     <ClInclude Include="..\..\src\tilemap.h" />
     <ClInclude Include="..\..\src\tilemap_layer.h" />
+    <ClInclude Include="..\..\src\transform.h" />
     <ClInclude Include="..\..\src\tone.h" />
+    <ClInclude Include="..\..\src\fps_overlay.h" />
     <ClInclude Include="..\..\src\utils.h" />
     <ClInclude Include="..\..\src\util_macro.h" />
     <ClInclude Include="..\..\src\util_win.h" />
@@ -724,6 +744,7 @@
     <ClInclude Include="..\..\src\window_skill.h" />
     <ClInclude Include="..\..\src\window_skillstatus.h" />
     <ClInclude Include="..\..\src\window_targetstatus.h" />
+    <ClInclude Include="..\..\src\window_teleport.h" />
     <ClInclude Include="..\..\src\window_varlist.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

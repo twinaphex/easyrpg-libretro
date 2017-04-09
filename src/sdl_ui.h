@@ -78,7 +78,9 @@ public:
 	uint32_t GetTicks() const override;
 	void Sleep(uint32_t time_milli) override;
 
+#ifdef SUPPORT_AUDIO
 	AudioInterface& GetAudio() override;
+#endif
 
 	/** @} */
 
@@ -109,9 +111,8 @@ private:
 	void ProcessJoystickHatEvent(SDL_Event &evnt);
 	void ProcessJoystickAxisEvent(SDL_Event &evnt);
 #if SDL_MAJOR_VERSION>1
-	void ProcessFingerDownEvent(SDL_Event & evnt);
-	void ProcessFingerUpEvent(SDL_Event & evnt);
-	void ProcessFingerEvent(SDL_Event & evnt, bool finger_down);
+	void ProcessMouseWheelEvent(SDL_Event &evnt);
+	void ProcessFingerEvent(SDL_Event & evnt);
 
 	/** @} */
 

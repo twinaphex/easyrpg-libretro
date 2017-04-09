@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This file is part of EasyRPG Player.
  *
  * EasyRPG Player is free software: you can redistribute it and/or modify
@@ -24,11 +24,6 @@
 #include "bitmap.h"
 #include "font.h"
 
-/** Interprets char literals as utf-8 */
-#ifdef _MSC_VER
-#pragma execution_character_set("utf-8")
-#endif
-
 const char* const Window_Keyboard::TO_SYMBOL = "Symbol";
 const char* const Window_Keyboard::TO_LETTER = "Letter";
 const char* const Window_Keyboard::DONE = "Done";
@@ -51,7 +46,7 @@ std::string Window_Keyboard::items[Window_Keyboard::MODE_END][9][10] = {
 	{"な","に","ぬ","ね","の","ぱ","ぴ","ぷ","ぺ","ぽ"},
 	{"は","ひ","ふ","へ","ほ","ぁ","ぃ","ぅ","ぇ","ぉ"},
 	{"ま","み","む","め","も","っ","ゃ","ゅ","ょ","ゎ"},
-	{"や","ゆ","よ","わ","ん","ー","〜","・","＝","☆"},
+	{"や","ゆ","よ","わ","ん","ー","～","・","＝","☆"},
 	{"ら","り","る","れ","ろ","を",Window_Keyboard::TO_KATAKANA,"",Window_Keyboard::DONE_JP}
 	},
 
@@ -63,7 +58,7 @@ std::string Window_Keyboard::items[Window_Keyboard::MODE_END][9][10] = {
 	{"ナ","ニ","ヌ","ネ","ノ","パ","ピ","プ","ペ","ポ"},
 	{"ハ","ヒ","フ","ヘ","ホ","ァ","ィ","ゥ","ェ","ォ"},
 	{"マ","ミ","ム","メ","モ","ッ","ャ","ュ","ョ","ヮ"},
-	{"ヤ","ユ","ヨ","ワ","ン","ー","〜","・","＝","☆"},
+	{"ヤ","ユ","ヨ","ワ","ン","ー","～","・","＝","☆"},
 	{"ラ","リ","ル","レ","ロ","ヲ",Window_Keyboard::TO_LETTER,"",Window_Keyboard::DONE_JP}
 	},
 
@@ -100,7 +95,6 @@ Window_Keyboard::Window_Keyboard(int ix, int iy, int iwidth, int iheight)
 	col = 0;
 
 	SetContents(Bitmap::Create(width - 16, height - 16));
-	contents->SetTransparentColor(windowskin->GetTransparentColor());
 	SetZ(9999);
 
 	row_spacing = 16;

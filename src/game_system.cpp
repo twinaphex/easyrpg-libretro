@@ -16,6 +16,7 @@
  */
 
 // Headers
+#include <fstream>
 #include <functional>
 #include "game_system.h"
 #include "async_handler.h"
@@ -26,6 +27,8 @@
 #include "output.h"
 #include "graphics.h"
 #include "main_data.h"
+#include "player.h"
+#include "reader_util.h"
 #include "scene_save.h"
 
 namespace {
@@ -49,6 +52,25 @@ void Game_System::BgmPlay(RPG::Music const& bgm) {
 	RPG::Music previous_music = data.current_music;
 	data.current_music = bgm;
 
+	// Validate
+	if (bgm.volume < 0 || bgm.volume > 100) {
+		data.current_music.volume = 100;
+
+		Output::Debug("BGM %s has invalid volume %d", bgm.name.c_str(), bgm.volume);
+	}
+
+	if (bgm.fadein < 0 || bgm.fadein > 10000) {
+		data.current_music.fadein = 0;
+
+		Output::Debug("BGM %s has invalid fadein %d", bgm.name.c_str(), bgm.fadein);
+	}
+
+	if (bgm.tempo < 50 || bgm.tempo > 200) {
+		data.current_music.tempo = 100;
+
+		Output::Debug("BGM %s has invalid tempo %d", bgm.name.c_str(), bgm.tempo);
+	}
+
 	// (OFF) means play nothing
 	// A Polish RPG Maker translation overtranslated the (OFF) reserved string.
 	// This particular translation uses (Brak) in editor for these cases.
@@ -58,14 +80,14 @@ void Game_System::BgmPlay(RPG::Music const& bgm) {
 	if (!bgm.name.empty() && bgm.name != "(OFF)" && bgm.name != "(Brak)") {
 		// Same music: Only adjust volume and speed
 		if (previous_music.name == bgm.name) {
-			if (previous_music.volume != bgm.volume) {
+			if (previous_music.volume != data.current_music.volume) {
 				if (!bgm_pending) { // Delay if not ready
-					Audio().BGM_Volume(bgm.volume);
+					Audio().BGM_Volume(data.current_music.volume);
 				}
 			}
-			if (previous_music.tempo != bgm.tempo) {
+			if (previous_music.tempo != data.current_music.tempo) {
 				if (!bgm_pending) { // Delay if not ready
-					Audio().BGM_Pitch(bgm.tempo);
+					Audio().BGM_Pitch(data.current_music.tempo);
 				}
 			}
 		} else {
@@ -109,8 +131,22 @@ void Game_System::SePlay(RPG::Sound const& se) {
 	if (se.volume == 0)
 		return;
 
+	int volume = se.volume;
+	int tempo = se.tempo;
+
+	// Validate
+	if (se.volume < 0 || se.volume > 100) {
+		Output::Debug("SE %s has invalid volume %d", se.name.c_str(), se.volume);
+		volume = 100;
+	}
+
+	if (se.tempo < 50 || se.tempo > 200) {
+		Output::Debug("SE %s has invalid tempo %d", se.name.c_str(), se.tempo);
+		tempo = 100;
+	}
+
 	FileRequestAsync* request = AsyncHandler::RequestFile("Sound", se.name);
-	se_request_ids[se.name] = request->Bind(std::bind(&Game_System::OnSeReady, std::placeholders::_1, se.volume, se.tempo));
+	se_request_ids[se.name] = request->Bind(std::bind(&Game_System::OnSeReady, std::placeholders::_1, volume, tempo));
 	request->Start();
 }
 
@@ -307,9 +343,46 @@ void Game_System::SetTransition(int which, int transition) {
 
 void Game_System::OnBgmReady(FileRequestResult* result) {
 	// Take from current_music, params could have changed over time
-	Audio().BGM_Play(result->file, data.current_music.volume, data.current_music.tempo, data.current_music.fadein);
-
 	bgm_pending = false;
+	std::string const path = FileFinder::FindMusic(result->file);
+	if (path.empty()) {
+		Output::Debug("Music not found: %s", result->file.c_str());
+		return;
+	}
+
+	if (Utils::EndsWith(result->file, ".link")) {
+		// Handle Ineluki's MP3 patch
+		std::shared_ptr<std::fstream> stream = FileFinder::openUTF8(path, std::ios_base::in);
+		if (!stream) {
+			Output::Warning("Ineluki link read error: %s", path.c_str());
+			return;
+		}
+
+		// The first line contains the path to the actual audio file to play
+		std::string line = Utils::ReadLine(*stream.get());
+		line = ReaderUtil::Recode(line, Player::encoding);
+		
+		Output::Debug("Ineluki link file: %s -> %s", path.c_str(), line.c_str());
+
+		#ifdef EMSCRIPTEN
+		Output::Warning("Ineluki MP3 patch unsupported in the web player");
+		return;
+		#else
+		std::string line_canonical = FileFinder::MakeCanonical(line, 1);
+		
+		std::string ineluki_path = FileFinder::FindDefault(line_canonical);
+		if (ineluki_path.empty()) {
+			Output::Debug("Music not found: %s", line_canonical.c_str());
+			return;
+		}
+		
+		Audio().BGM_Play(ineluki_path, data.current_music.volume, data.current_music.tempo, data.current_music.fadein);
+		
+		return;
+		#endif
+	}
+	
+	Audio().BGM_Play(path, data.current_music.volume, data.current_music.tempo, data.current_music.fadein);
 }
 
 void Game_System::OnSeReady(FileRequestResult* result, int volume, int tempo) {
@@ -318,5 +391,11 @@ void Game_System::OnSeReady(FileRequestResult* result, int volume, int tempo) {
 		se_request_ids.erase(item);
 	}
 
-	Audio().SE_Play(result->file, volume, tempo);
+	std::string const path = FileFinder::FindSound(result->file);
+	if (path.empty()) {
+		Output::Debug("Sound not found: %s", result->file.c_str());
+		return;
+	}
+
+	Audio().SE_Play(path, volume, tempo);
 }

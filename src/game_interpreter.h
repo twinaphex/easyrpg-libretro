@@ -53,7 +53,6 @@ public:
 		int dbg_x = -1, int dbg_y = -1
 	);
 
-	bool HasRunned() const;
 	bool IsRunning() const;
 	void Update();
 
@@ -76,7 +75,7 @@ protected:
 	bool main_flag;
 
 	int loop_count;
-	bool runned;
+	bool wait_messages;
 
 	unsigned int index;
 	int map_id;
@@ -91,7 +90,6 @@ protected:
 
 	int button_timer;
 	bool waiting_battle_anim;
-	bool waiting_pan_screen;
 	bool updating;
 	bool clear_child;
 

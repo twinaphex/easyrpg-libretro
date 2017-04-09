@@ -368,15 +368,15 @@ public:
 	virtual bool IsStopping() const;
 
 	/**
-	 * Gets if the character can walk in a tile
-	 * with a specific direction.
+	 * Makes way for the character to move from (x,y) in the direction d. Returns
+	 * true if the move can be completed.
 	 *
 	 * @param x tile x.
 	 * @param y tile y.
 	 * @param d character direction.
 	 * @return whether the character can walk through.
 	 */
-	virtual bool IsPassable(int x, int y, int d) const;
+	virtual bool MakeWay(int x, int y, int d) const;
 
 	/**
 	 * Gets if the character can jump to a tile.
@@ -399,6 +399,11 @@ public:
 	 * Updates character state and actions.
 	 */
 	virtual void Update();
+
+	/**
+	 * Updates character animation and movement.
+	 */
+	void UpdateSprite();
 
 	/**
 	 * Walks around on a custom move route.
@@ -710,6 +715,8 @@ protected:
 
 	int opacity;
 	bool visible;
+
+	int frame_count_at_last_update_parallel = -1;
 };
 
 #endif

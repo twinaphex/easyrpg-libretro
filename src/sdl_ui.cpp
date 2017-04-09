@@ -59,20 +59,25 @@
 
 #include "audio.h"
 
-#ifdef HAVE_SDL_MIXER
-#  include "audio_sdl.h"
-#elif defined(HAVE_OPENAL)
-#  include "audio_al.h"
-#endif
+#ifdef SUPPORT_AUDIO
+
+#  ifdef HAVE_SDL_MIXER
+#    include "audio_sdl_mixer.h"
+#  elif defined(HAVE_OPENAL)
+#    include "audio_al.h"
+#  else
+#    include "audio_sdl.h"
+#  endif
 
 AudioInterface& SdlUi::GetAudio() {
 	return *audio_;
 }
+#endif
 
 // SDL 1.2 compatibility
 #if SDL_MAJOR_VERSION==1
 	#define SDL_Keycode SDLKey
-	#define SDL_WINDOW_FULLSCREEN_DESKTOP SDL_FULLSCREEN 
+	#define SDL_WINDOW_FULLSCREEN_DESKTOP SDL_FULLSCREEN
 	#define SDL_WINDOWEVENT SDL_ACTIVEEVENT
 #endif
 
@@ -107,7 +112,7 @@ SdlUi::SdlUi(long width, long height, bool fs_flag) :
 #endif
 
 	uint32_t flags = SDL_INIT_VIDEO;
-	
+
 #ifndef EMSCRIPTEN
 	flags |= SDL_INIT_TIMER;
 #endif
@@ -170,22 +175,30 @@ SdlUi::SdlUi(long width, long height, bool fs_flag) :
 	ShowCursor(false);
 #endif
 
-#ifdef HAVE_SDL_MIXER
-	audio_.reset(new SdlAudio());
-#elif defined(HAVE_OPENAL)
-	audio_.reset(new ALAudio());
+#ifdef SUPPORT_AUDIO
+#  ifdef HAVE_SDL_MIXER
+	if (!Player::no_audio_flag) {
+		audio_.reset(new SdlMixerAudio());
+		return;
+	}
+#  elif defined(HAVE_OPENAL)
+	if (!Player::no_audio_flag) {
+		audio_.reset(new ALAudio());
+		return;
+	}
+#  else
+	if (!Player::no_audio_flag) {
+		audio_.reset(new SdlAudio());
+		return;
+	}
+#  endif
 #else
 	audio_.reset(new EmptyAudio());
 #endif
 }
 
 SdlUi::~SdlUi() {
-#if defined(GPH)
-	chdir("/usr/gp2x");
-	execl("./gp2xmenu", "./gp2xmenu", NULL);
-#else
 	SDL_Quit();
-#endif
 }
 
 uint32_t SdlUi::GetTicks() const {
@@ -327,7 +340,7 @@ bool SdlUi::RequestVideoMode(int width, int height, bool fullscreen) {
 		current_display_mode.flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 	toggle_fs_available = true;
-	
+
 	current_display_mode.zoom = true;
 #ifdef SUPPORT_ZOOM
 	zoom_available = true;
@@ -553,6 +566,14 @@ void SdlUi::ToggleZoom() {
 void SdlUi::ProcessEvents() {
 	SDL_Event evnt;
 
+#if defined(USE_MOUSE) && defined(SUPPORT_MOUSE)
+	// Reset Mouse scroll
+	if (Player::mouse_flag) {
+		keys[Input::Keys::MOUSE_SCROLLUP] = false;
+		keys[Input::Keys::MOUSE_SCROLLDOWN] = false;
+	}
+#endif
+
 	// Poll SDL events and process them
 	while (SDL_PollEvent(&evnt)) {
 		ProcessEvent(evnt);
@@ -640,6 +661,12 @@ void SdlUi::ProcessEvent(SDL_Event &evnt) {
 			ProcessMouseMotionEvent(evnt);
 			return;
 
+#if SDL_MAJOR_VERSION>1
+		case SDL_MOUSEWHEEL:
+			ProcessMouseWheelEvent(evnt);
+			return;
+#endif
+
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
 			ProcessMouseButtonEvent(evnt);
@@ -657,14 +684,12 @@ void SdlUi::ProcessEvent(SDL_Event &evnt) {
 		case SDL_JOYAXISMOTION:
 			ProcessJoystickAxisEvent(evnt);
 			return;
-		
+
 #if SDL_MAJOR_VERSION>1
 		case SDL_FINGERDOWN:
-			ProcessFingerDownEvent(evnt);
-			return;
-
 		case SDL_FINGERUP:
-			ProcessFingerUpEvent(evnt);
+		case SDL_FINGERMOTION:
+			ProcessFingerEvent(evnt);
 			return;
 #endif
 	}
@@ -679,11 +704,13 @@ void SdlUi::ProcessActiveEvent(SDL_Event &evnt) {
 	state = evnt.window.event;
 #endif
 
+	if (
 #if SDL_MAJOR_VERSION==1
-	if (state == SDL_APPINPUTFOCUS && !evnt.active.gain) {
+	(state == SDL_APPINPUTFOCUS && !evnt.active.gain)
 #else
-	if (state == SDL_WINDOWEVENT_FOCUS_LOST) {
+	state == SDL_WINDOWEVENT_FOCUS_LOST
 #endif
+	) {
 
 		Player::Pause();
 
@@ -700,7 +727,7 @@ void SdlUi::ProcessActiveEvent(SDL_Event &evnt) {
 			}
 		}
 #endif
-		
+
 		ShowCursor(last);
 
 		Player::Resume();
@@ -750,11 +777,6 @@ void SdlUi::ProcessKeyDownEvent(SDL_Event &evnt) {
 		EndDisplayModeChange();
 		return;
 
-	case SDLK_F12:
-		// Reset the game engine on F12
-		Player::reset_flag = true;
-		return;
-
 	case SDLK_RETURN:
 	case SDLK_KP_ENTER:
 		// Toggle fullscreen on Alt+Enter
@@ -795,16 +817,50 @@ void SdlUi::ProcessKeyUpEvent(SDL_Event &evnt) {
 #endif
 }
 
-void SdlUi::ProcessMouseMotionEvent(SDL_Event& /* evnt */) {
+void SdlUi::ProcessMouseMotionEvent(SDL_Event& evnt) {
 #if defined(USE_MOUSE) && defined(SUPPORT_MOUSE)
 	mouse_focus = true;
 	mouse_x = evnt.motion.x;
 	mouse_y = evnt.motion.y;
+#else
+	/* unused */
+	(void) evnt;
 #endif
 }
 
-void SdlUi::ProcessMouseButtonEvent(SDL_Event& /* evnt */) {
+#if SDL_MAJOR_VERSION>1
+void SdlUi::ProcessMouseWheelEvent(SDL_Event& evnt) {
 #if defined(USE_MOUSE) && defined(SUPPORT_MOUSE)
+	if (!Player::mouse_flag)
+		return;
+
+	// Ignore Finger (touch) events here
+	if (evnt.wheel.which == SDL_TOUCH_MOUSEID)
+		return;
+
+	int amount = evnt.wheel.y;
+	// translate direction
+	if (evnt.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+		amount *= -1;
+
+	keys[Input::Keys::MOUSE_SCROLLUP] = amount > 0;
+	keys[Input::Keys::MOUSE_SCROLLDOWN] = amount < 0;
+#else
+	/* unused */
+	(void) evnt;
+#endif
+}
+#endif
+
+void SdlUi::ProcessMouseButtonEvent(SDL_Event& evnt) {
+#if defined(USE_MOUSE) && defined(SUPPORT_MOUSE)
+	if (!Player::mouse_flag)
+		return;
+
+	// Ignore Finger (touch) events here
+	if (evnt.button.which == SDL_TOUCH_MOUSEID)
+		return;
+
 	switch (evnt.button.button) {
 	case SDL_BUTTON_LEFT:
 		keys[Input::Keys::MOUSE_LEFT] = evnt.button.state == SDL_PRESSED;
@@ -816,6 +872,9 @@ void SdlUi::ProcessMouseButtonEvent(SDL_Event& /* evnt */) {
 		keys[Input::Keys::MOUSE_RIGHT] = evnt.button.state == SDL_PRESSED;
 		break;
 	}
+#else
+	/* unused */
+	(void) evnt;
 #endif
 }
 
@@ -896,17 +955,32 @@ void SdlUi::ProcessJoystickAxisEvent(SDL_Event &evnt) {
 }
 
 #if SDL_MAJOR_VERSION>1
-void SdlUi::ProcessFingerDownEvent(SDL_Event& evnt) {
-	ProcessFingerEvent(evnt, true);
-}
+void SdlUi::ProcessFingerEvent(SDL_Event& evnt) {
+#if defined(USE_TOUCH) && defined(SUPPORT_TOUCH)
+	SDL_TouchID touchid;
+	int fingers = 0;
 
-void SdlUi::ProcessFingerUpEvent(SDL_Event& evnt) {
-	ProcessFingerEvent(evnt, false);
-}
+	if (!Player::touch_flag)
+		return;
 
-void SdlUi::ProcessFingerEvent(SDL_Event& evnt, bool finger_down) {
-	(void)finger_down;
-	(void)evnt;
+	// We currently ignore swipe gestures
+	if (evnt.type != SDL_FINGERMOTION) {
+		/* FIXME: To simplify things, we lazily only get the current number of
+		   fingers touching the first device (hoping nobody actually uses
+		   multiple devices). This way we do not need to keep track on finger
+		   IDs and deal with the timing.
+		*/
+		touchid = SDL_GetTouchDevice(0);
+		if (touchid != 0)
+			fingers = SDL_GetNumTouchFingers(touchid);
+
+		keys[Input::Keys::ONE_FINGER] = fingers == 1;
+		keys[Input::Keys::TWO_FINGERS] = fingers == 2;
+	}
+#else
+	/* unused */
+	(void) evnt;
+#endif
 }
 
 void SdlUi::SetAppIcon() {
@@ -1223,7 +1297,7 @@ Input::Keys::InputKey SdlJKey2InputKey(int button_index) {
 int FilterUntilFocus(const SDL_Event* evnt) {
 	// Prevent throwing events away received after focus gained but filter
 	// not detached.
-	
+
 	bool filtering_done = false;
 
 	switch (evnt->type) {

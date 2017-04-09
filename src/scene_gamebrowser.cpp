@@ -17,6 +17,7 @@
 
 // Headers
 #include "scene_gamebrowser.h"
+#include "audio_secache.h"
 #include "cache.h"
 #include "game_system.h"
 #include "input.h"
@@ -41,6 +42,7 @@ Scene_GameBrowser::Scene_GameBrowser() {
 void Scene_GameBrowser::Start() {
 	Game_System::SetSystemName(CACHE_DEFAULT_BITMAP);
 	CreateWindows();
+	Player::FrameReset();
 }
 
 void Scene_GameBrowser::Continue() {
@@ -50,6 +52,9 @@ void Scene_GameBrowser::Continue() {
 	Audio().BGM_Fade(800);
 
 	Main_Data::SetProjectPath(browser_dir);
+
+	Cache::Clear();
+	AudioSeCache::Clear();
 
 	Data::Clear();
 	Player::ResetGameObjects();

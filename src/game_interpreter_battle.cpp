@@ -34,6 +34,11 @@ Game_Interpreter_Battle::Game_Interpreter_Battle(int depth, bool main_flag) :
 
 // Execute Command.
 bool Game_Interpreter_Battle::ExecuteCommand() {
+	if (Game_Battle::CheckWin() || Game_Battle::CheckLose()) {
+		// Interpreter is cancelled when a win/lose condition is fulfilled
+		return false;
+	}
+
 	if (index >= list.size()) {
 		return CommandEnd();
 	}
@@ -138,13 +143,10 @@ bool Game_Interpreter_Battle::CommandEnableCombo(RPG::EventCommand const& com) {
 		return true;
 	}
 
-	Output::Warning("Battle: Enable Combo not implemented");
+	int command_id = com.parameters[1];
+	int multiple = com.parameters[2];
 
-	// TODO
-	// int command_id = com.parameters[1];
-	// int multiple = com.parameters[2];
-
-	// Game_Actors::GetActor(actor_id)->EnableCombo(command_id, multiple);
+	Game_Actors::GetActor(actor_id)->SetBattleCombo(command_id, multiple);
 
 	return true;
 }
@@ -289,7 +291,7 @@ bool Game_Interpreter_Battle::CommandShowBattleAnimation(RPG::EventCommand const
 
 bool Game_Interpreter_Battle::CommandTerminateBattle(RPG::EventCommand const& /* com */) {
 	Game_Battle::Terminate();
-	return true;
+	return false;
 }
 
 // Conditional branch.

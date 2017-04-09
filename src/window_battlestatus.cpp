@@ -79,11 +79,7 @@ void Window_BattleStatus::Refresh() {
 				break;
 			}
 			else {
-				BitmapRef system2 = Cache::System2(Data::system.system2_name);
-
 				DrawActorFace(static_cast<Game_Actor*>(actor), 80 * i, 24);
-
-				contents->StretchBlit(Rect(32 + i * 80, 24, 57, 48), *system2, Rect(0, 32, 48, 48), Opacity::opaque);
 			}
 		}
 		else {
@@ -123,6 +119,18 @@ void Window_BattleStatus::RefreshGauge() {
 				}
 				else {
 					BitmapRef system2 = Cache::System2(Data::system.system2_name);
+					
+					// Clear number drawing area
+					contents->ClearRect(Rect(40 + 80 * i, 24, 8 * 4, 16));
+					contents->ClearRect(Rect(40 + 80 * i, 24 + 12 + 4, 8 * 4, 16));
+
+					// Number clearing removed part of the face, but both, clear and redraw
+					// are needed because some games don't have face graphics that are huge enough
+					// to clear the number area (e.g. Ara Fell)
+					DrawActorFace(static_cast<Game_Actor*>(actor), 80 * i, 24);
+
+					// Background
+					contents->StretchBlit(Rect(32 + i * 80, 24, 57, 48), *system2, Rect(0, 32, 48, 48), Opacity::opaque);
 
 					// HP
 					DrawGaugeSystem2(48 + i * 80, 24, actor->GetHp(), actor->GetMaxHp(), 0);
@@ -234,7 +242,7 @@ void Window_BattleStatus::Update() {
 	}
 
 	if (active && index >= 0) {
-		if (Input::IsRepeated(Input::DOWN)) {
+		if (Input::IsRepeated(Input::DOWN) || Input::IsTriggered(Input::SCROLL_DOWN)) {
 			Game_System::SePlay(Game_System::GetSystemSE(Game_System::SFX_Cursor));
 			for (int i = 1; i < item_max; i++) {
 				int new_index = (index + i) % item_max;
@@ -244,7 +252,7 @@ void Window_BattleStatus::Update() {
 				}
 			}
 		}
-		if (Input::IsRepeated(Input::UP)) {
+		if (Input::IsRepeated(Input::UP) || Input::IsTriggered(Input::SCROLL_UP)) {
 			Game_System::SePlay(Game_System::GetSystemSE(Game_System::SFX_Cursor));
 			for (int i = item_max - 1; i > 0; i--) {
 				int new_index = (index + i) % item_max;

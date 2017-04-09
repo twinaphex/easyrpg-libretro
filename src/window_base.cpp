@@ -47,7 +47,6 @@ void Window_Base::Update() {
 	if (Game_System::GetSystemName() != windowskin_name) {
 		windowskin_name = Game_System::GetSystemName();
 		SetWindowskin(Cache::System(windowskin_name));
-		contents->SetTransparentColor(windowskin->GetTransparentColor());
 	}
 	SetStretch(Game_System::GetMessageStretch() == RPG::System::Stretch_stretch);
 }
@@ -237,7 +236,7 @@ void Window_Base::DrawEquipmentType(Game_Actor* actor, int cx, int cy, int type)
 		name = Data::terms.weapon;
 		break;
 	case 1:
-		if (actor->GetTwoSwordsStyle()) {
+		if (actor->HasTwoWeapons()) {
 			name = Data::terms.weapon;
 		} else {
 			name = Data::terms.shield;

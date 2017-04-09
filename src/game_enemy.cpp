@@ -17,13 +17,14 @@
 
 // Headers
 #include <algorithm>
-#include <cstdlib>
 #include "data.h"
 #include "rpg_enemy.h"
 #include "game_battle.h"
 #include "game_enemy.h"
 #include "game_party.h"
 #include "game_switches.h"
+#include "output.h"
+#include "utils.h"
 
 Game_Enemy::Game_Enemy(int enemy_id) : Game_Battler() {
 	Setup(enemy_id);
@@ -69,6 +70,13 @@ int Game_Enemy::GetAttributeModifier(int attribute_id) const {
 
 	if (attribute_id <= (int)enemy->attribute_ranks.size()) {
 		rate = enemy->attribute_ranks[attribute_id - 1];
+	}
+
+	rate += attribute_shift[attribute_id - 1];
+	if (rate < 0) {
+		rate = 0;
+	} else if (rate > 4) {
+		rate = 4;
 	}
 
 	return GetAttributeRate(attribute_id, rate);
@@ -164,7 +172,18 @@ bool Game_Enemy::IsHidden() const {
 
 void Game_Enemy::Transform(int new_enemy_id) {
 	enemy_id = new_enemy_id;
-	enemy = &Data::enemies[enemy_id - 1];
+
+	if (enemy_id <= 0 || enemy_id > static_cast<int>(Data::enemies.size())) {
+		// Some games (e.g. Battle 5 in Embric) have invalid monsters in the battle.
+		// This case will fail in RPG Maker and the game will exit with an error message.
+		// Create a warning instead and continue the battle.
+		Output::Warning("Enemy id %d invalid", new_enemy_id);
+		enemy_id = 1;
+		// This generates an invisible monster with 0 HP and a minor memory leak
+		enemy = new RPG::Enemy();
+	} else {
+		enemy = &Data::enemies[enemy_id - 1];
+	}
 }
 
 int Game_Enemy::GetBattleAnimationId() const {
@@ -175,8 +194,8 @@ int Game_Enemy::GetHitChance() const {
 	return enemy->miss ? 70 : 90;
 }
 
-int Game_Enemy::GetCriticalHitChance() const {
-	return enemy->critical_hit ? enemy->critical_hit_chance : 0;
+float Game_Enemy::GetCriticalHitChance() const {
+	return enemy->critical_hit ? (1.0f / enemy->critical_hit_chance) : 0.0f;
 }
 
 Game_Battler::BattlerType Game_Enemy::GetType() const {
@@ -278,7 +297,7 @@ const RPG::EnemyAction* Game_Enemy::ChooseRandomAction() {
 		return nullptr;
 	}
 
-	int which = rand() % total;
+	int which = Utils::GetRandomNumber(0, total - 1);
 	for (std::vector<int>::const_iterator it = valid.begin(); it != valid.end(); ++it) {
 		const RPG::EnemyAction& action = actions[*it];
 		if (which >= action.rating) {

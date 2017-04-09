@@ -16,46 +16,54 @@
  */
 
 #include "audio.h"
-#include <map>
+
+#ifndef CTRAUDIO_H
+#define CTRAUDIO_H
+
+#ifdef _3DS
 #include <3ds.h>
+#include <3ds/synchronization.h>
+#include <memory>
 
-#define SOUND_CHANNELS 22 // Number of available sounds channel
+#include "audio_decoder.h"
 
-struct CtrAudio : public AudioInterface {
+class CtrAudio : public AudioInterface {
+public:
 	CtrAudio();
 	~CtrAudio();
 
-	void BGM_Play(std::string const&, int, int, int);
-	void BGM_Pause();
-	void BGM_Resume();
-	void BGM_Stop();
-	bool BGM_PlayedOnce();
-	unsigned BGM_GetTicks();
-	void BGM_Fade(int);
-	void BGM_Volume(int);
-	void BGM_Pitch(int);
-	void BGS_Play(std::string const&, int, int, int);
-	void BGS_Pause();
-	void BGS_Resume();
-	void BGS_Stop();
-	void BGS_Fade(int);
-	void ME_Play(std::string const&, int, int, int);
-	void ME_Stop();
-	void ME_Fade(int /* fade */);
-	void SE_Play(std::string const&, int, int);
-	void SE_Stop();
-	void Update();
+	void BGM_Play(std::string const& file, int volume, int pitch, int fadein) override;
+	void BGM_Pause() override;
+	void BGM_Resume() override;
+	void BGM_Stop() override;
+	bool BGM_PlayedOnce() const override;
+	bool BGM_IsPlaying() const override;
+	unsigned BGM_GetTicks() const override;
+	void BGM_Fade(int fade) override;
+	void BGM_Volume(int volume) override;
+	void BGM_Pitch(int pitch) override;
+	void SE_Play(std::string const& file, int volume, int pitch) override;
+	void SE_Stop() override;
+	virtual void Update() override;
 
-	void BGM_OnPlayedOnce();
-	int BGS_GetChannel() const;
+	volatile bool term_stream = false;
+	
+	void LockMutex() const;
+	void UnlockMutex() const;
+	
+	ndspWaveBuf bgm_buf[2];
+	std::unique_ptr<AudioDecoder> bgm_decoder;
+	LightEvent audio_event;
 
 private:
-	u8* audiobuffers[SOUND_CHANNELS]; // We'll use last two available channels for BGM
-	uint8_t num_channels = SOUND_CHANNELS;
-	ndspWaveBuf dspSounds[SOUND_CHANNELS+1]; // We need one more waveBuf for BGM purposes
-	int bgm_volume; // Stubbed
-	bool (*isPlayingCallback)(int);
-	void (*clearCallback)(int);
-	u8 last_ch; // Used only with dsp::DSP
-
+	mutable LightLock audio_mutex;
+	
+	ndspWaveBuf se_buf[23];
+	unsigned bgm_starttick = 0;
+	
+	uint32_t* bgm_audio_buffer;
 }; // class CtrAudio
+
+#endif
+
+#endif

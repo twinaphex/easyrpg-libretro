@@ -25,6 +25,9 @@
 #include <vector>
 
 class Game_Vehicle;
+namespace RPG {
+	class SaveTarget;
+}
 
 /**
  * Game Player class
@@ -78,7 +81,7 @@ public:
 	void SetFlashTimeLeft(int time_left) override;
 	bool GetThrough() const override;
 	void SetThrough(bool through) override;
-	bool IsPassable(int x, int y, int d) const override;
+	bool MakeWay(int x, int y, int d) const override;
 	void BeginMove() override;
 	void CancelMoveRoute() override;
 	/** @} */
@@ -94,6 +97,7 @@ public:
 	 * @param direction New direction after teleport. If -1, the direction isn't changed.
 	 */
 	void ReserveTeleport(int map_id, int x, int y, int direction = -1);
+	void ReserveTeleport(const RPG::SaveTarget& target);
 	void StartTeleport();
 	void PerformTeleport();
 	void Center(int x, int y);
@@ -118,9 +122,10 @@ public:
 private:
 	RPG::SavePartyLocation& location;
 
-	bool teleporting;
-	int new_map_id, new_x, new_y, new_direction;
-	int last_pan_x, last_pan_y;
+	bool teleporting = false;
+	int new_map_id = 0, new_x = 0, new_y = 0, new_direction = 0;
+	int last_pan_x = 0, last_pan_y = 0;
+	int last_remaining_move = 0, last_remaining_jump = 0;
 	RPG::Music walking_bgm;
 
 	void UpdateScroll();

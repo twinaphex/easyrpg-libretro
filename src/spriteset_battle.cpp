@@ -42,7 +42,7 @@ Spriteset_Battle::Spriteset_Battle() {
 	std::vector<Game_Battler*> battler;
 	Main_Data::game_enemyparty->GetBattlers(battler);
 	if (Player::IsRPG2k3()) {
-		for (int i = 0; i < Data::actors.size(); ++i) {
+		for (unsigned int i = 0; i < Data::actors.size(); ++i) {
 			battler.push_back(Game_Actors::GetActor(i + 1));
 		}
 	}
@@ -57,10 +57,15 @@ Spriteset_Battle::Spriteset_Battle() {
 	timer1.reset(new Sprite_Timer(0));
 	timer2.reset(new Sprite_Timer(1));
 
+	screen.reset(new Screen());
+
 	Update();
 }
 
 void Spriteset_Battle::Update() {
+	// Battle is not as resource heavy as map, always use screen tone
+	screen->SetTone(Main_Data::game_screen->GetTone());
+
 	// Handle background change
 	if (background_name != Game_Battle::background_name) {
 		background_name = Game_Battle::background_name;

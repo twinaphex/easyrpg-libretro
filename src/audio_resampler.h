@@ -15,18 +15,19 @@
  * along with EasyRPG Player. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _EASYRPG_AUDIO_RESAMPLER_H_
-#define _EASYRPG_AUDIO_RESAMPLER_H_
-#if defined(HAVE_LIBSPEEXDSP) || defined(HAVE_LIBSAMPLERATE) 
+#ifndef EASYRPG_AUDIO_RESAMPLER_H
+#define EASYRPG_AUDIO_RESAMPLER_H
 
 // Headers
+// Don't remove the system.h include, prevents heap corruption for automake (preprocessor defines)
 #include "audio_decoder.h"
+#include "system.h"
 #include <string>
 #include <memory>
 
 #if defined(HAVE_LIBSPEEXDSP)
 #include <speex/speex_resampler.h>
-#elif  defined(HAVE_LIBSAMPLERATE)
+#elif defined(HAVE_LIBSAMPLERATE)
 #include <samplerate.h>
 #endif
 
@@ -36,7 +37,6 @@
  */
 class AudioResampler : public AudioDecoder {
 public:
-
 	/** Resampling quality */
 	enum class Quality {
 		High,
@@ -51,7 +51,7 @@ public:
 	 * @param[in] pitch_handled Defines whether the decoder handles pitch changes by itself or not. 
 	 * @param[in] quality Sets the quality rting of the resampler - higher quality implies slower filtering
 	 */
-	AudioResampler(AudioDecoder * decoder, bool pitch_handled=false,  Quality quality=Quality::Medium);
+	AudioResampler(AudioDecoder * decoder, bool pitch_handled=false, Quality quality=Quality::Medium);
 	
 	/**
 	 * Destroys the resampler as well as its owned ressources
@@ -59,12 +59,12 @@ public:
 	~AudioResampler();
 
 	/**
-    * Wraps the status querying of the contained decoder.
+	 * Wraps the status querying of the contained decoder.
 	 * Used to make sure the underlying library is properly initialized.
 	 *
 	 * @return true if initializing was succesful, false otherwise
 	 */
-	bool WasInited() const;
+	bool WasInited() const override;
 
 	/**
 	 * Wraps the opening function of the contained decoder
@@ -164,6 +164,7 @@ private:
 	 * Internally used by the FillBuffer function if the output rate equals the input rate
 	 */
 	int FillBufferSameRate(uint8_t* buffer, int length);
+
 	/**
 	 * Internally used by the FillBuffer function if resampling is necessary
 	 */
@@ -188,10 +189,10 @@ private:
 			spx_uint32_t input_frames_used, output_frames_gen;
 			spx_uint32_t ratio_num, ratio_denom;
 		} conversion_data;
-		SpeexResamplerState * conversion_state;
+		SpeexResamplerState * conversion_state = nullptr;
 	#elif defined(HAVE_LIBSAMPLERATE)
 		SRC_DATA conversion_data;
-		SRC_STATE * conversion_state;
+		SRC_STATE * conversion_state = nullptr;
 	#endif
 
 	/**
@@ -200,7 +201,6 @@ private:
 	 * (In the cpp file sizeof is used therefore it can be adjusted to fit the available memory)
 	 */
 	uint8_t internal_buffer[256*sizeof(float)];
-
 };
-#endif
+
 #endif

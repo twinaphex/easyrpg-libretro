@@ -46,10 +46,6 @@ void Scene_Save::Start() {
 		file_windows[i]->SetHasSave(true);
 		file_windows[i]->Refresh();
 	}
-
-	index = 0;
-
-	Refresh();
 }
 
 void Scene_Save::Action(int index) {
@@ -101,6 +97,8 @@ void Scene_Save::Action(int index) {
 	if (filename.empty()) {
 		filename = FileFinder::MakePath((*tree).directory_path, save_file);
 	}
+
+	Main_Data::game_data.title.timestamp = LSD_Reader::GenerateTimestamp();
 
 	LSD_Reader::Save(filename, Main_Data::game_data, Player::encoding);
 

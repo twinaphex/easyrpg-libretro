@@ -18,10 +18,9 @@
 #if defined(USE_LIBRETRO)
 #include "registry.h"
 
+std::string Registry::ReadStrValue(HKEY hkey, std::string const& key, std::string const& val, REGVIEW view) {return "";}
 
-std::string Registry::ReadStrValue(HKEY hkey, std::string const& key, std::string const& val) {return "";}
-
-int Registry::ReadBinValue(HKEY, std::string const&, std::string const&, unsigned char*) {
+int Registry::ReadBinValue(HKEY, std::string const&, std::string const&, unsigned char*, REGVIEW) {
 	return 0; // not really used yet
 }
 #endif

@@ -50,10 +50,6 @@ void Scene_Map::Start() {
 	spriteset.reset(new Spriteset_Map());
 	message_window.reset(new Window_Message(0, SCREEN_TARGET_HEIGHT - 80, SCREEN_TARGET_WIDTH, 80));
 
-	screen.reset(new Screen());
-	weather.reset(new Weather());
-	frame.reset(new Frame());
-
 	// Called here instead of Scene Load, otherwise wrong graphic stack
 	// is used.
 	if (from_save) {
@@ -83,7 +79,11 @@ void Scene_Map::Resume() {
 }
 
 void Scene_Map::TransitionIn() {
-	if (Game_Temp::battle_calling) {
+	if (Main_Data::game_player->IsTeleporting()) {
+		// Comes from the teleport scene
+		// Teleport will handle fade-in
+		return;
+	} else if (Game_Temp::battle_calling) {
 		Graphics::Transition((Graphics::TransitionType)Game_System::GetTransition(Game_System::Transition_EndBattleShow), 32);
 	}
 	else {
@@ -126,10 +126,13 @@ void Scene_Map::Update() {
 	// Fade In must be done before finish teleport, otherwise chipset is not
 	// loaded and renders black while fading -> ugly
 
-	if (Main_Data::game_player->IsTeleporting()) {
+	if (!Game_Map::IsTeleportDelayed() && Main_Data::game_player->IsTeleporting()) {
 		FinishTeleportPlayer();
 		return;
 	}
+	// The delay is only needed for one frame to execute pending transitions,
+	// the interpreters continue on the old map afterwards
+	Game_Map::SetTeleportDelayed(false);
 
 	Main_Data::game_party->UpdateTimers();
 
@@ -153,15 +156,20 @@ void Scene_Map::Update() {
 	if (Game_Message::visible)
 		return;
 
-	// ESC-Menu calling
-	if (Input::IsTriggered(Input::CANCEL)) {
-		// Prevent calling when disabled or the main interpreter is running
-		if (Game_System::GetAllowMenu() && !Game_Map::GetInterpreter().IsRunning()) {
-			Game_Temp::menu_calling = true;
-		}
-	}
-
 	if (Player::debug_flag) {
+		// ESC-Menu calling can be force called when TestPlay mode is on and cancel is pressed 5 times while holding SHIFT
+		if (Input::IsPressed(Input::SHIFT)) {
+			if (Input::IsTriggered(Input::CANCEL)) {
+				debug_menuoverwrite_counter++;
+				if (debug_menuoverwrite_counter >= 5) {
+					Game_Temp::menu_calling = true;
+					debug_menuoverwrite_counter = 0;
+				}
+			}
+		} else {
+			debug_menuoverwrite_counter = 0;
+		}
+
 		if (Input::IsTriggered(Input::DEBUG_MENU)) {
 			CallDebug();
 		}

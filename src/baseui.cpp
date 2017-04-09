@@ -25,6 +25,8 @@
 #include "3ds_ui.h"
 #elif USE_LIBRETRO
 #include "libretro_ui.h"
+#elif PSP2
+#include "psp2_ui.h"
 #endif
 
 std::shared_ptr<BaseUi> DisplayUi;
@@ -36,6 +38,8 @@ std::shared_ptr<BaseUi> BaseUi::CreateUi(long width, long height, bool fs_flag, 
 	return std::make_shared<CtrUi>(width, height);
 #elif USE_LIBRETRO
 	return std::make_shared<LibretroUi>(width, height);
+#elif PSP2
+	return std::make_shared<Psp2Ui>(width, height);
 #else
 #error cannot create UI
 #endif

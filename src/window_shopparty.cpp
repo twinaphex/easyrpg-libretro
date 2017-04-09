@@ -26,7 +26,6 @@ Window_ShopParty::Window_ShopParty(int ix, int iy, int iwidth, int iheight) :
 	Window_Base(ix, iy, iwidth, iheight) {
 
 	SetContents(Bitmap::Create(width - 16, height - 16));
-	contents->SetTransparentColor(windowskin->GetTransparentColor());
 
 	cycle = 0;
 	item_id = 0;
@@ -47,7 +46,7 @@ void Window_ShopParty::Refresh() {
 
 	BitmapRef system = Cache::System();
 
-	if (item_id <= 0 || item_id > Data::items.size())
+	if (item_id <= 0 || item_id > static_cast<int>(Data::items.size()))
 		return;
 
 	const std::vector<Game_Actor*>& actors = Main_Data::game_party->GetActors();
@@ -67,7 +66,7 @@ void Window_ShopParty::Refresh() {
 		if (equippable) {
 			//check if item is equipped by each member
 			bool is_equipped = false;
-			for (int j = 0; j < 5; ++j) {
+			for (int j = 1; j <= 5; ++j) {
 				const RPG::Item* item = actor->GetEquipment(j);
 				if (item) {
 					is_equipped |= (item->ID == item_id);
@@ -146,7 +145,7 @@ void Window_ShopParty::Update() {
 		Refresh();
 }
 
-void Window_ShopParty::OnCharsetSpriteReady(FileRequestResult* result, int party_index) {
+void Window_ShopParty::OnCharsetSpriteReady(FileRequestResult* /* result */, int party_index) {
 	Game_Actor *actor = Main_Data::game_party->GetActors()[party_index];
 	const std::string& sprite_name = actor->GetSpriteName();
 	int sprite_id = actor->GetSpriteIndex();
@@ -159,7 +158,6 @@ void Window_ShopParty::OnCharsetSpriteReady(FileRequestResult* result, int party
 		Rect src(sx, sy, width, height);
 		for (int k = 0; k < 2; k++) {
 			BitmapRef bm2 = Bitmap::Create(width, height, true);
-			bm2->SetTransparentColor(bm->GetTransparentColor());
 			bm2->Clear();
 			bm2->Blit(0, 0, *bm, src, 255);
 			if (k == 0)

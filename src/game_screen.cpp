@@ -16,17 +16,16 @@
  */
 
 // Headers
-#include <cstdlib>
 #include "bitmap.h"
 #include "data.h"
 #include "game_battle.h"
 #include "game_battler.h"
 #include "game_screen.h"
 #include "game_system.h"
+#include "game_variables.h"
 #include "main_data.h"
-#include "options.h"
-#include "sprite_battler.h"
-#include "spriteset_battle.h"
+#include "output.h"
+#include "utils.h"
 
 Game_Screen::Game_Screen() :
 	data(Main_Data::game_data.screen)
@@ -42,9 +41,6 @@ void Game_Screen::CreatePicturesFromSave() {
 	for (int id = 1; id < (int)save_pics.size(); ++id) {
 		if (!save_pics[id - 1].name.empty()) {
 			pictures[id - 1].reset(new Game_Picture(id));
-			int time_left = save_pics[id - 1].time_left;
-			pictures[id - 1]->Show(save_pics[id - 1].name, save_pics[id - 1].transparency);
-			pictures[id - 1]->SetTransition(time_left * DEFAULT_FPS / 10);
 		}
 	}
 }
@@ -77,7 +73,7 @@ void Game_Screen::Reset()
 	data.shake_time_left = 0;
 	data.shake_position = 0;
 	data.shake_continuous = false;
-	shake_direction = 0;
+	shake_direction = 1;
 
 	movie_filename = "";
 	movie_pos_x = 0;
@@ -90,6 +86,7 @@ Game_Picture* Game_Screen::GetPicture(int id) {
 	if (id <= 0) {
 		return NULL;
 	}
+
 	if (id > (int)pictures.size()) {
 		// Some games use more pictures then RPG_RT officially supported
 		Main_Data::game_data.pictures.resize(id);
@@ -100,7 +97,7 @@ Game_Picture* Game_Screen::GetPicture(int id) {
 
 		pictures.resize(id);
 	}
-	std::shared_ptr<Game_Picture>& p = pictures[id - 1];
+	std::unique_ptr<Game_Picture>& p = pictures[id - 1];
 	if (!p)
 		p.reset(new Game_Picture(id));
 	return p.get();
@@ -204,13 +201,13 @@ void Game_Screen::InitSnowRain() {
 	if (!snowflakes.empty())
 		return;
 
-	static const int num_snowflakes[3] = {100, 200, 300};
+	static const int num_snowflakes[3] = {50, 100, 150};
 
 	for (int i = 0; i < num_snowflakes[data.weather_strength]; i++) {
 		Snowflake f;
-		f.x = (short) (rand() * 440.0 / RAND_MAX);
-		f.y = (uint8_t) rand();
-		f.life = (uint8_t) rand();
+		f.x = (short) Utils::GetRandomNumber(0, 440);
+		f.y = (uint8_t) Utils::GetRandomNumber(0, 255);
+		f.life = (uint8_t) Utils::GetRandomNumber(0, 255);
 		snowflakes.push_back(f);
 	}
 }
@@ -223,9 +220,9 @@ void Game_Screen::UpdateSnowRain(int speed) {
 	for (it = snowflakes.begin(); it != snowflakes.end(); ++it) {
 		Snowflake& f = *it;
 		f.y += (uint8_t)speed;
-		f.life++;
-		if (f.life > snowflake_life)
-			f.life = 0;
+		f.life -= 5;
+		if (f.life < 10)
+			f.life = 255;
 	}
 }
 
@@ -260,10 +257,9 @@ void Game_Screen::Update() {
 			data.shake_time_left--;
 	}
 
-	std::vector<std::shared_ptr<Game_Picture> >::const_iterator it;
-	for (it = pictures.begin(); it != pictures.end(); ++it) {
-		if (*it) {
-			(*it)->Update();
+	for (const auto& picture : pictures) {
+		if (picture) {
+			picture->Update();
 		}
 	}
 

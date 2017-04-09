@@ -23,9 +23,11 @@
 #include "game_message.h"
 #include "game_party.h"
 #include "main_data.h"
+#include "output.h"
 #include "player.h"
 #include "rpg_skill.h"
 #include "util_macro.h"
+#include "utils.h"
 
 static int max_hp_value() {
 	return Player::IsRPG2k() ? 999 : 9999;
@@ -59,10 +61,14 @@ void Game_Actor::Init() {
 	SetHp(GetMaxHp());
 	SetSp(GetMaxSp());
 	SetExp(exp_list[GetLevel() - 1]);
+
+	RemoveInvalidEquipment();
 }
 
 void Game_Actor::Fixup() {
 	GetData().Fixup(actor_id);
+
+	RemoveInvalidEquipment();
 }
 
 int Game_Actor::GetId() const {
@@ -118,8 +124,8 @@ bool Game_Actor::IsSkillUsable(int skill_id) const {
 	const RPG::Skill& skill = Data::skills[skill_id - 1];
 
 	// Actor must have all attributes of the skill equipped as weapons
-	const RPG::Item* item = GetEquipment(0);
-	const RPG::Item* item2 = GetTwoSwordsStyle() ? GetEquipment(1) : nullptr;
+	const RPG::Item* item = GetEquipment(RPG::Item::Type_weapon);
+	const RPG::Item* item2 = HasTwoWeapons() ? GetEquipment(RPG::Item::Type_weapon + 1) : nullptr;
 
 	for (size_t i = 0; i < skill.attribute_effects.size(); ++i) {
 		bool required = skill.attribute_effects[i] && Data::attributes[i].type == RPG::Attribute::Type_physical;
@@ -139,6 +145,26 @@ bool Game_Actor::IsSkillUsable(int skill_id) const {
 	}
 
 	return Game_Battler::IsSkillUsable(skill_id);
+}
+
+int Game_Actor::GetSpCostModifier() const {
+	// Only non-weapons have this modifier
+	int start = HasTwoWeapons() ? RPG::Item::Type_armor : RPG::Item::Type_shield;
+	int sp_mod = 1;
+
+	for (int i = start; i <= 5; ++i) {
+		const RPG::Item* item = GetEquipment(i);
+		if (item && item->half_sp_cost) {
+			sp_mod = 2;
+			break;
+		}
+	}
+
+	return sp_mod;
+}
+
+int Game_Actor::CalculateSkillCost(int skill_id) const {
+	return Game_Battler::CalculateSkillCost(skill_id) / GetSpCostModifier();
 }
 
 bool Game_Actor::LearnSkill(int skill_id) {
@@ -161,15 +187,20 @@ bool Game_Actor::UnlearnSkill(int skill_id) {
 	return false;
 }
 
+void Game_Actor::UnlearnAllSkills() {
+	GetData().skills.clear();
+	GetData().skills_size = 0;
+}
+
 void Game_Actor::SetFace(const std::string& file_name, int index) {
 	GetData().face_name.assign(file_name);
 	GetData().face_id = index;
 }
 
 const RPG::Item* Game_Actor::GetEquipment(int equip_type) const {
-	if (equip_type < 0 || equip_type >= (int)GetData().equipped.size())
+	if (equip_type <= 0 || equip_type > (int)GetData().equipped.size())
 		return nullptr;
-	int item_id = GetData().equipped[equip_type];
+	int item_id = GetData().equipped[equip_type - 1];
 
 	if (item_id <= 0 || item_id >(int)Data::items.size()) {
 		return nullptr;
@@ -179,14 +210,14 @@ const RPG::Item* Game_Actor::GetEquipment(int equip_type) const {
 }
 
 int Game_Actor::SetEquipment(int equip_type, int new_item_id) {
-	if (equip_type < 0 || equip_type >= (int) GetData().equipped.size())
+	if (equip_type <= 0 || equip_type > (int) GetData().equipped.size())
 		return -1;
 
-	int old_item_id = GetData().equipped[equip_type];
+	int old_item_id = GetData().equipped[equip_type - 1];
 	if (old_item_id > (int)Data::items.size())
 		old_item_id = 0;
-	
-	GetData().equipped[equip_type] = (short)new_item_id;
+
+	GetData().equipped[equip_type - 1] = (short)new_item_id;
 	return old_item_id;
 }
 
@@ -199,6 +230,30 @@ void Game_Actor::ChangeEquipment(int equip_type, int item_id) {
 	if (item_id != 0) {
 		Main_Data::game_party->RemoveItem(item_id, 1);
 	}
+}
+
+const std::vector<int16_t>& Game_Actor::GetWholeEquipment() const {
+	return GetData().equipped;
+}
+
+void Game_Actor::RemoveWholeEquipment() {
+	for (int i = 1; i <= 5; ++i) {
+		ChangeEquipment(i, 0);
+	}
+}
+
+int Game_Actor::GetItemCount(int item_id) {
+	int number = 0;
+
+	if (item_id > 0) {
+		for (int16_t i : GetWholeEquipment()) {
+			if (item_id == i) {
+				++number;
+			}
+		}
+	}
+
+	return number;
 }
 
 const std::vector<int16_t>& Game_Actor::GetStates() const {
@@ -238,9 +293,10 @@ int Game_Actor::GetSp() const {
 }
 
 int Game_Actor::GetBaseMaxHp(bool mod) const {
-	// The .changed_class field is not reliable (and the purpose is unknown)
-	// because it is only true when the class was changed by an event
-	int n = GetData().class_id > 0
+	// Looks like RPG_RT only applies Class changes (changed_class == true)
+	// when the class was changed by the ChangeClass event, otherwise it uses
+	// the normal actor attributes.
+	int n = GetData().changed_class && GetData().class_id > 0
 		? Data::classes[GetData().class_id - 1].parameters.maxhp[GetData().level - 1]
 		: Data::actors[actor_id - 1].parameters.maxhp[GetData().level - 1];
 
@@ -255,7 +311,7 @@ int Game_Actor::GetBaseMaxHp() const {
 }
 
 int Game_Actor::GetBaseMaxSp(bool mod) const {
-	int n = GetData().class_id > 0
+	int n = GetData().changed_class && GetData().class_id > 0
 		? Data::classes[GetData().class_id - 1].parameters.maxsp[GetData().level - 1]
 		: Data::actors[actor_id - 1].parameters.maxsp[GetData().level - 1];
 
@@ -270,7 +326,7 @@ int Game_Actor::GetBaseMaxSp() const {
 }
 
 int Game_Actor::GetBaseAtk(bool mod, bool equip) const {
-	int n = GetData().class_id > 0
+	int n = GetData().changed_class && GetData().class_id > 0
 		? Data::classes[GetData().class_id - 1].parameters.attack[GetData().level - 1]
 		: Data::actors[actor_id - 1].parameters.attack[GetData().level - 1];
 
@@ -294,7 +350,7 @@ int Game_Actor::GetBaseAtk() const {
 }
 
 int Game_Actor::GetBaseDef(bool mod, bool equip) const {
-	int n = GetData().class_id > 0
+	int n = GetData().changed_class && GetData().class_id > 0
 		? Data::classes[GetData().class_id - 1].parameters.defense[GetData().level - 1]
 		: Data::actors[actor_id - 1].parameters.defense[GetData().level - 1];
 
@@ -318,7 +374,7 @@ int Game_Actor::GetBaseDef() const {
 }
 
 int Game_Actor::GetBaseSpi(bool mod, bool equip) const {
-	int n = GetData().class_id > 0
+	int n = GetData().changed_class && GetData().class_id > 0
 		? Data::classes[GetData().class_id - 1].parameters.spirit[GetData().level - 1]
 		: Data::actors[actor_id - 1].parameters.spirit[GetData().level - 1];
 
@@ -342,7 +398,7 @@ int Game_Actor::GetBaseSpi() const {
 }
 
 int Game_Actor::GetBaseAgi(bool mod, bool equip) const {
-	int n = GetData().class_id > 0
+	int n = GetData().changed_class && GetData().class_id > 0
 		? Data::classes[GetData().class_id - 1].parameters.agility[GetData().level - 1]
 		: Data::actors[actor_id - 1].parameters.agility[GetData().level - 1];
 
@@ -368,7 +424,7 @@ int Game_Actor::GetBaseAgi() const {
 int Game_Actor::CalculateExp(int level) const
 {
 	double base, inflation, correction;
-	if (GetData().class_id > 0) {
+	if (GetData().changed_class && GetData().class_id > 0) {
 		const RPG::Class& klass = Data::classes[GetData().class_id - 1];
 		base = klass.exp_base;
 		inflation = klass.exp_inflation;
@@ -447,7 +503,7 @@ int Game_Actor::GetNextExp(int level) const {
 }
 
 int Game_Actor::GetStateProbability(int state_id) const {
-	int rate = 3; // C - default
+	int rate = 2; // C - default
 
 	if (state_id <= (int)Data::actors[actor_id - 1].state_ranks.size()) {
 		rate = Data::actors[actor_id - 1].state_ranks[state_id - 1];
@@ -457,10 +513,17 @@ int Game_Actor::GetStateProbability(int state_id) const {
 }
 
 int Game_Actor::GetAttributeModifier(int attribute_id) const {
-	int rate = 3; // C - default
+	int rate = 2; // C - default
 
 	if (attribute_id <= (int)Data::actors[actor_id - 1].attribute_ranks.size()) {
 		rate = Data::actors[actor_id - 1].attribute_ranks[attribute_id - 1];
+	}
+
+	rate += attribute_shift[attribute_id - 1];
+	if (rate < 0) {
+		rate = 0;
+	} else if (rate > 4) {
+		rate = 4;
 	}
 
 	return GetAttributeRate(attribute_id, rate);
@@ -563,7 +626,8 @@ void Game_Actor::SetLevel(int _level) {
 }
 
 void Game_Actor::ChangeLevel(int new_level, bool level_up_message) {
-	const std::vector<RPG::Learning>& skills = Data::actors[actor_id - 1].skills;
+	const std::vector<RPG::Learning>& actor_skills = Data::actors[actor_id - 1].skills;
+	const std::vector<RPG::Learning>& class_skills = Data::classes[GetData().class_id - 1].skills;
 	bool level_up = false;
 
 	int old_level = GetLevel();
@@ -573,26 +637,34 @@ void Game_Actor::ChangeLevel(int new_level, bool level_up_message) {
 	if (new_level > old_level) {
 		if (level_up_message) {
 			std::stringstream ss;
-			ss << GetData().name << " ";
+			ss << GetData().name;
 			if (Player::IsRPG2k3E()) {
-				ss << Data::terms.level_up << " ";
-				ss << Data::terms.level << " " << new_level;
+				ss << " " << Data::terms.level_up << " ";
+				ss << " " << Data::terms.level << " " << new_level;
 			} else {
-				ss << Data::terms.level << " " << new_level;
-				ss << Data::terms.level_up;
+				std::string particle, space = "";
+				if (Player::IsCP932()) {
+					particle = "は";
+					space += " ";
+				}
+				else {
+					particle = " ";
+				}
+				ss << particle << Data::terms.level << " ";
+				ss << new_level << space << Data::terms.level_up;
 			}
 			Game_Message::texts.push_back(ss.str());
 			level_up = true;
 		}
 
 		// Learn new skills
-		for (std::vector<RPG::Learning>::const_iterator it = skills.begin();
-			it != skills.end(); ++it) {
+		for (const RPG::Learning& learn : GetData().changed_class ? class_skills : actor_skills) {
 			// Skill learning, up to current level
-			if (it->level > old_level && it->level <= new_level) {
-				if (LearnSkill(it->skill_id) && level_up_message) {
+			if (learn.level > old_level && learn.level <= new_level) {
+				LearnSkill(learn.skill_id);
+				if (level_up_message) {
 					std::stringstream ss;
-					ss << Data::skills[it->skill_id - 1].name;
+					ss << Data::skills[learn.skill_id - 1].name;
 					ss << (Player::IsRPG2k3E() ? " " : "") << Data::terms.skill_learned;
 					Game_Message::texts.push_back(ss.str());
 					level_up = true;
@@ -622,7 +694,7 @@ void Game_Actor::ChangeLevel(int new_level, bool level_up_message) {
 }
 
 bool Game_Actor::IsEquippable(int item_id) const {
-	if (GetData().two_weapon &&
+	if (HasTwoWeapons() &&
 		Data::items[item_id - 1].type == RPG::Item::Type_shield) {
 			return false;
 	}
@@ -634,6 +706,24 @@ bool Game_Actor::IsEquipmentFixed() const {
 	return GetData().lock_equipment;
 }
 
+bool Game_Actor::HasStrongDefense() const {
+	return GetData().super_guard;
+}
+
+bool Game_Actor::HasPreemptiveAttack() const {
+	const RPG::Item* item = GetEquipment(RPG::Item::Type_weapon);
+	if (item && item->preemptive) {
+		return true;
+	}
+	if (HasTwoWeapons()) {
+		item = GetEquipment(RPG::Item::Type_weapon + 1);
+		if (item && item->preemptive) {
+			return true;
+		}
+	}
+	return false;
+}
+
 const std::vector<int16_t>& Game_Actor::GetSkills() const {
 	return GetData().skills;
 }
@@ -641,10 +731,10 @@ const std::vector<int16_t>& Game_Actor::GetSkills() const {
 const RPG::Skill& Game_Actor::GetRandomSkill() const {
 	const std::vector<int16_t>& skills = GetSkills();
 
-	return Data::skills[skills[rand() % (skills.size() + 1)] - 1];
+	return Data::skills[skills[Utils::GetRandomNumber(0, skills.size() - 1)] - 1];
 }
 
-bool Game_Actor::GetTwoSwordsStyle() const {
+bool Game_Actor::HasTwoWeapons() const {
 	return GetData().two_weapon;
 }
 
@@ -872,12 +962,32 @@ const RPG::Class* Game_Actor::GetClass() const {
 void Game_Actor::SetClass(int _class_id) {
 	GetData().class_id = _class_id;
 	GetData().changed_class = _class_id > 0;
+
+	// The class settings are not applied when the actor has a class on startup
+	// but only when the "Change Class" event command is used.
+
 	if (GetData().changed_class) {
 		GetData().battler_animation = GetClass()->battler_animation;
+		GetData().super_guard = GetClass()->super_guard;
+		GetData().lock_equipment = GetClass()->lock_equipment;
+		GetData().two_weapon = GetClass()->two_weapon;
+		GetData().auto_battle = GetClass()->auto_battle;
 	} else {
+		const RPG::Actor& actor = Data::actors[actor_id - 1];
+
+		GetData().super_guard = actor.super_guard;
+		GetData().lock_equipment = actor.lock_equipment;
+		GetData().two_weapon = actor.two_weapon;
+		GetData().auto_battle = actor.auto_battle;
+
 		GetData().battler_animation = 0;
 	}
 	MakeExpList();
+
+	// Set EXP to at least minimum value
+	if (GetExp() < GetBaseExp()) {
+		SetExp(GetBaseExp());
+	}
 }
 
 std::string Game_Actor::GetClassName() const {
@@ -959,7 +1069,9 @@ int Game_Actor::GetBattleAnimationId() const {
 	if (GetData().battler_animation <= 0) {
 		// Earlier versions of EasyRPG didn't save this value correctly
 
-		if (GetData().class_id > 0) {
+		// The battle animation of the class only matters when the class was
+		// changed by event "Change Class"
+		if (GetData().changed_class && GetClass()) {
 			anim = GetClass()->battler_animation;
 		} else {
 			anim = Data::battleranimations[Data::actors[actor_id - 1].battler_animation - 1].ID;
@@ -967,7 +1079,7 @@ int Game_Actor::GetBattleAnimationId() const {
 	} else {
 		anim = GetData().battler_animation;
 	}
-	
+
 	if (anim == 0) {
 		// Chunk was missing, set to proper default
 		return 1;
@@ -980,8 +1092,8 @@ int Game_Actor::GetHitChance() const {
 	return 90;
 }
 
-int Game_Actor::GetCriticalHitChance() const {
-	return Data::actors[actor_id - 1].critical_hit ? Data::actors[actor_id - 1].critical_hit_chance : 0;
+float Game_Actor::GetCriticalHitChance() const {
+	return Data::actors[actor_id - 1].critical_hit ? (1.0f / Data::actors[actor_id - 1].critical_hit_chance) : 0.0f;
 }
 
 Game_Battler::BattlerType Game_Actor::GetType() const {
@@ -991,3 +1103,23 @@ Game_Battler::BattlerType Game_Actor::GetType() const {
 RPG::SaveActor & Game_Actor::GetData() const {
 	return Main_Data::game_data.actors[actor_id - 1];
 }
+
+void Game_Actor::RemoveInvalidEquipment() {
+	// Filter out invalid equipment
+	int eq_types[] = { RPG::Item::Type_weapon,
+		HasTwoWeapons() ? RPG::Item::Type_weapon : RPG::Item::Type_shield,
+		RPG::Item::Type_armor,
+		RPG::Item::Type_helmet,
+		RPG::Item::Type_accessory
+	};
+
+	for (int i = 1; i <= 5; ++i) {
+		const RPG::Item* item = GetEquipment(i);
+		if (item && item->type != eq_types[i - 1]) {
+			Output::Debug("Actor %d: Removing invalid item %d (of type %d) from equipment slot %d (needs type %d)",
+			GetId(), item->ID, item->type, i, eq_types[i - 1]);
+			SetEquipment(i, 0);
+		}
+	}
+}
+

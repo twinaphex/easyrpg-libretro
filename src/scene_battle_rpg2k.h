@@ -49,8 +49,6 @@ protected:
 
 	bool CheckWin();
 	bool CheckLose();
-	bool CheckAbort();
-	bool CheckFlee();
 	bool CheckResultConditions();
 
 	void RefreshCommandWindow();
@@ -83,6 +81,7 @@ protected:
 	int select_target_flash_count = 0;
 	bool encounter_message_first_monster = true;
 	int encounter_message_sleep_until = -1;
+	bool encounter_message_first_strike = false;
 
 	bool begin_escape = true;
 	bool escape_success = false;

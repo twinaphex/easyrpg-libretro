@@ -131,6 +131,21 @@ namespace Game_Map {
 	bool IsValid(int x, int y);
 
 	/**
+	 * Clears the way for a move by self from (x,y) in the direction d. Any events
+	 * that block the way are updated early (by UpdateParallel) to give them a
+	 * chance to move out of the way.
+	 *
+	 * Returns true if everything is clear to make the move.
+	 *
+	 * @param x tile x.
+	 * @param y tile y.
+	 * @param d direction
+	 * @param self Character to move.
+	 * @return whether is passable.
+	 */
+	bool MakeWay(int x, int y, int d, const Game_Character& self);
+
+	/**
 	 * Gets if a tile coordinate is passable in a direction.
 	 *
 	 * @param x tile x.
@@ -152,15 +167,15 @@ namespace Game_Map {
 	 */
 	bool IsPassableVehicle(int x, int y, Game_Vehicle::Type vehicle_type);
 
-    /**
-     * Gets if a tile coordinate can be jumped to.
-     *
-     * @param x tile x.
-     * @param y tile y.
-     * @param self_event Current character attemping to jump.
-     * @return whether is posible to jump.
-     */
-    bool IsLandable(int x, int y, const Game_Character* self_event = NULL);
+	/**
+	 * Gets if a tile coordinate can be jumped to.
+	 *
+	 * @param x tile x.
+	 * @param y tile y.
+	 * @param self_event Current character attemping to jump.
+	 * @return whether is posible to jump.
+	 */
+	bool IsLandable(int x, int y, const Game_Character* self_event = NULL);
 
 	/**
 	 * Gets the bush depth at a certain tile.
@@ -387,18 +402,26 @@ namespace Game_Map {
 	void SetBattlebackName(std::string battleback_name);
 
 	/**
-	 * Gets display x.
+	 * Gets the offset of the screen from the left edge
+	 * of the map.
+	 *
+	 * If the screen is shaking, this is not necessarily
+	 * the same value that SetPositionX returns.
 	 *
 	 * @return display x.
 	 */
 	int GetDisplayX();
 
 	/**
-	 * Sets the display x.
+	 * Sets the offset of the screen from the left edge
+	 * of the map.
 	 *
-	 * @param display_x new display x.
+	 * If the screen is shaking, this is not necessarily
+	 * the same value that GetDisplayX returns.
+	 *
+	 * @param new_position_x new position x.
 	 */
-	void SetDisplayX(int display_x);
+	void SetPositionX(int new_position_x);
 
 	/**
 	 * Gets display y.
@@ -408,11 +431,12 @@ namespace Game_Map {
 	int GetDisplayY();
 
 	/**
-	 * Sets the display y.
+	 * Sets the offset of the screen from the top edge
+	 * of the map.
 	 *
-	 * @param display_y new display y.
+	 * @param new_position_y new position y.
 	 */
-	void SetDisplayY(int display_y);
+	void SetPositionY(int new_position_y);
 
 	/**
 	 * Gets need refresh flag.
@@ -510,14 +534,6 @@ namespace Game_Map {
 	int XwithDirection(int x, int direction);
 	int YwithDirection(int y, int direction);
 
-
-	void SetParallaxName(const std::string& name);
-	void SetParallaxScroll(bool horz, bool vert,
-						   bool horz_auto, bool vert_auto,
-						   int horz_speed, int vert_speed);
-	void SetParallaxSize(int width, int height);
-	void InitializeParallax();
-
 	/**
 	 * Gets the map index from MapInfo vector using map ID.
 	 *
@@ -525,6 +541,14 @@ namespace Game_Map {
 	 * @return map index from MapInfo vector.
 	 */
 	int GetMapIndex(int id);
+
+	/**
+	 * Gets the map name from MapInfo vector using map ID.
+	 *
+	 * @param id map ID.
+	 * @return map name from MapInfo vector.
+	 */
+	std::string GetMapName(int id);
 
 	/**
 	 * Sets the chipset.
@@ -571,12 +595,76 @@ namespace Game_Map {
 	int GetPanX();
 	int GetPanY();
 
-	void UpdateParallax();
-	int GetParallaxX();
-	int GetParallaxY();
-	const std::string& GetParallaxName();
+	/**
+	 * Gets if pending teleportations will be ignored.
+	 *
+	 * @return true: teleport ignored, false: teleport processed normally
+	 */
+	bool IsTeleportDelayed();
+
+	/**
+	 * Enables/Disables the processing of teleports.
+	 * This is used by Show/EraseScreen in Parallel processes to prevent
+	 * too early execution of teleports (Show/EraseScreen don't yield the
+	 * interpreter in RPG_RT).
+	 *
+	 * @param delay enable/disable delay
+	 */
+	void SetTeleportDelayed(bool delay);
 
 	FileRequestAsync* RequestMap(int map_id);
+
+	namespace Parallax {
+		struct Params {
+			std::string name;
+			bool scroll_horz;
+			bool scroll_horz_auto;
+			int scroll_horz_speed;
+			bool scroll_vert;
+			bool scroll_vert_auto;
+			int scroll_vert_speed;
+		};
+
+		/**
+		 * The name of the current parallax graphic (or the empty string
+		 * if none).
+		 */
+		std::string GetName();
+
+		/**
+		 * Offset in pixels of the bitmap at the top-left of the screen.
+		 * (If the screen is shaking, at the top-left of where the screen
+		 * would be if it weren't.)
+		 */
+		int GetX();
+
+		/** Same a GetX(), but in the y-direction. */
+		int GetY();
+
+		/** Call this when you find out the width and height of the BG. */
+		void Initialize(int width, int height);
+
+		/** Reset the x- and y- position of the BG (eg. after a teleport). */
+		void ResetPosition();
+
+		/** Update autoscrolling BG (call every frame). */
+		void Update();
+
+		/**
+		 * Scrolls the BG by the correct amount when the screen scrolls
+		 * by the given distances.
+		 */
+		void Scroll(int distance_right, int distance_down);
+
+		/** Change BG (eg. with a "Change Parallax BG" command). */
+		void ChangeBG(const Params& params);
+
+		/**
+		 * Remove any changed BG. The BG goes back to what was set in
+		 * the map properties.
+		 */
+		void ClearChangedBG();
+	}
 }
 
 #endif

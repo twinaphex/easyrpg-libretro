@@ -20,13 +20,13 @@
 #include <vector>
 #include "scene_title.h"
 #include "audio.h"
+#include "audio_secache.h"
 #include "cache.h"
 #include "game_screen.h"
 #include "game_system.h"
 #include "graphics.h"
 #include "input.h"
 #include "main_data.h"
-#include "options.h"
 #include "output.h"
 #include "player.h"
 #include "scene_battle.h"
@@ -53,6 +53,7 @@ void Scene_Title::Continue() {
 	// Clear the cache when the game returns to the
 	// title screen e.g. by pressing F12
 	Cache::Clear();
+	AudioSeCache::Clear();
 
 	Player::ResetGameObjects();
 
@@ -144,7 +145,7 @@ void Scene_Title::CreateCommandWindow() {
 		command_window->SetY(SCREEN_TARGET_HEIGHT / 2 - command_window->GetHeight() / 2);
 	}
 	// Enable load game if available
-	continue_enabled = FileFinder::HasSavegame(*FileFinder::CreateSaveDirectoryTree());
+	continue_enabled = FileFinder::HasSavegame();
 	if (continue_enabled) {
 		command_window->SetIndex(1);
 	} else {
@@ -164,7 +165,9 @@ void Scene_Title::CreateCommandWindow() {
 }
 
 void Scene_Title::PlayTitleMusic() {
-	// Play music
+	// Workaround Android problem: BGM doesn't start when game is started again
+	Game_System::BgmStop();
+	// Play BGM
 	Game_System::BgmPlay(Data::system.title_music);
 }
 

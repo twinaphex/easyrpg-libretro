@@ -29,7 +29,6 @@ Window_ShopNumber::Window_ShopNumber(int ix, int iy, int iwidth, int iheight) :
 	item_max(1), price(0), number(1), item_id(0) {
 
 	SetContents(Bitmap::Create(width - 16, height - 16));
-	contents->SetTransparentColor(windowskin->GetTransparentColor());
 	contents->Clear();
 }
 
@@ -69,9 +68,11 @@ void Window_ShopNumber::Update() {
 			number++;
 		} else if (Input::IsRepeated(Input::LEFT) && number > 1) {
 			number--;
-		} else if (Input::IsRepeated(Input::UP) && number < item_max) {
+		} else if ((Input::IsRepeated(Input::UP) || Input::IsTriggered(Input::SCROLL_UP))
+			&& number < item_max) {
 			number = min(number + 10, item_max);
-		} else if (Input::IsRepeated(Input::DOWN) && number > 1) {
+		} else if ((Input::IsRepeated(Input::DOWN) || Input::IsTriggered(Input::SCROLL_DOWN))
+			&& number > 1) {
 			number = max(number - 10, 1);
 		}
 
@@ -83,5 +84,5 @@ void Window_ShopNumber::Update() {
 }
 
 int Window_ShopNumber::GetTotal() const {
-	return Data::items[item_id - 1].price * number;
+	return price * number;
 }

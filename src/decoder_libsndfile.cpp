@@ -25,13 +25,12 @@
 #include "decoder_libsndfile.h"
 #include "output.h"
 
-
 static sf_count_t sf_vio_get_filelen_impl(void* userdata) {
 	FILE* f = reinterpret_cast<FILE*>(userdata);
 	int fd=fileno(f); //Posix complient - should work on windows as well
 	struct stat stat_buf;
 	int rc = fstat(fd, &stat_buf);
-    return rc == 0 ? stat_buf.st_size : 0;
+	return rc == 0 ? stat_buf.st_size : 0;
 }
 
 static sf_count_t sf_vio_read_impl(void *ptr, sf_count_t count, void* userdata){
@@ -39,7 +38,7 @@ static sf_count_t sf_vio_read_impl(void *ptr, sf_count_t count, void* userdata){
 	return fread(ptr, 1, count, f);
 }
 
-static sf_count_t sf_vio_write_impl(const void *ptr, sf_count_t count, void *user_data){
+static sf_count_t sf_vio_write_impl(const void* /* ptr */, sf_count_t count, void* /* user_data */){
 	//Writing of wav files is not necessary
 	return count;
 }
@@ -55,14 +54,13 @@ static sf_count_t sf_vio_tell_impl(void* userdata){
 	return ftell(f);
 }
 
-static  SF_VIRTUAL_IO vio = {
+static SF_VIRTUAL_IO vio = {
 	sf_vio_get_filelen_impl,
 	sf_vio_seek_impl,
 	sf_vio_read_impl,
 	sf_vio_write_impl,
 	sf_vio_tell_impl
 }; 
-
 
 LibsndfileDecoder::LibsndfileDecoder() 
 {
@@ -71,7 +69,7 @@ LibsndfileDecoder::LibsndfileDecoder()
 }
 
 LibsndfileDecoder::~LibsndfileDecoder() {
-	if(soundfile!=0){
+	if(soundfile != 0){
 		sf_close(soundfile);
 		fclose(file_);
 	}
@@ -86,9 +84,10 @@ bool LibsndfileDecoder::Open(FILE* file) {
 	return soundfile!=0;
 }
 
-bool LibsndfileDecoder::Seek(size_t offset, Origin origin) {
+bool LibsndfileDecoder::Seek(size_t offset, Origin /* origin */) {
 	finished = false;
-	if(soundfile==0) return false;
+	if(soundfile == 0)
+		return false;
 	return sf_seek(soundfile,offset,SEEK_SET)!=-1;
 }
 
@@ -105,7 +104,9 @@ void LibsndfileDecoder::GetFormat(int& frequency, AudioDecoder::Format& format, 
 }
 
 bool LibsndfileDecoder::SetFormat(int freq, AudioDecoder::Format fmt, int channels) {
-	if(soundfile==0) return false;
+	if(soundfile == 0)
+		return false;
+
 	switch(fmt){
 		case Format::F32:
 		case Format::S16:
@@ -118,30 +119,38 @@ bool LibsndfileDecoder::SetFormat(int freq, AudioDecoder::Format fmt, int channe
 	return soundinfo.samplerate==freq && soundinfo.channels==channels && output_format==fmt;
 }
 
-
 int LibsndfileDecoder::FillBuffer(uint8_t* buffer, int length) {
-	if(soundfile==0) return -1;
+	if(soundfile == 0)
+		return -1;
+
 	int decoded;
 	switch(output_format){
 		case Format::F32:
 			{
 				decoded=sf_read_float(soundfile,(float*)buffer,length/sizeof(float));
-				if(!decoded) finished=true;
+				if(!decoded)
+					finished=true;
 				decoded*=sizeof(float);
 			}
 			break;
 		case Format::S16:
 			{
 				decoded=sf_read_short(soundfile,(int16_t*)buffer,length/sizeof(int16_t));
-				if(!decoded) finished=true;
+				if(!decoded)
+					finished=true;
 				decoded*=sizeof(int16_t);
 			}
 			break;
 		case Format::S32:
 			{
-				decoded=sf_read_int(soundfile,(int32_t*)buffer,length/sizeof(int32_t));
-				if(!decoded) finished=true;
-				decoded*=sizeof(int32_t);
+				// Uses int instead of int32_t because the 3ds toolchain typedefs
+				// to long int which is an incompatible pointer type
+				decoded=sf_read_int(soundfile,(int*)buffer,length/sizeof(int));
+
+				if(!decoded)
+					finished=true;
+
+				decoded *= sizeof(int);
 			}
 			break;
 		default:

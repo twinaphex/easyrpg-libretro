@@ -21,6 +21,7 @@
 // Headers
 #include <string>
 #include <vector>
+#include <stdint.h>
 #include "rpg_saveactor.h"
 #include "game_battler.h"
 
@@ -96,6 +97,12 @@ public:
 	bool UnlearnSkill(int skill_id);
 
 	/**
+	 * Unlearns all skills.
+	 *
+	 */
+	void UnlearnAllSkills();
+
+	/**
 	 * Checks if the actor has the skill learned.
 	 *
 	 * @param skill_id ID of skill to check.
@@ -110,6 +117,21 @@ public:
 	 * @return true if skill can be used.
 	 */
 	bool IsSkillUsable(int skill_id) const override;
+
+	/**
+	 * Returns the modifier by which skill costs are divided.
+	 *
+	 * @return modifier
+	 */
+	int GetSpCostModifier() const;
+
+	/**
+	 * Calculates the Skill costs including all modifiers.
+	 *
+	 * @param skill_id ID of skill to calculate.
+	 * @return needed skill cost.
+	 */
+	int CalculateSkillCost(int skill_id) const override;
 
 	/**
 	 * Gets the actor ID.
@@ -342,7 +364,21 @@ public:
 	 * @return true if fixed
 	 */
 	bool IsEquipmentFixed() const;
+	
+	/**
+	 * Checks if the actors defense skill is stronger the usual.
+	 * 
+	 * @return true if strong defense
+	 */
+	bool HasStrongDefense() const override;
 
+	/**
+	 * Tests if the battler has a weapon that grants preemption.
+	 *
+	 * @return true if a weapon is having preempt attribute
+	 */
+	bool HasPreemptiveAttack() const override;
+	
 	/**
 	 * Sets face graphic of actor.
 	 * @param file_name file containing new face.
@@ -368,14 +404,35 @@ public:
 
 	/**
 	 * Changes the equipment of the actor.
-	 * Removes one instance of that item from the Inventory.
-	 * and adds the old one of the actor to it.
-	 * If you don't want this use SetEquipment instead.
+	 * Unequips the current inventory item and adds it to the inventory.
+	 * The new equipment is taken from the inventory (if available),
+	 * otherwise a new item is equipped.
+	 * If you don't want this behaviour use SetEquipment instead.
 	 *
 	 * @param equip_type type of equipment.
 	 * @param item_id item to equip.
 	 */
 	void ChangeEquipment(int equip_type, int item_id);
+
+	/**
+	 * Returns an array of all equipped item IDs (or 0 for none).
+	 *
+	 * @return equipped item array
+	 */
+	const std::vector<int16_t>& GetWholeEquipment() const;
+
+	/**
+	 * Unequips the whole equipment and adds it to the inventory.
+	 */
+	void RemoveWholeEquipment();
+
+	/**
+	 * Gets how often the item with the corresponding id is equipped.
+	 *
+	 * @param item_id database item ID.
+	 * @return number of items.
+	 */
+	int GetItemCount(int item_id);
 
 	/**
 	 * Gets learned skills list.
@@ -571,7 +628,7 @@ public:
 	 *
 	 * @return true if actor has two weapons.
 	 */
-	bool GetTwoSwordsStyle() const;
+	bool HasTwoWeapons() const;
 
 	/**
 	 * Gets if actor does auto battle.
@@ -677,7 +734,7 @@ public:
 	int GetBattleAnimationId() const override;
 
 	int GetHitChance() const override;
-	int GetCriticalHitChance() const override;
+	float GetCriticalHitChance() const override;
 
 	BattlerType GetType() const override;
 private:
@@ -686,6 +743,12 @@ private:
 	 * @return Reference to the SaveActor data
 	 */
 	RPG::SaveActor& GetData() const;
+
+	/**
+	 * Removes invalid (wrong type) equipment from the equipment
+	 * slots.
+	 */
+	void RemoveInvalidEquipment();
 
 	int actor_id;
 	std::vector<int> exp_list;

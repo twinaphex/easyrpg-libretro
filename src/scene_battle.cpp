@@ -86,8 +86,6 @@ void Scene_Battle::Start() {
 
 	CreateUi();
 
-	screen.reset(new Screen());
-
 	Game_System::BgmPlay(Game_System::GetSystemBGM(Game_System::BGM_Battle));
 
 	SetState(State_Start);
@@ -238,7 +236,13 @@ void Scene_Battle::AllySelected() {
 void Scene_Battle::AttackSelected() {
 	Game_System::SePlay(Game_System::GetSystemSE(Game_System::SFX_Decision));
 
-	SetState(State_SelectEnemyTarget);
+	const RPG::Item* item = active_actor->GetEquipment(RPG::Item::Type_weapon);
+	if (item && item->attack_all) {
+		active_actor->SetBattleAlgorithm(std::make_shared<Game_BattleAlgorithm::Normal>(active_actor, Main_Data::game_enemyparty.get()));
+		ActionSelectedCallback(active_actor);
+	} else {
+		SetState(State_SelectEnemyTarget);
+	}
 }
 
 void Scene_Battle::DefendSelected() {
@@ -403,20 +407,18 @@ void Scene_Battle::CreateEnemyActionBasic(Game_Enemy* enemy, const RPG::EnemyAct
 			enemy->SetBattleAlgorithm(std::make_shared<Game_BattleAlgorithm::Escape>(enemy));
 			break;
 		case RPG::EnemyAction::Basic_nothing:
-			// no-op
+			enemy->SetBattleAlgorithm(std::make_shared<Game_BattleAlgorithm::NoMove>(enemy));
 			break;
 	}
 
-	if (action->basic != RPG::EnemyAction::Basic_nothing) {
-		if (action->switch_on) {
-			enemy->GetBattleAlgorithm()->SetSwitchEnable(action->switch_on_id);
-		}
-		if (action->switch_off) {
-			enemy->GetBattleAlgorithm()->SetSwitchEnable(action->switch_off_id);
-		}
-
-		ActionSelectedCallback(enemy);
+	if (action->switch_on) {
+		enemy->GetBattleAlgorithm()->SetSwitchEnable(action->switch_on_id);
 	}
+	if (action->switch_off) {
+		enemy->GetBattleAlgorithm()->SetSwitchEnable(action->switch_off_id);
+	}
+
+	ActionSelectedCallback(enemy);
 }
 
 void Scene_Battle::RemoveCurrentAction() {

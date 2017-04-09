@@ -17,7 +17,6 @@
 
 // Headers
 #include <algorithm>
-#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include "game_interpreter.h"
@@ -48,6 +47,7 @@
 #include "util_macro.h"
 #include "reader_util.h"
 #include "game_battle.h"
+#include "utils.h"
 
 Game_Interpreter::Game_Interpreter(int _depth, bool _main_flag) {
 	depth = _depth;
@@ -55,7 +55,6 @@ Game_Interpreter::Game_Interpreter(int _depth, bool _main_flag) {
 	index = 0;
 	updating = false;
 	clear_child = false;
-	runned = false;
 
 	if (depth > 100) {
 		Output::Warning("Too many event calls (over 9000)");
@@ -64,8 +63,8 @@ Game_Interpreter::Game_Interpreter(int _depth, bool _main_flag) {
 	Clear();
 }
 
- Game_Interpreter::~Game_Interpreter() {
- }
+Game_Interpreter::~Game_Interpreter() {
+}
 
 // Clear.
 void Game_Interpreter::Clear() {
@@ -73,10 +72,10 @@ void Game_Interpreter::Clear() {
 	event_id = 0;					// event ID
 	wait_count = 0;					// wait count
 	waiting_battle_anim = false;
-	waiting_pan_screen = false;
 	triggered_by_decision_key = false;
 	continuation = NULL;			// function to execute to resume command
 	button_timer = 0;
+	wait_messages = false;			// wait if message window is visible
 	if (child_interpreter) {		// clear child interpreter for called events
 		if (child_interpreter->updating)
 			clear_child = true;
@@ -133,14 +132,9 @@ void Game_Interpreter::SetContinuation(Game_Interpreter::ContinuationFunction fu
 	continuation = func;
 }
 
-bool Game_Interpreter::HasRunned() const {
-	return runned;
-}
-
 // Update
 void Game_Interpreter::Update() {
 	updating = true;
-	runned = false;
 	// 10000 based on: https://gist.github.com/4406621
 	for (loop_count = 0; loop_count < 10000; ++loop_count) {
 		/* If map is different than event startup time
@@ -172,7 +166,7 @@ void Game_Interpreter::Update() {
 			if (Game_Message::message_waiting)
 				break;
 		} else {
-			if ((Game_Message::visible || Game_Message::message_waiting) && Game_Message::owner_id == event_id)
+			if ((Game_Message::visible || Game_Message::message_waiting) && wait_messages)
 				break;
 		}
 
@@ -223,7 +217,6 @@ void Game_Interpreter::Update() {
 			break;
 		}
 
-		runned = true;
 		if (!ExecuteCommand()) {
 			break;
 		}
@@ -569,6 +562,7 @@ bool Game_Interpreter::CommandShowMessage(RPG::EventCommand const& com) { // cod
 	if (!main_flag && Game_Message::visible)
 		return false;
 
+	wait_messages = true;
 	unsigned int line_count = 0;
 
 	Game_Message::message_waiting = true;
@@ -671,7 +665,7 @@ bool Game_Interpreter::CommandShowChoices(RPG::EventCommand const& com) { // cod
 
 	Game_Message::message_waiting = true;
 	Game_Message::owner_id = event_id;
-
+	wait_messages = true;
 	// Choices setup
 	std::vector<std::string> choices = GetChoices();
 	Game_Message::choice_cancel_type = com.parameters[0];
@@ -697,31 +691,24 @@ bool Game_Interpreter::CommandInputNumber(RPG::EventCommand const& com) { // cod
 }
 
 bool Game_Interpreter::CommandControlSwitches(RPG::EventCommand const& com) { // code 10210
-	int i;
-	switch (com.parameters[0]) {
-		case 0:
-		case 1:
-			// Single and switch range
-			for (i = com.parameters[1]; i <= com.parameters[2]; i++) {
-				if (com.parameters[3] != 2) {
-					Game_Switches[i] = com.parameters[3] == 0;
-				} else {
-					Game_Switches[i] = !Game_Switches[i];
-				}
-			}
-			break;
-		case 2:
-			// Switch from variable
+	if (com.parameters[0] >= 0 && com.parameters[0] <= 2) {
+		// Param0: 0: Single, 1: Range, 2: Indirect
+		// For Range set end to param 2, otherwise to start, this way the loop runs exactly once
+
+		int start = com.parameters[0] == 2 ? Game_Variables[com.parameters[1]] : com.parameters[1];
+		int end = com.parameters[0] == 1 ? com.parameters[2] : start;
+
+		for (int i = start; i <= end; ++i) {
 			if (com.parameters[3] != 2) {
-				Game_Switches[Game_Variables[com.parameters[1]]] = com.parameters[3] == 0;
+				Game_Switches[i] = com.parameters[3] == 0;
 			} else {
-				Game_Switches[Game_Variables[com.parameters[1]]] = !Game_Switches[Game_Variables[com.parameters[1]]];
+				Game_Switches[i] = !Game_Switches[i];
 			}
-			break;
-		default:
-			return false;
+		}
+
+		Game_Map::SetNeedRefresh(Game_Map::Refresh_All);
 	}
-	Game_Map::SetNeedRefresh(Game_Map::Refresh_All);
+
 	return true;
 }
 
@@ -749,7 +736,7 @@ bool Game_Interpreter::CommandControlVariables(RPG::EventCommand const& com) { /
 			int a, b;
 			a = max(com.parameters[5], com.parameters[6]);
 			b = min(com.parameters[5], com.parameters[6]);
-			value = rand() % (a-b+1)+b;
+			value = Utils::GetRandomNumber(b, a);
 			break;
 		case 4:
 			// Items
@@ -954,91 +941,57 @@ bool Game_Interpreter::CommandControlVariables(RPG::EventCommand const& com) { /
 			;
 	}
 
-	switch (com.parameters[0]) {
-		case 0:
-		case 1:
-			// Single and Var range
-			for (i = com.parameters[1]; i <= com.parameters[2]; i++) {
-				switch (com.parameters[3]) {
-					case 0:
-						// Assignement
-						Game_Variables[i] = value;
-						break;
-					case 1:
-						// Addition
-						Game_Variables[i] += value;
-						break;
-					case 2:
-						// Subtraction
-						Game_Variables[i] -= value;
-						break;
-					case 3:
-						// Multiplication
-						Game_Variables[i] *= value;
-						break;
-					case 4:
-						// Division
-						if (value != 0) {
-							Game_Variables[i] /= value;
-						}
-						break;
-					case 5:
-						// Module
-						if (value != 0) {
-							Game_Variables[i] %= value;
-						} else {
-							Game_Variables[i] = 0;
-						}
-				}
-				if (Game_Variables[i] > MaxSize) {
-					Game_Variables[i] = MaxSize;
-				}
-				if (Game_Variables[i] < MinSize) {
-					Game_Variables[i] = MinSize;
-				}
-			}
-			break;
+	if (com.parameters[0] >= 0 && com.parameters[0] <= 2) {
+		// Param0: 0: Single, 1: Range, 2: Indirect
+		// For Range set end to param 2, otherwise to start, this way the loop runs exactly once
 
-		case 2:
-			int var_index = Game_Variables[com.parameters[1]];
+		int start = com.parameters[0] == 2 ? Game_Variables[com.parameters[1]] : com.parameters[1];
+		int end = com.parameters[0] == 1 ? com.parameters[2] : start;
+
+		for (i = start; i <= end; ++i) {
 			switch (com.parameters[3]) {
 				case 0:
 					// Assignement
-					Game_Variables[var_index] = value;
+					Game_Variables[i] = value;
 					break;
 				case 1:
 					// Addition
-					Game_Variables[var_index] += value;
+					Game_Variables[i] += value;
 					break;
 				case 2:
 					// Subtraction
-					Game_Variables[var_index] -= value;
+					Game_Variables[i] -= value;
 					break;
 				case 3:
 					// Multiplication
-					Game_Variables[var_index] *= value;
+					Game_Variables[i] *= value;
 					break;
 				case 4:
 					// Division
 					if (value != 0) {
-						Game_Variables[var_index] /= value;
+						Game_Variables[i] /= value;
 					}
 					break;
 				case 5:
 					// Module
 					if (value != 0) {
-						Game_Variables[var_index] %= value;
+						Game_Variables[i] %= value;
+					} else {
+						Game_Variables[i] = 0;
 					}
 			}
-			if (Game_Variables[var_index] > MaxSize) {
-				Game_Variables[var_index] = MaxSize;
+
+			if (Game_Variables[i] > MaxSize) {
+				Game_Variables[i] = MaxSize;
 			}
-			if (Game_Variables[var_index] < MinSize) {
-				Game_Variables[var_index] = MinSize;
+			if (Game_Variables[i] < MinSize) {
+				Game_Variables[i] = MinSize;
 			}
+		}
+
+		Game_Map::SetNeedRefresh(Game_Map::Refresh_Map);
 	}
 
-	Game_Map::SetNeedRefresh(Game_Map::Refresh_Map);
 	return true;
 }
 
@@ -1308,7 +1261,7 @@ bool Game_Interpreter::CommandChangeEquipment(RPG::EventCommand const& com) { //
 				case RPG::Item::Type_armor:
 				case RPG::Item::Type_helmet:
 				case RPG::Item::Type_accessory:
-					slot = type - 1;
+					slot = type;
 					break;
 				default:
 					return true;
@@ -1316,14 +1269,20 @@ bool Game_Interpreter::CommandChangeEquipment(RPG::EventCommand const& com) { //
 			break;
 		case 1:
 			item_id = 0;
-			slot = com.parameters[3];
+			slot = com.parameters[3] + 1;
 			break;
 		default:
 			return false;
 	}
 
-	for (const auto& actor : GetActors(com.parameters[0], com.parameters[1])) {
-		actor->ChangeEquipment(slot, item_id);
+	if (slot == 6) {
+		for (const auto& actor : GetActors(com.parameters[0], com.parameters[1])) {
+			actor->RemoveWholeEquipment();
+		}
+	} else {
+		for (const auto &actor : GetActors(com.parameters[0], com.parameters[1])) {
+			actor->ChangeEquipment(slot, item_id);
+		}
 	}
 
 	return true;
@@ -1381,6 +1340,7 @@ bool Game_Interpreter::CommandChangeCondition(RPG::EventCommand const& com) { //
 	for (const auto& actor : GetActors(com.parameters[0], com.parameters[1])) {
 		if (remove) {
 			actor->RemoveState(state_id);
+			Game_Battle::SetNeedRefresh(true);
 		} else {
 			if(state_id == 1) {
 				actor->ChangeHp(-actor->GetHp());
@@ -1401,6 +1361,8 @@ bool Game_Interpreter::CommandFullHeal(RPG::EventCommand const& com) { // Code 1
 		actor->RemoveAllStates();
 	}
 
+	Game_Battle::SetNeedRefresh(true);
+
 	return true;
 }
 
@@ -1417,7 +1379,7 @@ bool Game_Interpreter::CommandSimulatedAttack(RPG::EventCommand const& com) { //
 		result -= (actor->GetSpi() * spi) / 800;
 		if (var != 0) {
 			int rperc = var * 5;
-			int rval = rand() % (2 * rperc) - rperc;
+			int rval = Utils::GetRandomNumber(-rperc, rperc - 1);
 			result += result * rval / 100;
 		}
 
@@ -1436,13 +1398,22 @@ bool Game_Interpreter::CommandSimulatedAttack(RPG::EventCommand const& com) { //
 }
 
 bool Game_Interpreter::CommandWait(RPG::EventCommand const& com) { // code 11410
+	// Wait a given time
 	if (com.parameters.size() <= 1 ||
 		(com.parameters.size() > 1 && com.parameters[1] == 0)) {
 		SetupWait(com.parameters[0]);
 		return true;
-	} else {
-		return Input::IsAnyTriggered();
 	}
+
+	// Wait until decision key pressed, but skip the first frame so that
+	// it ignores keys that were pressed before this command started.
+	if (!Game_Message::visible && button_timer > 0 && Input::IsTriggered(Input::DECISION)) {
+		button_timer = 0;
+		return true;
+	}
+
+	button_timer++;
+	return false;
 }
 
 bool Game_Interpreter::CommandPlayBGM(RPG::EventCommand const& com) { // code 11510
@@ -1606,6 +1577,15 @@ bool Game_Interpreter::CommandChangeEventLocation(RPG::EventCommand const& com) 
 		int x = ValueOrVariable(com.parameters[1], com.parameters[2]);
 		int y = ValueOrVariable(com.parameters[1], com.parameters[3]);
 		event->MoveTo(x, y);
+
+		// RPG2k3 feature
+		int direction = com.parameters.size() > 4 ? com.parameters[4] - 1 : -1;
+		// Only for the constant case, not for variables
+		if (com.parameters[1] == 0 && direction != -1) {
+			event->SetDirection(direction);
+			if (!(event->IsDirectionFixed() || event->IsFacingLocked()))
+				event->SetSpriteDirection(direction);
+		}
 	}
 	return true;
 }
@@ -1654,6 +1634,10 @@ bool Game_Interpreter::CommandStoreEventID(RPG::EventCommand const& com) { // co
 bool Game_Interpreter::CommandEraseScreen(RPG::EventCommand const& com) { // code 11010
 	if (Game_Temp::transition_processing || Game_Message::visible)
 		return false;
+
+	if (!main_flag) {
+		Game_Map::SetTeleportDelayed(true);
+	}
 
 	Game_Temp::transition_processing = true;
 	Game_Temp::transition_erase = true;
@@ -1732,6 +1716,10 @@ bool Game_Interpreter::CommandEraseScreen(RPG::EventCommand const& com) { // cod
 bool Game_Interpreter::CommandShowScreen(RPG::EventCommand const& com) { // code 11020
 	if (Game_Temp::transition_processing || Game_Message::visible)
 		return false;
+
+	if (!main_flag) {
+		Game_Map::SetTeleportDelayed(true);
+	}
 
 	Game_Temp::transition_processing = true;
 	Game_Temp::transition_erase = false;
@@ -1942,6 +1930,9 @@ bool Game_Interpreter::CommandKeyInputProc(RPG::EventCommand const& com) { // co
 	int var_id = com.parameters[0];
 	bool wait = com.parameters[1] != 0;
 
+	if (wait && Game_Message::visible)
+		return false;
+
 	// Wait the first frame so that it ignores keys that were pressed before this command started.
 	if (wait && button_timer == 0) {
 		button_timer++;
@@ -2071,18 +2062,17 @@ bool Game_Interpreter::CommandChangeMapTileset(RPG::EventCommand const& com) { /
 
 
 bool Game_Interpreter::CommandChangePBG(RPG::EventCommand const& com) { // code 11720
-	const std::string& name = com.string;
-	Game_Map::SetParallaxName(name);
+	Game_Map::Parallax::Params params;
+	params.name = com.string;
+	params.scroll_horz = com.parameters[0] != 0;
+	params.scroll_vert = com.parameters[1] != 0;
+	params.scroll_horz_auto = com.parameters[2] != 0;
+	params.scroll_horz_speed = com.parameters[3];
+	params.scroll_vert_auto = com.parameters[4] != 0;
+	params.scroll_vert_speed = com.parameters[5];
 
-	bool horz = com.parameters[0] != 0;
-	bool vert = com.parameters[1] != 0;
-	bool horz_auto = com.parameters[2] != 0;
-	int horz_speed = com.parameters[3];
-	bool vert_auto = com.parameters[4] != 0;
-	int vert_speed = com.parameters[5];
-	Game_Map::SetParallaxScroll(horz, vert,
-		horz_auto, vert_auto,
-		horz_speed, vert_speed);
+	Game_Map::Parallax::ChangeBG(params);
+
 	return true;
 }
 
@@ -2318,7 +2308,7 @@ bool Game_Interpreter::CommandConditionalBranch(RPG::EventCommand const& com) { 
 		switch (com.parameters[1]) {
 		case 0:
 			// Any savestate available
-			result = FileFinder::HasSavegame(*FileFinder::CreateSaveDirectoryTree());
+			result = FileFinder::HasSavegame();
 			break;
 		case 1:
 			// Is Test Play mode?
@@ -2386,8 +2376,13 @@ bool Game_Interpreter::CommandEraseEvent(RPG::EventCommand const& /* com */) { /
 		return true;
 
 	Game_Event* evnt = Game_Map::GetEvent(event_id);
-	if (evnt)
+	if (evnt) {
 		evnt->SetActive(false);
+
+		// Parallel map events shall stop immediately
+		if (!main_flag)
+			return false;
+	}
 
 	return true;
 }
@@ -2451,6 +2446,7 @@ bool Game_Interpreter::CommandChangeClass(RPG::EventCommand const& com) { // cod
 
 	int cur_lvl = actor->GetLevel();
 	int cur_exp = actor->GetExp();
+	int cur_cid = actor->GetClass() ? actor->GetClass()->ID : -1;
 
 	switch (stats_mode) {
 	case 2:
@@ -2499,31 +2495,57 @@ bool Game_Interpreter::CommandChangeClass(RPG::EventCommand const& com) { // cod
 
 	int level = actor->GetLevel();
 
-	switch (skill_mode) {
-	case 0:
-		break;
-	case 1:
-		while (!actor->GetSkills().empty())
-			actor->UnlearnSkill(actor->GetSkills()[0]);
-		break;
-	case 2:
-	{
-		const RPG::Class& klass = Data::classes[class_id - 1];
-		while (!actor->GetSkills().empty())
-			actor->UnlearnSkill(actor->GetSkills()[0]);
-		std::vector<RPG::Learning>::const_iterator it;
-		for (it = klass.skills.begin(); it != klass.skills.end(); ++it) {
-			const RPG::Learning& learn = *it;
-			if (level >= learn.level)
-				actor->LearnSkill(learn.skill_id);
+	// same class, not doing skill processing
+	if (class_id == cur_cid)
+		return true;
+
+	bool level_up = false;
+
+	if (show && !level1) {
+		std::stringstream ss;
+		ss << actor->GetName();
+		if (Player::IsRPG2k3E()) {
+			ss << " " << Data::terms.level_up << " ";
+			ss << " " << Data::terms.level << " " << level;
+		} else {
+			std::string particle, space = "";
+			if (Player::IsCP932()) {
+				particle = "は";
+				space += " ";
+			}
+			else {
+				particle = " ";
+			}
+			ss << particle << Data::terms.level << " ";
+			ss << level << space << Data::terms.level_up;
 		}
-		break;
-	}
+		Game_Message::texts.push_back(ss.str());
+		level_up = true;
 	}
 
-	if (show && level > cur_lvl) {
-		// TODO
-		// Show message increase level
+	if (skill_mode == 1) {
+		// Learn based on level (replace)
+		actor->UnlearnAllSkills();
+	}
+	if (skill_mode > 0) {
+		// Learn additionally
+		for (const RPG::Learning& learn : Data::classes[class_id - 1].skills) {
+			if (level >= learn.level) {
+				actor->LearnSkill(learn.skill_id);
+				if (show) {
+					std::stringstream ss;
+					ss << Data::skills[learn.skill_id - 1].name;
+					ss << (Player::IsRPG2k3E() ? " " : "") << Data::terms.skill_learned;
+					Game_Message::texts.push_back(ss.str());
+					level_up = true;
+				}
+			}
+		}
+	}
+
+	if (level_up) {
+		Game_Message::texts.back().append("\f");
+		Game_Message::message_waiting = true;
 	}
 
 	return true;
@@ -2540,7 +2562,7 @@ bool Game_Interpreter::CommandChangeBattleCommands(RPG::EventCommand const& com)
 	return true;
 }
 
-bool Game_Interpreter::CommandExitGame(RPG::EventCommand const& com) {
+bool Game_Interpreter::CommandExitGame(RPG::EventCommand const& /* com */) {
 	if (Scene::Find(Scene::GameBrowser)) {
 		Scene::PopUntil(Scene::GameBrowser);
 	} else {
@@ -2549,7 +2571,7 @@ bool Game_Interpreter::CommandExitGame(RPG::EventCommand const& com) {
 	return true;
 }
 
-bool Game_Interpreter::CommandToggleFullscreen(RPG::EventCommand const& com) {
+bool Game_Interpreter::CommandToggleFullscreen(RPG::EventCommand const& /* com */) {
 	DisplayUi->BeginDisplayModeChange();
 	DisplayUi->ToggleFullscreen();
 	DisplayUi->EndDisplayModeChange();

@@ -27,15 +27,19 @@ void Input::InitButtons() {
 	buttons[UP].push_back(Keys::UP);
 	buttons[UP].push_back(Keys::K);
 	buttons[UP].push_back(Keys::KP8);
+	buttons[UP].push_back(Keys::W);
 	buttons[DOWN].push_back(Keys::DOWN);
 	buttons[DOWN].push_back(Keys::J);
 	buttons[DOWN].push_back(Keys::KP2);
+	buttons[DOWN].push_back(Keys::S);
 	buttons[LEFT].push_back(Keys::LEFT);
 	buttons[LEFT].push_back(Keys::H);
 	buttons[LEFT].push_back(Keys::KP4);
+	buttons[LEFT].push_back(Keys::A);
 	buttons[RIGHT].push_back(Keys::RIGHT);
 	buttons[RIGHT].push_back(Keys::L);
 	buttons[RIGHT].push_back(Keys::KP6);
+	buttons[RIGHT].push_back(Keys::D);
 	buttons[DECISION].push_back(Keys::Z);
 	buttons[DECISION].push_back(Keys::Y);
 	buttons[DECISION].push_back(Keys::SPACE);
@@ -73,11 +77,17 @@ void Input::InitButtons() {
 	buttons[TAKE_SCREENSHOT].push_back(Keys::F10);
 	buttons[TOGGLE_FPS].push_back(Keys::F2);
 	buttons[SHOW_LOG].push_back(Keys::F3);
+	buttons[PAGE_UP].push_back(Keys::PGUP);
+	buttons[PAGE_DOWN].push_back(Keys::PGDN);
+	buttons[RESET].push_back(Keys::F12);
+	buttons[FAST_FORWARD].push_back(Keys::F);
 
 #if defined(USE_MOUSE) && defined(SUPPORT_MOUSE)
 	buttons[DECISION].push_back(Keys::MOUSE_LEFT);
 	buttons[CANCEL].push_back(Keys::MOUSE_RIGHT);
 	buttons[SHIFT].push_back(Keys::MOUSE_MIDDLE);
+	buttons[SCROLL_UP].push_back(Keys::MOUSE_SCROLLUP);
+	buttons[SCROLL_DOWN].push_back(Keys::MOUSE_SCROLLDOWN);
 #endif
 
 #if defined(USE_JOYSTICK) && defined(SUPPORT_JOYSTICK)
@@ -121,6 +131,11 @@ void Input::InitButtons() {
 	buttons[RIGHT].push_back(Keys::JOY_AXIS_X_RIGHT);
 	buttons[DOWN].push_back(Keys::JOY_AXIS_Y_DOWN);
 	buttons[UP].push_back(Keys::JOY_AXIS_Y_UP);
+#endif
+
+#if defined(USE_TOUCH) && defined(SUPPORT_TOUCH)
+	buttons[DECISION].push_back(Keys::ONE_FINGER);
+	buttons[CANCEL].push_back(Keys::TWO_FINGERS);
 #endif
 
 	dir_buttons.resize(10);

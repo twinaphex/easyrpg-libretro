@@ -59,7 +59,16 @@
     <ClCompile Include="..\..\src\audio_al.cpp">
       <Filter>Source Files\Backend\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\audio_generic.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\audio_sdl_mixer.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\audio_sdl.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\audio_secache.cpp">
       <Filter>Source Files\Backend\Audio</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\midisequencer.cpp">
@@ -75,9 +84,6 @@
       <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\color.cpp">
-      <Filter>Source Files\Backend\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\effects.cpp">
       <Filter>Source Files\Backend\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\font.cpp">
@@ -134,10 +140,10 @@
     <ClCompile Include="..\..\src\input_buttons_gekko.cpp">
       <Filter>Source Files\Backend\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\input_buttons_gph.cpp">
+    <ClCompile Include="..\..\src\input_buttons_psp.cpp">
       <Filter>Source Files\Backend\Input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\input_buttons_psp.cpp">
+    <ClCompile Include="..\..\src\input_source.cpp">
       <Filter>Source Files\Backend\Input</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\baseui.cpp">
@@ -266,6 +272,9 @@
     <ClCompile Include="..\..\src\scene_status.cpp">
       <Filter>Source Files\Engine\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\scene_teleport.cpp">
+      <Filter>Source Files\Engine\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\sprite_character.cpp">
       <Filter>Source Files\Engine\Sprite</Filter>
     </ClCompile>
@@ -365,6 +374,9 @@
     <ClCompile Include="..\..\src\window_targetstatus.cpp">
       <Filter>Source Files\Engine\Window</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\window_teleport.cpp">
+      <Filter>Source Files\Engine\Window</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\cache.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -443,6 +455,9 @@
     <ClCompile Include="..\..\src\shinonome_mincho.cpp">
       <Filter>Source Files\Shinonome</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\shinonome_wqy.cpp">
+      <Filter>Source Files\Shinonome</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\scene_gamebrowser.cpp">
       <Filter>Source Files\Engine\Scene</Filter>
     </ClCompile>
@@ -476,6 +491,21 @@
     <ClCompile Include="..\..\src\decoder_mpg123.cpp">
       <Filter>Source Files\Backend\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\audio_resampler.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\decoder_libsndfile.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\decoder_oggvorbis.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\decoder_wav.cpp">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fps_overlay.cpp">
+      <Filter>Source Files\Backend\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\audio.h">
@@ -484,7 +514,16 @@
     <ClInclude Include="..\..\src\audio_al.h">
       <Filter>Source Files\Backend\Audio</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\audio_generic.h">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\audio_sdl_mixer.h">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\audio_sdl.h">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\audio_secache.h">
       <Filter>Source Files\Backend\Audio</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\midiprogram.h">
@@ -566,6 +605,9 @@
       <Filter>Source Files\Backend\Input</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\input_buttons.h">
+      <Filter>Source Files\Backend\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\input_source.h">
       <Filter>Source Files\Backend\Input</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\keys.h">
@@ -703,6 +745,9 @@
     <ClInclude Include="..\..\src\scene_status.h">
       <Filter>Source Files\Engine\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\scene_teleport.h">
+      <Filter>Source Files\Engine\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\sprite_character.h">
       <Filter>Source Files\Engine\Sprite</Filter>
     </ClInclude>
@@ -802,6 +847,9 @@
     <ClInclude Include="..\..\src\window_skillstatus.h">
       <Filter>Source Files\Engine\Window</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\window_teleport.h">
+      <Filter>Source Files\Engine\Window</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\cache.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
@@ -841,7 +889,7 @@
     <ClInclude Include="..\..\src\main_data.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\matrix.h">
+    <ClInclude Include="..\..\src\transform.h">
       <Filter>Source Files\Backend\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\memory_management.h">
@@ -936,6 +984,21 @@
     </ClInclude>
     <ClInclude Include="..\..\src\decoder_mpg123.h">
       <Filter>Source Files\Backend\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\decoder_wav.h">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\audio_resampler.h">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\decoder_libsndfile.h">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\decoder_oggvorbis.h">
+      <Filter>Source Files\Backend\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fps_overlay.h">
+      <Filter>Source Files\Backend\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

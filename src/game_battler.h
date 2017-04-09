@@ -60,7 +60,7 @@ public:
 
 	/**
 	 * Apply effects of Conditions to Battler
-	 * 
+	 *
 	 * @return Damage taken to Battler from conditions
 	 */
 	int ApplyConditions();
@@ -93,7 +93,7 @@ public:
 	/**
 	 * Tests if the battler has a "No Action" condition like sleep.
 	 *
-	 * @return can act 
+	 * @return can act
 	 */
 	bool CanAct();
 
@@ -124,8 +124,21 @@ public:
 	int GetAttributeRate(int attribute_id, int rate) const;
 
 	/**
+	 * Applies a modifier (buff/debuff) to an attribute rate.
+	 * GetAttributeModifier will use this shift in the rate lookup.
+	 * A shift of +1 changed a C to D and a -1 a C to B.
+	 * The maximum shift value is +-1.
+	 * Calling this function again applies the new shift to the previous shifts.
+	 * The shift is cleared after the battle ended.
+	 *
+	 * @param attribute_id Attribute to modify
+	 * @param shift Shift to apply.
+	 */
+	void ShiftAttributeRate(int attribute_id, int shift);
+
+	/**
 	 * Gets probability that a state can be inflicted on this actor.
-	 * 
+	 *
 	 * @param state_id State to test
 	 * @return Probability of state infliction
 	 */
@@ -336,7 +349,7 @@ public:
 	 * @param skill_id ID of skill to calculate.
 	 * @return needed skill cost.
 	 */
-	int CalculateSkillCost(int skill_id) const;
+	virtual int CalculateSkillCost(int skill_id) const;
 
 	/**
 	 * Sets the battler attack modifier.
@@ -389,20 +402,41 @@ public:
 	 * Removes all states.
 	 */
 	virtual void RemoveAllStates();
-	
+
 	/**
-	 * Gets X position on battlefield
+	 * Tests if the battler has a state that provides reflect.
+	 * Attack skills targeted at this battler will be reflected to the source.
+	 *
+	 * @return Reflect is enabled.
+	 */
+	bool HasReflectState() const;
+
+	/**
+	 * Gets X position against the battle background.
 	 *
 	 * @return X position in battle scene
 	 */
 	virtual int GetBattleX() const = 0;
 
 	/**
-	 * Gets Y position on battlefield
+	 * Gets Y position against the battle background.
 	 *
 	 * @return Y position in battle scene
 	 */
 	virtual int GetBattleY() const = 0;
+
+	/**
+	 * Gets X position on the screen.
+	 *
+	 * This is equal to GetBattleX, plus a displacement for
+	 * any screen shaking.
+	 */
+	int GetDisplayX() const;
+
+	/**
+	 * Gets Y position on the screen.
+	 */
+	int GetDisplayY() const;
 
 	virtual int GetHue() const;
 
@@ -410,7 +444,7 @@ public:
 
 	virtual int GetHitChance() const = 0;
 
-	virtual int GetCriticalHitChance() const = 0;
+	virtual float GetCriticalHitChance() const = 0;
 
 	/**
 	 * @return If battler is charged (next attack double damages)
@@ -425,9 +459,21 @@ public:
 	void SetCharged(bool charge);
 
 	/**
-	* @return If battler is defending (next turn, defense is doubled)
-	*/
+	 * @return If battler is defending (next turn, defense is doubled)
+	 */
 	bool IsDefending() const;
+
+	/**
+	 * @return If battler has strong defense (defense is tripled when defending)
+	 */
+	virtual bool HasStrongDefense() const;
+
+	/**
+	 * Tests if the battler has a weapon that grants preemption.
+	 *
+	 * @return true if a weapon is having preempt attribute
+	 */
+	virtual bool HasPreemptiveAttack() const;
 
 	/**
 	 * Sets defence state (next turn, defense is doubled)
@@ -447,7 +493,7 @@ public:
 	 * Convenience function to access the party based on the type of this
 	 * battler. This function does not ensure that the battler is in the
 	 * party.
-	 * @return Party this member probably belongs to. 
+	 * @return Party this member probably belongs to.
 	 */
 	Game_Party_Base& GetParty() const;
 
@@ -505,7 +551,7 @@ public:
 	 */
 	void SetBattleAlgorithm(const BattleAlgorithmRef battle_algorithm);
 
-	/** 
+	/**
 	 * @return Current turn in battle
 	 */
 	int GetBattleTurn() const;
@@ -531,10 +577,13 @@ public:
 
 	int GetLastBattleAction() const;
 
+	void SetBattleCombo(int command_id, int times);
+	void GetBattleCombo(int& command_id, int& times) const;
+
 	/**
 	 * Initializes battle related data to there default values.
 	 */
-	void ResetBattle();
+	virtual void ResetBattle();
 
 protected:
 	/** Gauge for RPG2k3 Battle */
@@ -551,6 +600,10 @@ protected:
 	int agi_modifier;
 	int battle_turn;
 	int last_battle_action;
+	int battle_combo_command_id;
+	int battle_combo_times;
+
+	std::vector<int> attribute_shift;
 };
 
 #endif

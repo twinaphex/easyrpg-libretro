@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstdlib>
 #include "player.h"
 #include "game_battler.h"
 #include "game_actor.h"
@@ -30,6 +29,7 @@
 #include "game_switches.h"
 #include "util_macro.h"
 #include "main_data.h"
+#include "utils.h"
 
 Game_Battler::Game_Battler() {
 	ResetBattle();
@@ -157,7 +157,7 @@ bool Game_Battler::IsSkillUsable(int skill_id) const {
 	if (CalculateSkillCost(skill_id) > GetSp()) {
 		return false;
 	}
-	
+
 	// > 10 makes any skill usable
 	int smallest_physical_rate = 11;
 	int smallest_magical_rate = 11;
@@ -230,11 +230,11 @@ bool Game_Battler::UseItem(int item_id) {
 
 		return was_used;
 	}
-	
+
 	if (item.type == RPG::Item::Type_switch) {
 		return true;
 	}
-	
+
 	switch (item.type) {
 		case RPG::Item::Type_weapon:
 		case RPG::Item::Type_shield:
@@ -254,47 +254,43 @@ bool Game_Battler::UseSkill(int skill_id) {
 
 	bool was_used = false;
 
-	switch (skill.type) {
-		case RPG::Skill::Type_normal:
-		case RPG::Skill::Type_subskill:
-			// Only takes care of healing skills outside of battle,
-			// the other skill logic is in Game_BattleAlgorithm
+	if (skill.type == RPG::Skill::Type_normal || skill.type >= RPG::Skill::Type_subskill) {
+		// Only takes care of healing skills outside of battle,
+		// the other skill logic is in Game_BattleAlgorithm
 
-			if (!(skill.scope == RPG::Skill::Scope_ally ||
-				skill.scope == RPG::Skill::Scope_party ||
-				skill.scope == RPG::Skill::Scope_self)) {
-				return false;
-			}
+		if (!(skill.scope == RPG::Skill::Scope_ally ||
+			  skill.scope == RPG::Skill::Scope_party ||
+			  skill.scope == RPG::Skill::Scope_self)) {
+			return false;
+		}
 
-			// Skills only increase hp and sp outside of battle
-			if (skill.power > 0 && skill.affect_hp && !HasFullHp()) {
-				was_used = true;
-				ChangeHp(skill.power);
-			}
+		// Skills only increase hp and sp outside of battle
+		if (skill.power > 0 && skill.affect_hp && !HasFullHp()) {
+			was_used = true;
+			ChangeHp(skill.power);
+		}
 
-			if (skill.power > 0 && skill.affect_sp && !HasFullSp()) {
-				was_used = true;
-				ChangeSp(skill.power);
-			}
+		if (skill.power > 0 && skill.affect_sp && !HasFullSp()) {
+			was_used = true;
+			ChangeSp(skill.power);
+		}
 
-			for (int i = 0; i < (int)skill.state_effects.size(); i++) {
-				if (skill.state_effects[i]) {
-					if (skill.state_effect) {
-						was_used |= !HasState(Data::states[i].ID);
-						AddState(Data::states[i].ID);
-					} else {
-						was_used |= HasState(Data::states[i].ID);
-						RemoveState(Data::states[i].ID);
-					}
+		for (int i = 0; i < (int) skill.state_effects.size(); i++) {
+			if (skill.state_effects[i]) {
+				if (skill.state_effect) {
+					was_used |= !HasState(Data::states[i].ID);
+					AddState(Data::states[i].ID);
+				} else {
+					was_used |= HasState(Data::states[i].ID);
+					RemoveState(Data::states[i].ID);
 				}
 			}
-		case RPG::Skill::Type_teleport:
-		case RPG::Skill::Type_escape:
-			// ToDo: Show Teleport/Escape target menu
-			break;
-		case RPG::Skill::Type_switch:
-			Game_Switches[skill.switch_id] = true;
-			return true;
+		}
+	} else if (skill.type == RPG::Skill::Type_teleport || skill.type == RPG::Skill::Type_escape) {
+		was_used = true;
+	} else if (skill.type == RPG::Skill::Type_switch) {
+		Game_Switches[skill.switch_id] = true;
+		was_used = true;
 	}
 
 	return was_used;
@@ -330,7 +326,7 @@ void Game_Battler::AddState(int state_id) {
 	}
 
 	std::vector<int16_t>& states = GetStates();
-	if (state_id - 1 >= states.size()) {
+	if (state_id - 1 >= static_cast<int>(states.size())) {
 		states.resize(state_id);
 	}
 
@@ -343,7 +339,7 @@ void Game_Battler::RemoveState(int state_id) {
 	}
 
 	std::vector<int16_t>& states = GetStates();
-	if (state_id - 1 >= states.size()) {
+	if (state_id - 1 >= static_cast<int>(states.size())) {
 		return;
 	}
 
@@ -400,12 +396,8 @@ int Game_Battler::ApplyConditions()
 		this->ChangeSp(src_sp);
 		damageTaken += src_hp;
 	}
-	if(damageTaken < 0) {
-		return -damageTaken;
-	}
-	else {
-		return damageTaken;
-	}
+
+	return damageTaken;
 }
 
 
@@ -440,6 +432,14 @@ void Game_Battler::SetCharged(bool charge) {
 
 bool Game_Battler::IsDefending() const {
 	return defending;
+}
+
+bool Game_Battler::HasStrongDefense() const {
+	return false;
+}
+
+bool Game_Battler::HasPreemptiveAttack() const {
+	return false;
 }
 
 void Game_Battler::SetDefending(bool defend) {
@@ -478,11 +478,10 @@ bool Game_Battler::HasFullSp() const {
 	return GetMaxSp() == GetSp();
 }
 
-static int AffectParameter(int const type, int const val) {
+static int AffectParameter(const int type, const int val) {
 	return
 		type == 0? val / 2 :
 		type == 1? val * 2 :
-		type == 2? val :
 		val;
 }
 
@@ -490,10 +489,9 @@ int Game_Battler::GetAtk() const {
 	int base_atk = GetBaseAtk();
 	int n = min(max(base_atk, 1), 999);
 
-	const std::vector<int16_t> states = GetInflictedStates();
-	for (std::vector<int16_t>::const_iterator i = states.begin(); i != states.end(); ++i) {
-		if(Data::states[(*i) - 1].affect_attack) {
-			n = AffectParameter(Data::states[(*i) - 1].affect_type, base_atk);
+	for (int16_t i : GetInflictedStates()) {
+		if(Data::states[i - 1].affect_attack) {
+			n = AffectParameter(Data::states[i - 1].affect_type, base_atk);
 			break;
 		}
 	}
@@ -509,10 +507,9 @@ int Game_Battler::GetDef() const {
 	int base_def = GetBaseDef();
 	int n = min(max(base_def, 1), 999);
 
-	const std::vector<int16_t> states = GetInflictedStates();
-	for (std::vector<int16_t>::const_iterator i = states.begin(); i != states.end(); ++i) {
-		if(Data::states[(*i) - 1].affect_defense) {
-			n = AffectParameter(Data::states[(*i) - 1].affect_type, base_def);
+	for (int16_t i : GetInflictedStates()) {
+		if (Data::states[i - 1].affect_defense) {
+			n = AffectParameter(Data::states[i - 1].affect_type, base_def);
 			break;
 		}
 	}
@@ -528,10 +525,9 @@ int Game_Battler::GetSpi() const {
 	int base_spi = GetBaseSpi();
 	int n = min(max(base_spi, 1), 999);
 
-	const std::vector<int16_t> states = GetInflictedStates();
-	for (std::vector<int16_t>::const_iterator i = states.begin(); i != states.end(); ++i) {
-		if(Data::states[(*i) - 1].affect_spirit) {
-			n = AffectParameter(Data::states[(*i) - 1].affect_type, base_spi);
+	for (int16_t i : GetInflictedStates()) {
+		if(Data::states[i - 1].affect_spirit) {
+			n = AffectParameter(Data::states[i - 1].affect_type, base_spi);
 			break;
 		}
 	}
@@ -547,10 +543,9 @@ int Game_Battler::GetAgi() const {
 	int base_agi = GetBaseAgi();
 	int n = min(max(base_agi, 1), 999);
 
-	const std::vector<int16_t> states = GetInflictedStates();
-	for (std::vector<int16_t>::const_iterator i = states.begin(); i != states.end(); ++i) {
-		if(Data::states[(*i) - 1].affect_agility) {
-			n = AffectParameter(Data::states[(*i) - 1].affect_type, base_agi);
+	for (int16_t i : GetInflictedStates()) {
+		if(Data::states[i - 1].affect_agility) {
+			n = AffectParameter(Data::states[i - 1].affect_type, base_agi);
 			break;
 		}
 	}
@@ -560,6 +555,15 @@ int Game_Battler::GetAgi() const {
 	n = min(max(n, 1), 999);
 
 	return n;
+}
+
+int Game_Battler::GetDisplayX() const {
+	int shake_pos = Main_Data::game_data.screen.shake_position;
+	return GetBattleX() + shake_pos;
+}
+
+int Game_Battler::GetDisplayY() const {
+	return GetBattleY();
 }
 
 int Game_Battler::GetHue() const {
@@ -627,7 +631,7 @@ std::vector<int16_t> Game_Battler::NextBattleTurn() {
 			states[i] += 1;
 
 			if (states[i] >= Data::states[i].hold_turn) {
-				if (rand() % 100 < Data::states[i].auto_release_prob) {
+				if (Utils::ChanceOf(Data::states[i].auto_release_prob, 100)) {
 					healed_states.push_back(i + 1);
 					RemoveState(i + 1);
 				}
@@ -650,7 +654,7 @@ std::vector<int16_t> Game_Battler::BattlePhysicalStateHeal(int physical_rate) {
 		if (HasState(i + 1) && Data::states[i].release_by_damage > 0) {
 			int release_chance = (int)(Data::states[i].release_by_damage * physical_rate / 100.0);
 
-			if (rand() % 100 < release_chance) {
+			if (Utils::ChanceOf(release_chance, 100)) {
 				healed_states.push_back(i + 1);
 				RemoveState(i + 1);
 			}
@@ -660,8 +664,21 @@ std::vector<int16_t> Game_Battler::BattlePhysicalStateHeal(int physical_rate) {
 	return healed_states;
 }
 
+bool Game_Battler::HasReflectState() const {
+	for (int16_t i : GetInflictedStates()) {
+		if (Data::states[i - 1].reflect_magic) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Game_Battler::ResetBattle() {
-	gauge = GetMaxGauge() / 2;
+	gauge = GetMaxGauge();
+	if (!HasPreemptiveAttack()) {
+		gauge /= 2;
+	}
 	charged = false;
 	defending = false;
 	battle_turn = 0;
@@ -670,6 +687,10 @@ void Game_Battler::ResetBattle() {
 	def_modifier = 0;
 	spi_modifier = 0;
 	agi_modifier = 0;
+	battle_combo_command_id = -1;
+	battle_combo_times = -1;
+	attribute_shift.clear();
+	attribute_shift.resize(Data::attributes.size());
 }
 
 int Game_Battler::GetBattleTurn() const {
@@ -682,4 +703,35 @@ void Game_Battler::SetLastBattleAction(int battle_action) {
 
 int Game_Battler::GetLastBattleAction() const {
 	return last_battle_action;
+}
+
+void Game_Battler::SetBattleCombo(int command_id, int times) {
+	battle_combo_command_id = command_id;
+	battle_combo_times = times;
+}
+
+void Game_Battler::GetBattleCombo(int &command_id, int &times) const {
+	command_id = battle_combo_command_id;
+	times = battle_combo_times;
+}
+
+void Game_Battler::ShiftAttributeRate(int attribute_id, int shift) {
+	if (attribute_id < 1 || attribute_id > Data::attributes.size()) {
+		assert(false && "invalid attribute_id");
+	}
+
+	if (shift < -1 || shift > 1) {
+		assert(false && "Invalid shift");
+	}
+
+	if (shift == 0) {
+		return;
+	}
+
+	int& old_shift = attribute_shift[attribute_id - 1];
+	if ((old_shift == -1 || old_shift == 0) && shift == 1) {
+		++old_shift;
+	} else if ((old_shift == 1 || old_shift == 0) && shift == -1) {
+		--old_shift;
+	}
 }

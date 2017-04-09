@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = --install -I builds/autoconf/m4
 include builds/autoconf/aminclude/doxygen.am
 
-EXTRA_DIST = builds lib/README resources CMakeLists.txt
+EXTRA_DIST = AUTHORS.md README.md builds lib/README.md resources CMakeLists.txt
 MOSTLYCLEANFILES = $(DX_CLEANFILES)
 
 bin_PROGRAMS = easyrpg-player
@@ -12,14 +12,20 @@ libeasyrpg_player_la_SOURCES = \
 	src/async_handler.h \
 	src/audio_al.cpp \
 	src/audio_al.h \
+	src/audio_sdl_mixer.cpp \
+	src/audio_sdl_mixer.h \
 	src/audio_sdl.cpp \
 	src/audio_sdl.h \
 	src/audio.cpp \
 	src/audio.h \
 	src/audio_decoder.cpp \
 	src/audio_decoder.h \
+	src/audio_generic.cpp \
+	src/audio_generic.h \
 	src/audio_resampler.cpp \
 	src/audio_resampler.h \
+	src/audio_secache.cpp \
+	src/audio_secache.h \
 	src/background.cpp \
 	src/background.h \
 	src/baseui.cpp \
@@ -35,20 +41,29 @@ libeasyrpg_player_la_SOURCES = \
 	src/color.h \
 	src/decoder_libsndfile.cpp \
 	src/decoder_libsndfile.h \
+	src/decoder_oggvorbis.cpp \
+	src/decoder_oggvorbis.h \
 	src/decoder_mpg123.cpp \
 	src/decoder_mpg123.h \
 	src/decoder_fmmidi.cpp \
 	src/decoder_fmmidi.h \
+	src/decoder_wav.cpp \
+	src/decoder_wav.h \
+	src/decoder_wildmidi.cpp \
+	src/decoder_wildmidi.h \
+	src/decoder_xmp.cpp \
+	src/decoder_xmp.h \
 	src/default_graphics.h \
 	src/dirent_win.h \
 	src/docmain.h \
 	src/drawable.h \
-	src/effects.cpp \
 	src/exfont.h \
 	src/filefinder.cpp \
 	src/filefinder.h \
 	src/font.cpp \
 	src/font.h \
+	src/fps_overlay.cpp \
+	src/fps_overlay.h \
 	src/frame.cpp \
 	src/frame.h \
 	src/game_actor.cpp \
@@ -116,10 +131,11 @@ libeasyrpg_player_la_SOURCES = \
 	src/image_xyz.h \
 	src/input_buttons_desktop.cpp \
 	src/input_buttons_gekko.cpp \
-	src/input_buttons_gph.cpp \
 	src/input_buttons.h \
 	src/input_buttons_opendingux.cpp \
 	src/input_buttons_psp.cpp \
+	src/input_source.cpp \
+	src/input_source.h \
 	src/input.cpp \
 	src/input.h \
 	src/keys.h \
@@ -127,7 +143,6 @@ libeasyrpg_player_la_SOURCES = \
 	src/main_data.cpp \
 	src/main_data.h \
 	src/map_data.h \
-	src/matrix.h \
 	src/memory_management.h \
 	src/message_overlay.cpp \
 	src/message_overlay.h \
@@ -191,6 +206,8 @@ libeasyrpg_player_la_SOURCES = \
 	src/scene_skill.h \
 	src/scene_status.cpp \
 	src/scene_status.h \
+	src/scene_teleport.cpp \
+	src/scene_teleport.h \
 	src/scene_title.cpp \
 	src/scene_title.h \
 	src/screen.cpp \
@@ -200,6 +217,7 @@ libeasyrpg_player_la_SOURCES = \
 	src/shinonome.h \
 	src/shinonome_gothic.cpp \
 	src/shinonome_mincho.cpp \
+	src/shinonome_wqy.cpp \
 	src/sprite_airshipshadow.h \
 	src/sprite_airshipshadow.cpp \
 	src/sprite_battler.cpp \
@@ -223,6 +241,7 @@ libeasyrpg_player_la_SOURCES = \
 	src/tilemap_layer.h \
 	src/tone.cpp \
 	src/tone.h \
+	src/transform.h \
 	src/util_macro.h \
 	src/utils.cpp \
 	src/utils.h \
@@ -301,6 +320,8 @@ libeasyrpg_player_la_SOURCES = \
 	src/window_skillstatus.h \
 	src/window_targetstatus.cpp \
 	src/window_targetstatus.h \
+	src/window_teleport.cpp \
+	src/window_teleport.h \
 	src/window_varlist.cpp \
 	src/window_varlist.h
 
@@ -325,7 +346,10 @@ libeasyrpg_player_la_CXXFLAGS = \
 	$(PNG_CFLAGS) \
 	$(ZLIB_CFLAGS) \
 	$(MPG123_CFLAGS) \
+	$(WILDMIDI_CFLAGS) \
+	$(OGGVORBIS_CFLAGS) \
 	$(SNDFILE_CFLAGS) \
+	$(XMP_CFLAGS) \
 	$(SPEEXDSP_CFLAGS)
 libeasyrpg_player_la_LIBADD = \
 	$(LCF_LIBS) \
@@ -337,7 +361,10 @@ libeasyrpg_player_la_LIBADD = \
 	$(PNG_LIBS) \
 	$(ZLIB_LIBS) \
 	$(MPG123_LIBS) \
+	$(WILDMIDI_LIBS) \
+	$(OGGVORBIS_LIBS) \
 	$(SNDFILE_LIBS) \
+	$(XMP_LIBS) \
 	$(SPEEXDSP_LIBS)
 
 easyrpg_player_SOURCES = src/main.cpp
@@ -347,7 +374,7 @@ easyrpg_player_LDADD = libeasyrpg-player.la
 # manual page
 if HAVE_A2X
 resources/easyrpg-player.6: resources/easyrpg-player.6.adoc
-	$(AM_V_GEN) $(A2X) -a player_version=$(PACKAGE_VERSION) -f manpage -D $(builddir)/resources $(srcdir)/$<
+	$(AM_V_GEN) $(A2X) -a player_version=$(PACKAGE_VERSION) -f manpage -D $(builddir)/resources $<
 
 dist_man6_MANS = resources/easyrpg-player.6
 MOSTLYCLEANFILES += resources/easyrpg-player.6
@@ -355,6 +382,12 @@ else
 if HAVE_MANUAL
 dist_man6_MANS = resources/easyrpg-player.6
 endif
+endif
+
+# bash completion
+if HAVE_BASHCOMPLETION
+bashcompletiondir = $(BASHCOMPLETION_DIR)
+dist_bashcompletion_DATA = resources/unix/bash-completion/easyrpg-player
 endif
 
 # FIXME make filefinder work without external scripting

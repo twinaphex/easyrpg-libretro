@@ -18,15 +18,17 @@
 // Headers
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include "system.h"
 #include "game_party.h"
 #include "game_actors.h"
 #include "game_map.h"
 #include "game_player.h"
 #include "game_battle.h"
+#include "game_targets.h"
 #include "game_temp.h"
+#include "game_system.h"
 #include "output.h"
-#include "util_macro.h"
 
 static RPG::SaveInventory& data = Main_Data::game_data.inventory;
 
@@ -65,11 +67,11 @@ void Game_Party::SetupBattleTestMembers() {
 		it != Data::system.battletest_data.end(); ++it) {
 		AddActor(it->actor_id);
 		Game_Actor* actor = Game_Actors::GetActor(it->actor_id);
-		actor->SetEquipment(0, it->weapon_id);
-		actor->SetEquipment(1, it->shield_id);
-		actor->SetEquipment(2, it->armor_id);
-		actor->SetEquipment(3, it->helmet_id);
-		actor->SetEquipment(4, it->accessory_id);
+		actor->SetEquipment(RPG::Item::Type_weapon, it->weapon_id);
+		actor->SetEquipment(RPG::Item::Type_shield, it->shield_id);
+		actor->SetEquipment(RPG::Item::Type_armor, it->armor_id);
+		actor->SetEquipment(RPG::Item::Type_helmet, it->helmet_id);
+		actor->SetEquipment(RPG::Item::Type_accessory, it->accessory_id);
 		actor->ChangeLevel(it->level, false);
 		actor->SetHp(actor->GetMaxHp());
 		actor->SetSp(actor->GetMaxSp());
@@ -92,21 +94,7 @@ int Game_Party::GetItemCount(int item_id, bool get_equipped) {
 		int number = 0;
 		for (int i = 0; i < (int) data.party.size(); i++) {
 			Game_Actor* actor = Game_Actors::GetActor(data.party[i]);
-			if (actor->GetWeaponId() == item_id) {
-				++number;
-			}
-			if (actor->GetShieldId() == item_id) {
-				++number;
-			}
-			if (actor->GetArmorId() == item_id) {
-				++number;
-			}
-			if (actor->GetHelmetId() == item_id) {
-				++number;
-			}
-			if (actor->GetAccessoryId() == item_id) {
-				++number;
-			}
+			number += actor->GetItemCount(item_id);
 		}
 		return number;
 	} else {
@@ -154,7 +142,7 @@ void Game_Party::AddItem(int item_id, int amount) {
 		// (Adding an item never changes the number of uses, even when
 		// you already have x99 of them.)
 		if (amount < 0) {
-			data.item_usage[i] = (uint8_t)Data::items[item_id - 1].uses;
+			data.item_usage[i] = 0;
 		}
 
 		return;
@@ -169,7 +157,7 @@ void Game_Party::AddItem(int item_id, int amount) {
 	data.item_ids.push_back((int16_t)item_id);
 	data.items_size = data.item_ids.size();
 	data.item_counts.push_back((uint8_t)std::min(amount, 99));
-	data.item_usage.push_back((uint8_t)Data::items[item_id - 1].uses);
+	data.item_usage.push_back(0);
 }
 
 void Game_Party::RemoveItem(int item_id, int amount) {
@@ -197,14 +185,14 @@ void Game_Party::ConsumeItemUse(int item_id) {
 		if (data.item_ids[i] != item_id)
 			continue;
 
-		if (data.item_usage[i] == 0) {
-			// Limitless uses
+		if (Data::items[item_id - 1].uses == 0) {
+			// Unlimited uses
 			return;
 		}
 
-		data.item_usage[i]--;
+		data.item_usage[i]++;
 
-		if (data.item_usage[i] == 0) {
+		if (data.item_usage[i] >= Data::items[item_id - 1].uses) {
 			if (data.item_counts[i] == 1) {
 				// We just used up the last one
 				data.item_ids.erase(data.item_ids.begin() + i);
@@ -213,7 +201,7 @@ void Game_Party::ConsumeItemUse(int item_id) {
 				data.item_usage.erase(data.item_usage.begin() + i);
 			} else {
 				data.item_counts[i]--;
-				data.item_usage[i] = (uint8_t)Data::items[item_id - 1].uses;
+				data.item_usage[i] = 0;
 			}
 		}
 		return;
@@ -300,14 +288,11 @@ bool Game_Party::IsSkillUsable(int skill_id, const Game_Actor* target, bool from
 		return false;
 	}
 
-	// TODO: Escape and Teleport Spells need event SetTeleportPlace and
-	// SetEscapePlace first. Not sure if any game uses this...
-	//if (Data::skills[skill_id - 1].type == RPG::Skill::Type_teleport) {
-	//	return is_there_a_teleport_set;
-	//} else if (Data::skills[skill_id - 1].type == RPG::Skill::Type_escape) {
-	//	return is_there_an_escape_set;
-	//} else
-	if (skill.type == RPG::Skill::Type_normal ||
+	if (skill.type == RPG::Skill::Type_escape) {
+		return !Game_Temp::battle_running && Game_System::GetAllowEscape() && Game_Targets::HasEscapeTarget();
+	} else if (skill.type == RPG::Skill::Type_teleport) {
+		return !Game_Temp::battle_running && Game_System::GetAllowTeleport() && Game_Targets::HasTeleportTarget();
+	} else if (skill.type == RPG::Skill::Type_normal ||
 		skill.type >= RPG::Skill::Type_subskill) {
 		int scope = skill.scope;
 
@@ -504,23 +489,26 @@ void Game_Party::UpdateTimers() {
 	}
 }
 
-int Game_Party::GetTimer(int which, bool* visible, bool* battle) {
+int Game_Party::GetTimer(int which) {
 	switch (which) {
 		case Timer1:
-			if (visible) {
-				*visible = data.timer1_visible;
-			}
-			if (battle) {
-				*battle = data.timer1_battle;
-			}
 			return data.timer1_secs;
 		case Timer2:
-			if (visible) {
-				*visible = data.timer2_visible;
-			}
-			if (battle) {
-				*battle = data.timer2_battle;
-			}
+			return data.timer2_secs;
+		default:
+			return 0;
+	}
+}
+
+int Game_Party::GetTimer(int which, bool& visible, bool& battle) {
+	switch (which) {
+		case Timer1:
+			visible = data.timer1_visible;
+			battle = data.timer1_battle;
+			return data.timer1_secs;
+		case Timer2:
+			visible = data.timer2_visible;
+			battle = data.timer2_battle;
 			return data.timer2_secs;
 		default:
 			return 0;
@@ -541,11 +529,10 @@ int Game_Party::GetAverageLevel() {
 		party_lvl += (*it)->GetLevel();
 	}
 
-	return party_lvl /= (int)actors.size();
+	return party_lvl / (int)actors.size();
 }
 
 int Game_Party::GetFatigue() {
-	int party_exh = 0;
 	std::vector<Game_Actor*> actors = GetActors();
 	std::vector<Game_Actor*>::iterator it;
 
@@ -553,11 +540,21 @@ int Game_Party::GetFatigue() {
 		return 0;
 	}
 
-	for (it = actors.begin(); it != actors.end(); ++it) {
-		// FIXME: this is what the help file says, but it looks wrong
-		party_exh += 100 - (200 * (*it)->GetHp() / (*it)->GetMaxHp() -
-			100 * (*it)->GetSp() / (*it)->GetMaxSp() / 3);
+	int hp = 0;
+	int total_hp = 0;
+	int sp = 0;
+	int total_sp = 0; 
+	for (Game_Actor* a : actors) {
+		hp += a->GetHp();
+		total_hp += a->GetMaxHp();
+		sp += a->GetSp();
+		total_sp += a->GetMaxSp();
 	}
 
-	return party_exh /= (int)actors.size();
+	// SP is always 33.3% of fatigue, which means a 0 SP actor is never above 66%
+	if (total_sp == 0) {
+		total_sp = 1;
+	}
+
+	return (int)std::ceil(100 - 100.0f * (((float)hp / total_hp * 2.0f + (float)sp / total_sp) / 3.0f));
 }

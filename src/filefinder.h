@@ -25,6 +25,14 @@
 #include <cstdio>
 #include <ios>
 #include <unordered_map>
+#include <vector>
+
+#ifdef PSP2
+#  include <psp2/types.h>
+#  define Offset SceOff
+#else
+#  define Offset off_t
+#endif
 
 /**
  * FileFinder contains helper methods for finding case
@@ -43,14 +51,14 @@ namespace FileFinder {
 	 */
 	void Quit();
 
-	/*
-	* { case lowered path, real path }
-	*/
+	/**
+	 * { case lowered path, real path }
+	 */
 	typedef std::unordered_map<std::string, std::string> string_map;
 
-	/*
-	* { case lowered directory name, non directory file list }
-	*/
+	/**
+	 * { case lowered directory name, non directory file list }
+	 */
 	typedef std::unordered_map<std::string, string_map> sub_members_type;
 
 	struct DirectoryTree {
@@ -99,7 +107,7 @@ namespace FileFinder {
 	std::string FindDefault(const DirectoryTree& tree, const std::string& dir, const std::string& name);
 
 	/**
-	 * Finds a file in the root of a custom project tree.
+	 * Finds a file from the root of a custom project tree.
 	 *
 	 * @param tree Project tree to search
 	 * @param name the path and name
@@ -183,9 +191,27 @@ namespace FileFinder {
 	 *
 	 * @param dir base directory.
 	 * @param name file name to be appended to dir.
-	 * @return normalized path string.
+	 * @return combined path
 	 */
 	std::string MakePath(std::string const& dir, std::string const& name);
+	
+	/**
+	 * Converts a path to the canonical equivalent.
+	 * This generates a path that does not contain ".." or "." directories.
+	 * 
+	 * @param path Path to normalize
+	 * @param initial_deepness How deep the passed path is relative to the game root
+	 * @return canonical path
+	 */
+	std::string MakeCanonical(std::string const& path, int initial_deepness);
+
+	/**
+	 * Splits a path in it's components.
+	 *
+	 * @param path Path to split
+	 * @return Vector containing path components
+	 */
+	std::vector<std::string> SplitPath(std::string const& path);
 
 	/**
 	 * GetDirectoryMembers member listing mode.
@@ -229,12 +255,51 @@ namespace FileFinder {
 	bool IsEasyRpgProject(DirectoryTree const& dir);
 
 	/**
-	 * Checks whether the directory contains any savegame with name
+	 * Checks whether the save directory contains any savegame with name
 	 * SaveXX.lsd (XX from 00 to 15).
 	 *
-	 * @return If directory Tree contains a savegame
+	 * @return If directory tree contains a savegame
 	 */
-	bool HasSavegame(DirectoryTree const& dir);
+	bool HasSavegame();
+
+	/** Get the size of a file
+         *
+         * @param file the path to a file
+         * @return the filesize, or -1 on error
+         */
+	Offset GetFileSize(std::string const& file);
+
+	/**
+         * Known file sizes
+         */
+	enum KnownFileSize {
+		OFFICIAL_HARMONY_DLL = 473600,
+	};
+
+	/**
+	 * Checks whether the game is created with RPG2k >= 1.50 or RPG2k3 >= 1.05.
+	 *
+	 * @return true if RPG2k >= 1.50 or RPG2k3 >= 1.05, otherwise false.
+	 */
+	bool IsMajorUpdatedTree();
+
+	/** RPG_RT.exe file size thresholds
+         *
+         * 2k v1.51 (Japanese)    : 746496
+         * 2k v1.50 (Japanese)    : 745984
+         *  -- threshold (2k) --  : 735000
+         * 2k v1.10 (Japanese)    : 726016
+         *
+         * 2k3 v1.09a (Japanese)  : 950784
+         * 2k3 v1.06 (Japanese)   : 949248
+         * 2k3 v1.05 (Japanese)   : unknown
+         *  -- threshold (2k3) -- : 927000
+         * 2k3 v1.04 (Japanese)   : 913408
+         */
+	enum RpgrtMajorUpdateThreshold {
+		RPG2K = 735000,
+		RPG2K3 = 927000,
+	};
 } // namespace FileFinder
 
 #endif

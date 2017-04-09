@@ -37,9 +37,10 @@
 #  include <fat.h>
 #elif defined(EMSCRIPTEN)
 #  include <emscripten.h>
+#elif defined(PSP2)
+#  include <psp2/kernel/processmgr.h>
 #elif defined(_3DS)
 #  include <3ds.h>
-#  include <khax.h>
 #endif
 
 #include "async_handler.h"
@@ -89,16 +90,20 @@ namespace Player {
 	int start_map_id;
 	bool no_rtp_flag;
 	bool no_audio_flag;
+	bool mouse_flag;
+	bool touch_flag;
 	std::string encoding;
 	std::string escape_symbol;
 	int engine;
 	std::string game_title;
 	int frames;
+	std::string replay_input_path;
+	std::string record_input_path;
+	int speed_modifier = 3;
 #ifdef EMSCRIPTEN
 	std::string emscripten_game_name;
 #endif
 #ifdef _3DS
-	bool use_dsp;
 	bool is_3dsx;
 #endif
 }
@@ -116,10 +121,7 @@ namespace {
 }
 
 void Player::Init(int argc, char *argv[]) {
-	static bool init = false;
 	frames = 0;
-
-	if (init) return;
 
 	// Display a nice version string
 	std::stringstream header;
@@ -141,60 +143,16 @@ void Player::Init(int argc, char *argv[]) {
 		Output::Error("Couldn't mount any storage medium!");
 	}
 #elif defined(_3DS)
-	// Starting debug console
-	gfxInitDefault();
-	consoleInit(GFX_BOTTOM, NULL);
-
-	aptOpenSession();
-	APT_SetAppCpuTimeLimit(30);
-	aptCloseSession();
-	if (osGetKernelVersion() <  SYSTEM_VERSION(2, 48, 3)) khaxInit(); // Executing libkhax just to be sure...
-	consoleClear();
-
-	// Check if we already have access to csnd:SND, if not, we will perform a kernel privilege escalation
-	Handle csndHandle = 0;
-	use_dsp = false;
-#ifndef FORCE_DSP
-	srvGetServiceHandleDirect(&csndHandle, "csnd:SND");
-	if (csndHandle) {
-		Output::Debug("csnd:SND has been selected as audio service.");
-		svcCloseHandle(csndHandle);
-	} else {
-		Output::Debug("csnd:SND is unavailable...");
-#endif
-		srvGetServiceHandleDirect(&csndHandle, "dsp::DSP");
-		if (csndHandle) {
-			Output::Debug("dsp::DSP has been selected as audio service.");
-			use_dsp = true;
-			svcCloseHandle(csndHandle);
-		} else {
-			Output::Error("dsp::DSP is unavailable. Please dump a DSP firmware to use EasyRPG Player. If the problem persists, please report us the issue.");
-		}
-#ifndef FORCE_DSP
-	}
-#endif
-
-	fsInit();
-	sdmcInit();
-#ifndef CITRA3DS_COMPATIBLE
+#  ifndef CITRA3DS_COMPATIBLE
 	romfsInit();
-#endif
-
-	hidInit();
-
-	// Enable 804 Mhz mode if on N3DS
-	u8 isN3DS;
-	APT_CheckNew3DS(&isN3DS);
-	if (isN3DS) {
-		osSetSpeedupEnable(true);
-	}
+#  endif
 #endif
 
 #if (defined(_WIN32) && defined(NDEBUG) && defined(WINVER) && WINVER >= 0x0600)
 	InitMiniDumpWriter();
 #endif
 
-	srand(time(NULL));
+	Utils::SeedRandomNumberGenerator(time(NULL));
 
 	ParseCommandLine(argc, argv);
 
@@ -230,7 +188,8 @@ void Player::Init(int argc, char *argv[]) {
 			 RUN_ZOOM);
 	}
 
-	init = true;
+	Graphics::Init();
+	Input::Init(replay_input_path, record_input_path);
 }
 
 void Player::Run() {
@@ -321,6 +280,9 @@ void Player::Update(bool update_scene) {
 	if (Input::IsTriggered(Input::SHOW_LOG)) {
 		Output::ToggleLog();
 	}
+	if (Input::IsTriggered(Input::RESET)) {
+		reset_flag = true;
+	}
 
 	DisplayUi->ProcessEvents();
 
@@ -338,12 +300,24 @@ void Player::Update(bool update_scene) {
 
 	Audio().Update();
 	Input::Update();
+
 	if (update_scene) {
-		Scene::instance->Update();
+		std::shared_ptr<Scene> old_instance = Scene::instance;
+
+		int speed_modifier = GetSpeedModifier();
+
+		for (int i = 0; i < speed_modifier; ++i) {
+			Graphics::Update(false);
+			Scene::instance->Update();
+			++frames;
+			// Scene changed, not save to Update again, setup code must run
+			if (&*old_instance != &*Scene::instance) {
+				break;
+			}
+		}
 	}
 
 	start_time = next_frame;
-	++frames;
 }
 
 void Player::FrameReset() {
@@ -379,20 +353,14 @@ void Player::Exit() {
 	FileFinder::Quit();
 	Output::Quit();
 	DisplayUi.reset();
-	
-#ifdef __ANDROID__
-	// Workaround Segfault under Android
-	exit(0);
+
+#ifdef PSP2
+	sceKernelExitProcess(0);
 #endif
 
 #ifdef _3DS
-	hidExit();
-	gfxExit();
-	sdmcExit();
 	romfsExit();
-	fsExit();
 #endif
-
 }
 
 void Player::ParseCommandLine(int argc, char *argv[]) {
@@ -423,6 +391,8 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 	start_map_id = -1;
 	no_rtp_flag = false;
 	no_audio_flag = false;
+	mouse_flag = false;
+	touch_flag = false;
 
 	std::vector<std::string> args;
 
@@ -449,6 +419,12 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 		}
 		else if (*it == "--show-fps") {
 			fps_flag = true;
+		}
+		else if (*it == "--enable-mouse") {
+			mouse_flag = true;
+		}
+		else if (*it == "--enable-touch") {
+			touch_flag = true;
 		}
 		else if (*it == "testplay" || *it == "--test-play") {
 			debug_flag = true;
@@ -527,7 +503,7 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 			if (it == args.end()) {
 				return;
 			}
-			srand(atoi((*it).c_str()));
+			Utils::SeedRandomNumberGenerator(atoi((*it).c_str()));
 		}
 		else if (*it == "--start-map-id") {
 			++it;
@@ -559,12 +535,32 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 			if (*it == "rpg2k" || *it == "2000") {
 				engine = EngineRpg2k;
 			}
+			else if (*it == "rpg2kv150" || *it == "2000v150") {
+				engine = EngineRpg2k | EngineMajorUpdated;
+			}
 			else if (*it == "rpg2k3" || *it == "2003") {
 				engine = EngineRpg2k3;
 			}
-			else if (*it == "rpg2k3e") {
-				engine = EngineRpg2k3 | EngineRpg2k3E;
+			else if (*it == "rpg2k3v105" || *it == "2003v105") {
+				engine = EngineRpg2k3 | EngineMajorUpdated;
 			}
+			else if (*it == "rpg2k3e") {
+				engine = EngineRpg2k3 | EngineMajorUpdated | EngineRpg2k3E;
+			}
+		}
+		else if (*it == "--record-input") {
+			++it;
+			if (it == args.end()) {
+				return;
+			}
+			record_input_path = *it;
+		}
+		else if (*it == "--replay-input") {
+			++it;
+			if (it == args.end()) {
+				return;
+			}
+			replay_input_path = *it;
 		}
 		else if (*it == "--encoding") {
 			++it;
@@ -645,18 +641,35 @@ void Player::CreateGameObjects() {
 			engine = EngineRpg2k3;
 
 			if (FileFinder::FindDefault("ultimate_rt_eb.dll").empty()) {
-				Output::Debug("Using RPG2k3 Interpreter");
-			}
-			else {
+				// Heuristic: Detect if game was converted from 2000 to 2003 and
+				// no typical 2003 feature was used at all (breaks .flow e.g.)
+				if (Data::classes.size() == 1 &&
+					Data::classes[0].name.empty() &&
+					Data::system.menu_commands.empty() &&
+					Data::system.system2_name.empty() &&
+					Data::battleranimations.size() == 1 &&
+					Data::battleranimations[0].name.empty()) {
+					engine = EngineRpg2k;
+					Output::Debug("Using RPG2k Interpreter (heuristic)");
+				} else {
+					Output::Debug("Using RPG2k3 Interpreter");
+				}
+			} else {
 				engine |= EngineRpg2k3E;
 				Output::Debug("Using RPG2k3 (English release, v1.11) Interpreter");
 			}
-		}
-		else {
+		} else {
 			engine = EngineRpg2k;
 			Output::Debug("Using RPG2k Interpreter");
 		}
+		if (FileFinder::IsMajorUpdatedTree()) {
+			engine |= EngineMajorUpdated;
+			Output::Debug("RPG2k >= v1.50 / RPG2k3 >= v1.05 detected");
+		} else {
+			Output::Debug("RPG2k < v1.50 / RPG2k3 < v1.05 detected");
+		}
 	}
+	Output::Debug("Engine configured as: 2k=%d 2k3=%d 2k3Legacy=%d MajorUpdated=%d 2k3E=%d", Player::IsRPG2k(), Player::IsRPG2k3(), Player::IsRPG2k3Legacy(), Player::IsMajorUpdatedVersion(), Player::IsRPG2k3E());
 
 	if (!no_rtp_flag) {
 		FileFinder::InitRtpPaths();
@@ -814,8 +827,43 @@ std::string Player::GetEncoding() {
 	}
 
 	if (encoding.empty() || encoding == "auto") {
+		encoding = "";
+
 		std::string ldb = FileFinder::FindDefault(DATABASE_NAME);
-		encoding = ReaderUtil::DetectEncoding(ldb);
+		std::vector<std::string> encodings = ReaderUtil::DetectEncodings(ldb);
+
+#ifndef EMSCRIPTEN
+		for (std::string& enc : encodings) {
+			// Heuristic: Check if encoded title and system name matches the one on the filesystem
+			// When yes is a good encoding. Otherwise try the next ones.
+
+			escape_symbol = ReaderUtil::Recode("\\", enc);
+			if (escape_symbol.empty()) {
+				// Bad encoding
+				Output::Debug("Bad encoding: %s. Trying next.", enc.c_str());
+				continue;
+			}
+
+			if ((Data::system.title_name.empty() ||
+					!FileFinder::FindImage("Title", ReaderUtil::Recode(Data::system.title_name, enc)).empty()) &&
+				(Data::system.system_name.empty() ||
+					!FileFinder::FindImage("System", ReaderUtil::Recode(Data::system.system_name, enc)).empty())) {
+				// Looks like a good encoding
+				encoding = enc;
+				break;
+			} else {
+				Output::Debug("Detected encoding: %s. Files not found. Trying next.", enc.c_str());
+			}
+		}
+#endif
+
+		if (!encodings.empty() && encoding.empty()) {
+			// No encoding found that matches the files, maybe RTP missing.
+			// Use the first one instead
+			encoding = encodings[0];
+		}
+
+		escape_symbol = "";
 
 		if (!encoding.empty()) {
 			Output::Debug("Detected encoding: %s", encoding.c_str());
@@ -825,8 +873,15 @@ std::string Player::GetEncoding() {
 		}
 	}
 
-
 	return encoding;
+}
+
+int Player::GetSpeedModifier() {
+	if (Input::IsPressed(Input::FAST_FORWARD)) {
+		return Input::IsPressed(Input::PLUS) ? 10 : speed_modifier;
+	}
+
+	return 1;
 }
 
 void Player::PrintVersion() {
@@ -853,11 +908,15 @@ Options:
                            Use "auto" for automatic detection.
       --engine ENGINE      Disable auto detection of the simulated engine.
                            Possible options:
-                            rpg2k   - RPG Maker 2000 engine
-                            rpg2k3  - RPG Maker 2003 engine
-                            rpg2k3e - RPG Maker 2003 (English release) engine
+                            rpg2k      - RPG Maker 2000 engine (v1.00 - v1.10)
+                            rpg2kv150  - RPG Maker 2000 engine (v1.50 - v1.51)
+                            rpg2k3     - RPG Maker 2003 engine (v1.00 - v1.04)
+                            rpg2k3v105 - RPG Maker 2003 engine (v1.05 - v1.09a)
+                            rpg2k3e    - RPG Maker 2003 (English release) engine
       --fullscreen         Start in fullscreen mode.
       --show-fps           Enable frames per second counter.
+      --enable-mouse       Use mouse click for decision and scroll wheel for lists
+      --enable-touch       Use one/two finger tap for decision/cancel
       --hide-title         Hide the title background image and center the
                            command menu.
       --load-game-id N     Skip the title scene and load SaveN.lsd
@@ -865,6 +924,9 @@ Options:
       --new-game           Skip the title scene and start a new game directly.
       --project-path PATH  Instead of using the working directory the game in
                            PATH is used.
+      --record-input PATH  Record all button input to a log file at PATH.
+      --replay-input PATH  Replays button presses from an input log generated by
+                           --record-input.
       --save-path PATH     Instead of storing save files in the game directory
                            they are stored in PATH. The directory must exist.
                            When using the game browser all games will share
@@ -899,20 +961,28 @@ Alex, EV0001 and the EasyRPG authors wish you a lot of fun!)" << std::endl;
 }
 
 bool Player::IsRPG2k() {
-	return engine == EngineRpg2k;
+	return (engine & EngineRpg2k) == EngineRpg2k;
 }
 
 
 bool Player::IsRPG2k3Legacy() {
-	return engine == EngineRpg2k3;
+	return (engine == EngineRpg2k3 || engine == (EngineRpg2k3 | EngineMajorUpdated));
 }
 
 bool Player::IsRPG2k3() {
 	return (engine & EngineRpg2k3) == EngineRpg2k3;
 }
 
+bool Player::IsMajorUpdatedVersion() {
+	return (engine & EngineMajorUpdated) == EngineMajorUpdated;
+}
+
 bool Player::IsRPG2k3E() {
 	return (engine & EngineRpg2k3E) == EngineRpg2k3E;
+}
+
+bool Player::IsCP932() {
+	return (encoding == "ibm-943_P15A-2003" || encoding == "932");
 }
 
 #if (defined(_WIN32) && defined(NDEBUG) && defined(WINVER) && WINVER >= 0x0600)

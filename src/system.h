@@ -26,7 +26,7 @@
 #  include <config.h>
 #endif
 
-#if !(defined(USE_SDL) || defined(_3DS) || defined(USE_LIBRETRO))
+#if !(defined(USE_SDL) || defined(_3DS) || defined(USE_LIBRETRO) || defined(PSP2))
 #  error "This build doesn't target a backend"
 #endif
 
@@ -43,10 +43,14 @@
  */
 #include "memory_management.h"
 
+#ifdef PSP2
+#  define SUPPORT_JOYSTICK
+#  define SUPPORT_JOYSTICK_AXIS
+#endif
+
 #ifdef GEKKO
 #  include "stdint.h"
 
-#  define HAVE_SDL_MIXER
 #  define WORDS_BIGENDIAN
 #endif
 
@@ -59,13 +63,6 @@
 #define SUPPORT_ZOOM
 
 #ifdef USE_SDL
-#  define USE_SDL_MIXER
-
-#  ifdef PSP
-#    undef USE_SDL_MIXER
-#    define NO_SDL_MIXER
-#  endif
-
 #  if defined(GEKKO) || defined(OPENDINGUX) || defined(EMSCRIPTEN)
 #    undef SUPPORT_ZOOM
 #  endif
@@ -73,6 +70,11 @@
 #  if !defined(OPENDINGUX) && !defined(GEKKO)
 #    define SUPPORT_KEYBOARD
 #    define SUPPORT_MOUSE
+
+     // We have our own touch input solution on Android
+#    if !defined(__ANDROID__)
+#      define SUPPORT_TOUCH
+#    endif
 #  endif
 
 #  if !defined(OPENDINGUX)
@@ -89,12 +91,6 @@
 #    define SUPPORT_MID
 #    define SUPPORT_OGG
 #    define SUPPORT_MP3
-#  endif
-
-#  ifdef NO_SDL_MIXER
-#    undef SUPPORT_AUDIO
-#  else
-#    define SUPPORT_AUDIO
 #  endif
 
 #  ifdef WANT_FMMIDI

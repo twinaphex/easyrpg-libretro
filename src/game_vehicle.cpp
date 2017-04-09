@@ -207,7 +207,7 @@ void Game_Vehicle::SetThrough(bool through) {
 	data.through = through;
 }
 
-bool Game_Vehicle::IsPassable(int x, int y, int d) const {
+bool Game_Vehicle::MakeWay(int x, int y, int d) const {
 	int new_x = Game_Map::RoundX(x + (d == Right ? 1 : d == Left ? -1 : 0));
 	int new_y = Game_Map::RoundY(y + (d == Down ? 1 : d == Up ? -1 : 0));
 
@@ -389,6 +389,8 @@ bool Game_Vehicle::CanLand() const {
 	Game_Map::GetEventsXY(events, GetX(), GetY());
 	if (!events.empty())
 		return false;
+	if (!Game_Map::IsLandable(GetX(), GetY(), nullptr))
+		return false;
 	if (Game_Map::GetVehicle(Ship)->IsInPosition(GetX(), GetY()))
 		return false;
 	if (Game_Map::GetVehicle(Boat)->IsInPosition(GetX(), GetY()))
@@ -398,6 +400,8 @@ bool Game_Vehicle::CanLand() const {
 
 void Game_Vehicle::Update() {
 	Game_Character::Update();
+	Game_Character::UpdateSprite();
+	SyncWithPlayer();
 
 	if (type == Airship) {
 		if (IsAscending()) {

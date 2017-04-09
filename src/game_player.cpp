@@ -23,22 +23,18 @@
 #include "game_message.h"
 #include "game_party.h"
 #include "game_system.h"
+#include "game_temp.h"
 #include "graphics.h"
 #include "input.h"
 #include "main_data.h"
 #include "player.h"
 #include "util_macro.h"
+#include "game_switches.h"
 #include <algorithm>
 #include <cmath>
 
 Game_Player::Game_Player():
-	location(Main_Data::game_data.party_location),
-	teleporting(false),
-	new_map_id(0),
-	new_x(0),
-	new_y(0),
-	last_pan_x(0),
-	last_pan_y(0) {
+	location(Main_Data::game_data.party_location) {
 	SetDirection(RPG::EventPage::Direction_down);
 	SetMoveSpeed(4);
 }
@@ -220,6 +216,15 @@ void Game_Player::ReserveTeleport(int map_id, int x, int y, int direction) {
 	request->Start();
 }
 
+void Game_Player::ReserveTeleport(const RPG::SaveTarget& target) {
+	ReserveTeleport(target.map_id, target.map_x, target.map_y, Down);
+
+	if (target.switch_on) {
+		Game_Switches[target.switch_id] = true;
+		Game_Map::SetNeedRefresh(Game_Map::Refresh_All);
+	}
+}
+
 void Game_Player::StartTeleport() {
 	teleporting = true;
 }
@@ -228,6 +233,15 @@ void Game_Player::PerformTeleport() {
 	if (!teleporting) return;
 
 	teleporting = false;
+
+	// Finish (un)boarding process
+	if (location.boarding) {
+		location.boarding = false;
+		location.aboard = true;
+	} else if (location.unboarding) {
+		location.unboarding = false;
+		location.aboard = false;
+	}
 
 	if (Game_Map::GetMapId() != new_map_id) {
 		Refresh(); // Reset sprite if it was changed by a move
@@ -249,14 +263,14 @@ void Game_Player::PerformTeleport() {
 		GetVehicle()->MoveTo(new_x, new_y);
 }
 
-bool Game_Player::IsPassable(int x, int y, int d) const {
+bool Game_Player::MakeWay(int x, int y, int d) const {
 	if (Player::debug_flag && Input::IsPressed(Input::DEBUG_THROUGH))
 		return true;
 
 	if (location.aboard)
-		return GetVehicle()->IsPassable(x, y, d);
+		return GetVehicle()->MakeWay(x, y, d);
 
-	return Game_Character::IsPassable(x, y, d);
+	return Game_Character::MakeWay(x, y, d);
 }
 
 bool Game_Player::IsTeleporting() const {
@@ -268,18 +282,20 @@ void Game_Player::Center(int x, int y) {
 	int center_y = (DisplayUi->GetHeight() / (TILE_SIZE / 16) - TILE_SIZE) * 8 - Game_Map::GetPanY();
 
 	if (Game_Map::LoopHorizontal()) {
-		Game_Map::SetDisplayX(x*SCREEN_TILE_WIDTH - center_x);
+		Game_Map::SetPositionX(x*SCREEN_TILE_WIDTH - center_x);
 	} else {
 		int max_x = (Game_Map::GetWidth() - DisplayUi->GetWidth() / TILE_SIZE) * SCREEN_TILE_WIDTH;
-		Game_Map::SetDisplayX(max(0, min((x * SCREEN_TILE_WIDTH - center_x), max_x)));
+		Game_Map::SetPositionX(max(0, min((x * SCREEN_TILE_WIDTH - center_x), max_x)));
 	}
 
 	if (Game_Map::LoopVertical()) {
-		Game_Map::SetDisplayY(y * SCREEN_TILE_WIDTH - center_y);
+		Game_Map::SetPositionY(y * SCREEN_TILE_WIDTH - center_y);
 	} else {
 		int max_y = (Game_Map::GetHeight() - DisplayUi->GetHeight() / TILE_SIZE) * SCREEN_TILE_WIDTH;
-		Game_Map::SetDisplayY(max(0, min((y * SCREEN_TILE_WIDTH - center_y), max_y)));
+		Game_Map::SetPositionY(max(0, min((y * SCREEN_TILE_WIDTH - center_y), max_y)));
 	}
+
+	Game_Map::Parallax::ResetPosition();
 }
 
 void Game_Player::MoveTo(int x, int y) {
@@ -291,30 +307,40 @@ void Game_Player::MoveTo(int x, int y) {
 }
 
 void Game_Player::UpdateScroll() {
-	int center_x = DisplayUi->GetWidth() / 2 - TILE_SIZE / 2 - Game_Map::GetPanX() / (SCREEN_TILE_WIDTH / TILE_SIZE);
-	int center_y = DisplayUi->GetHeight() / 2 + TILE_SIZE / 2 - Game_Map::GetPanY() / (SCREEN_TILE_WIDTH / TILE_SIZE);
+	int center_x = DisplayUi->GetWidth() / 2 - TILE_SIZE / 2 - Game_Map::GetPanX() / (SCREEN_TILE_WIDTH / TILE_SIZE) + 2;
+	int center_y = DisplayUi->GetHeight() / 2 + TILE_SIZE / 2 - Game_Map::GetPanY() / (SCREEN_TILE_WIDTH / TILE_SIZE) + 2;
+
 	int dx = 0;
 	int dy = 0;
 
 	if (!Game_Map::IsPanLocked()) {
-		if (IsMoving()) {
+		if (IsMoving() || last_remaining_move > 0) {
+			if (last_remaining_move == 0)
+				last_remaining_move = SCREEN_TILE_WIDTH;
+
 			int d = GetDirection();
 			if ((d == Right || d == UpRight || d == DownRight) && GetScreenX() >= center_x)
 				dx = 1;
 			else if ((d == Left || d == UpLeft || d == DownLeft) && GetScreenX() <= center_x)
 				dx = -1;
-			dx *= 1 << (1 + GetMoveSpeed());
+			dx *= last_remaining_move - remaining_step;
 
 			if ((d == Down || d == DownRight || d == DownLeft) && GetScreenY() >= center_y)
 				dy = 1;
 			else if ((d == Up || d == UpRight || d == UpLeft) && GetScreenY() <= center_y)
 				dy = -1;
-			dy *= 1 << (1 + GetMoveSpeed());
-		} else if (IsJumping()) {
-			int move_speed = GetMoveSpeed();
-			int diff = move_speed < 5 ? 48 / (2 + pow(2.0, 3 - move_speed)) : 64 / (7 - move_speed);
-			dx += (GetX() - jump_x) * diff;
-			dy += (GetY() - jump_y) * diff;
+			dy *= last_remaining_move - remaining_step;
+			last_remaining_move = remaining_step;
+
+		} else if (IsJumping() || last_remaining_jump > 0) {
+			if (last_remaining_jump == 0)
+				last_remaining_jump = SCREEN_TILE_WIDTH;
+
+			if ((GetX() > jump_x && GetScreenX() >= center_x) || (GetX() < jump_x && GetScreenX() <= center_x))
+				dx = (GetX() - jump_x) * (last_remaining_jump - remaining_step);
+			if ((GetY() > jump_y && GetScreenY() >= center_y) || (GetY() < jump_y && GetScreenY() <= center_y))
+				dy = (GetY() - jump_y) * (last_remaining_jump - remaining_step);
+			last_remaining_jump = remaining_step;
 		}
 	}
 
@@ -338,30 +364,45 @@ void Game_Player::UpdateScroll() {
 
 
 void Game_Player::Update() {
-	bool last_moving = IsMoving() || IsJumping();
-
-	if (IsMovable() && !(Game_Map::GetInterpreter().IsRunning() || Game_Map::GetInterpreter().HasRunned())) {
-		switch (Input::dir4) {
-			case 2:
-				Move(Down);
-				break;
-			case 4:
-				Move(Left);
-				break;
-			case 6:
-				Move(Right);
-				break;
-			case 8:
-				Move(Up);
-		}
+	int cur_frame_count = Player::GetFrames();
+	// Only update the event once per frame
+	if (cur_frame_count == frame_count_at_last_update_parallel) {
+		return;
 	}
+	frame_count_at_last_update_parallel = cur_frame_count;
 
-	UpdateScroll();
+	bool last_moving = IsMoving() || IsJumping();
 
 	// Workaround: If a blocking move route ends in this frame, Game_Player::CancelMoveRoute decides
 	// which events to start. was_blocked is used to avoid triggering events the usual way.
 	bool was_blocked = IsBlockedByMoveRoute();
 	Game_Character::Update();
+
+	if (!Game_Map::GetInterpreter().IsRunning() && !Game_Map::IsAnyEventStarting()) {
+		if (IsMovable()) {
+			switch (Input::dir4) {
+				case 2:
+					Move(Down);
+					break;
+				case 4:
+					Move(Left);
+					break;
+				case 6:
+					Move(Right);
+					break;
+				case 8:
+					Move(Up);
+			}
+		}
+
+		// ESC-Menu calling
+		if (Game_System::GetAllowMenu() && !Game_Message::message_waiting && Input::IsTriggered(Input::CANCEL)) {
+			Game_Temp::menu_calling = true;
+		}
+	}
+
+	Game_Character::UpdateSprite();
+	UpdateScroll();
 
 	if (location.aboard)
 		GetVehicle()->SyncWithPlayer();
@@ -395,7 +436,7 @@ void Game_Player::Update() {
 
 	if (last_moving && CheckTouchEvent()) return;
 
-	if (!(Game_Map::GetInterpreter().IsRunning() || Game_Map::GetInterpreter().HasRunned())) {
+	if (!Game_Map::GetInterpreter().IsRunning()) {
 		if (!Game_Message::visible && Input::IsTriggered(Input::DECISION)) {
 			if ( GetOnOffVehicle() ) return;
 			if ( CheckActionEvent() ) return;
@@ -419,6 +460,10 @@ bool Game_Player::CheckActionEvent() {
 bool Game_Player::CheckTouchEvent() {
 	if (InAirship())
 		return false;
+
+	if (IsMoveRouteOverwritten())
+		return false;
+
 	return CheckEventTriggerHere({RPG::EventPage::Trigger_touched});
 }
 
@@ -605,9 +650,7 @@ bool Game_Player::IsMovable() const {
 		return false;
 	if (Graphics::IsTransitionPending())
 		return false;
-	if (IsBlockedByMoveRoute())
-		return false;
-	if (Game_Map::IsAnyEventStarting())
+	if (IsMoveRouteOverwritten())
 		return false;
 	if (location.boarding || location.unboarding)
 		return false;
@@ -668,8 +711,8 @@ void Game_Player::CancelMoveRoute() {
 
 	int index = GetMoveRouteIndex();
 	if (!active_route.move_commands.empty()) {
-		int move_size = (int)active_route.move_commands.size();
-		if (index >= active_route.move_commands.size()) {
+		int move_size = static_cast<int>(active_route.move_commands.size());
+		if (index >= move_size) {
 			index = move_size - 1;
 		}
 
