@@ -17,6 +17,7 @@ struct LibretroAudio : public AudioInterface {
 		void BGM_Resume() override;
 		void BGM_Stop() override;
 		bool BGM_PlayedOnce() override;
+      bool BGM_IsPlaying() override;
 		unsigned BGM_GetTicks() override;
 		void BGM_Fade(int) override;
 		void BGM_Volume(int) override;

@@ -70,6 +70,14 @@ void LibretroAudio::BGM_Stop(){
 bool LibretroAudio::BGM_PlayedOnce(){
 	return BGM_PlayedOnceIndicator;
 }
+
+bool LibretroAudio::BGM_IsPlaying() {
+ 	for(unsigned i=0;i<nr_of_bgm_channels;i++){
+ 		if(!BGM_Channels[i].stopped) return true;
+ 	}
+	return false;
+}
+
 unsigned LibretroAudio::BGM_GetTicks(){
 	unsigned ticks=0;
 	slock_lock(mutex);
