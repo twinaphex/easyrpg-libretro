@@ -227,6 +227,7 @@ ifeq ($(RETRO_PROFILE),1)
 endif
 
 OBJECTS		= $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
+COMMON_DEFINES += -DSUPPORT_AUDIO
 CXXFLAGS       += -std=c++11 -D__LIBRETRO__ -fpermissive $(fpic) $(INCDIR) -DUSE_LIBRETRO $(COMMON_DEFINES)
 CFLAGS	       += -std=gnu99 -D__LIBRETRO__ $(fpic) $(INCDIR) -DUSE_LIBRETRO $(COMMON_DEFINES)
 
