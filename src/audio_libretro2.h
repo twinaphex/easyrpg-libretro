@@ -17,7 +17,7 @@
 #ifndef AUDIOPSP_H
 #define AUDIOPSP_H
 
-#if defined(PSP2)
+#if defined(USE_LIBRETRO)
 
 #include "audio_generic.h"
 
