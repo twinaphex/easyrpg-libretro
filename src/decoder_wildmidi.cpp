@@ -59,11 +59,23 @@ WildMidiDecoder::WildMidiDecoder(const std::string file_name) {
 	if (init)
 		return;
 
-
 	/* find the configuration file in different paths on different platforms
 	 * FIXME: move this logic into some configuration class
 	 */
-#ifdef GEKKO
+#if defined(__LIBRETRO__)
+   config_file = "wildmidi.cfg";
+   extern retro_environment_t environ_cb;
+   const char *dir = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
+   {
+#ifdef _WIN32
+      config_file = std::string(dir) + "\\wildmidi.cfg";
+#else
+      config_file = std::string(dir) + "/wildmidi.cfg";
+#endif
+   }
+#elif defined(GEKKO)
 	// preferred under /data
 	config_file = "usb:/data/wildmidi/wildmidi.cfg";
 	found = FileFinder::Exists(config_file);
@@ -109,19 +121,6 @@ WildMidiDecoder::WildMidiDecoder(const std::string file_name) {
 		config_file = "wildmidi.cfg";
 		found = FileFinder::Exists(config_file);
 	}
-#elif defined(__LIBRETRO__)
-   config_file = "wildmidi.cfg";
-   extern retro_environment_t environ_cb;
-   const char *dir = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
-   {
-#ifdef _WIN32
-      config_file = std::string(dir) + "\\wildmidi.cfg";
-#else
-      config_file = std::string(dir) + "/wildmidi.cfg";
-#endif
-   }
 #else
 	// Prefer wildmidi in current directory
 	config_file = "wildmidi.cfg";
