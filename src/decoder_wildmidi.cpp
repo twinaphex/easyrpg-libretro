@@ -75,6 +75,7 @@ WildMidiDecoder::WildMidiDecoder(const std::string file_name) {
       config_file = std::string(dir) + "/wildmidi.cfg";
 #endif
    }
+   found = FileFinder::Exists(config_file);
 #elif defined(GEKKO)
 	// preferred under /data
 	config_file = "usb:/data/wildmidi/wildmidi.cfg";
