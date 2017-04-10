@@ -28,11 +28,7 @@
 
 #if defined(USE_LIBRETRO)
 #include <compat/zutil.h>
-#define uLongf uint32_t
-#define Bytef  uint8_t
-#define Z_OK   0
-
-int uncompress(unsigned char *a, uint32_t *b, uint8_t *c, uint32_t d);
+int uncompress(unsigned char *a, uint32_t *b, const unsigned char *c, uint32_t d);
 #endif
 
 bool ImageXYZ::ReadXYZ(const uint8_t* data, unsigned len, bool transparent,
@@ -46,13 +42,14 @@ bool ImageXYZ::ReadXYZ(const uint8_t* data, unsigned len, bool transparent,
 
 	uint16_t w = data[4] + (data[5] << 8);
 	uint16_t h = data[6] + (data[7] << 8);
-	uLongf src_size = len - 8;
-	Bytef* src_buffer = (Bytef*)&data[8];
-	uLongf dst_size = 768 + (w * h);
-	std::vector<Bytef> dst_buffer(dst_size);
+	uint32_t src_size = len - 8;
+	uint8_t* src_buffer = (uint8_t*)&data[8];
+	uint32_t dst_size = 768 + (w * h);
+	std::vector<uint8_t> dst_buffer(dst_size);
 
-	int status = uncompress(&dst_buffer.front(), &dst_size, src_buffer, src_size);
-	if (status != Z_OK) {
+	int status = uncompress(&dst_buffer.front(), &dst_size, (const unsigned char*)src_buffer, src_size);
+	if (status != 0)
+   {
 		Output::Warning("Error decompressing XYZ file.");
 		return false;
 	}

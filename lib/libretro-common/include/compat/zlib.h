@@ -1205,7 +1205,7 @@ typedef int (*out_func) (void FAR *, unsigned char FAR *, unsigned);
 */
 
  int  uncompress (unsigned char *dest,   uint32_t *destLen,
-                                   const unsigned char *source, uint32_t sourceLen);
+       const unsigned char *source, uint32_t sourceLen);
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
