@@ -20,6 +20,7 @@ INCDIR :=         \
 						-I$(ZLIB_DIR) \
 						-I$(LIBLCF_DIR)/src \
 						-I$(PIXMAN_DIR) \
+						-I$(LIBLCF_DIR)/src \
 						-I$(LIBLCF_DIR)/src/generated \
 						-I$(LIBRETRO_COMM_DIR)/include \
 						-I$(LIBRETRO_COMM_DIR)/include/compat

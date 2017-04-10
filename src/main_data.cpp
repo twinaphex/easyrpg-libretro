@@ -29,7 +29,8 @@
 #include "font.h"
 #include "player.h"
 
-#ifdef __ANDROID__
+#if !defined(USE_LIBRETRO)
+#if defined(__ANDROID__)
 	#include <jni.h>
 	#include <SDL_system.h>
 #endif
@@ -52,6 +53,7 @@
 #if defined(__APPLE__) && defined(__MACH__)
 	#include <SDL.h>
 	#include <unistd.h>
+#endif
 #endif
 
 // Global variables.

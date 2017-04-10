@@ -62,7 +62,7 @@
 #  include <sys/types.h>
 #endif
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) && !defined(USE_LIBRETRO)
 #   include <jni.h>
 #   include <SDL_system.h>
 #endif
@@ -445,7 +445,7 @@ void FileFinder::InitRtpPaths(bool warn_no_rtp_found) {
 	add_rtp_path("usb:/data/rtp/" + version_str + "/");
 #elif defined(PSP2)
 	add_rtp_path("ux0:/data/easyrpg-player/rtp/" + version_str + "/");
-#elif defined(__ANDROID__)
+#elif defined(__ANDROID__) && !defined(USE_LIBRETRO)
 	// Invoke "String getRtpPath()" in EasyRPG Activity via JNI
 	JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 	jobject sdl_activity = (jobject)SDL_AndroidGetActivity();

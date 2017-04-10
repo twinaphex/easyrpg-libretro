@@ -26,6 +26,15 @@
 #include "output.h"
 #include "image_xyz.h"
 
+#if defined(USE_LIBRETRO)
+#include <compat/zutil.h>
+#define uLongf uint32_t
+#define Bytef  uint8_t
+#define Z_OK   0
+
+int uncompress(unsigned char *a, uint32_t *b, uint8_t *c, uint32_t d);
+#endif
+
 bool ImageXYZ::ReadXYZ(const uint8_t* data, unsigned len, bool transparent,
 					   int& width, int& height, void*& pixels) {
 	pixels = nullptr;
