@@ -20,7 +20,7 @@
 #include "version.h"
 #include "options.h"
 #include "libretro_ui.h"
-#include "audio_libretro2.h"
+#include "audio_libretro.h"
 
 static const unsigned AUDIO_SAMPLERATE = 44100.0;
 

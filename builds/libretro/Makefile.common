@@ -31,7 +31,7 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/audio_decoder.cpp \
 						$(EASYRPG_DIR)/audio_resampler.cpp \
 						$(EASYRPG_DIR)/audio_secache.cpp \
-						$(EASYRPG_DIR)/audio_libretro2.cpp \
+						$(EASYRPG_DIR)/audio_libretro.cpp \
 						$(EASYRPG_DIR)/color.cpp \
 						$(EASYRPG_DIR)/filefinder.cpp \
 						$(EASYRPG_DIR)/game_actor.cpp \

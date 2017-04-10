@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 #ifdef SUPPORT_AUDIO
-#include "audio_libretro2.h"
+#include "audio_libretro.h"
 AudioInterface& LibretroUi::GetAudio() {
 	return *audio_;
 }
