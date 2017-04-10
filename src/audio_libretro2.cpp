@@ -43,7 +43,7 @@ void LibretroAudio::AudioThreadCallback()
       return;
 
    instance->LockMutex();
-   instance->Decode(buffer.data(), buffer.size());
+   instance->Decode(buffer.data(), samples_per_frame * 2 * 2);
    instance->UnlockMutex();
 
    RenderAudioFrames((const int16_t*)buffer.data(), samples_per_frame);
