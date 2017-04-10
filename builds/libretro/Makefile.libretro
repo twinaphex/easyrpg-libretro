@@ -213,7 +213,7 @@ else
 
 endif
 
-include $(CORE_DIR)/builds/libretro/Makefile.common
+include Makefile.common
 
 ifeq ($(DEBUG), 1)
 	CXXFLAGS += -g -O0
