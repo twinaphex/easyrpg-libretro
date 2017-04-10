@@ -38,6 +38,7 @@ else ifeq ($(platform), osx)
 		CXXFLAGS += $(ARCHFLAGS)
 		LDFLAGS += $(ARCHFLAGS)
 	endif
+        LDFLAGS += -liconv
 
 # iOS
 else ifneq (,$(findstring ios,$(platform)))
