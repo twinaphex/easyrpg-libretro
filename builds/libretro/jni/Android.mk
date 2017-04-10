@@ -1,7 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 DEBUG = 0
 FRONTEND_SUPPORTS_RGB565 = 1
-FAST = 1
 
 include $(CLEAR_VARS)
 
