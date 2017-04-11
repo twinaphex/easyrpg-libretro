@@ -426,17 +426,18 @@ ifeq ($(WANT_LIBSAMPLERATE), 1)
 					 $(LIBSAMPLERATE_DIR)/src_zoh.c
 endif
 
-SOURCES_C += $(LIBICONV_DIR)/lib/iconv.c \
-				 $(LIBICONV_DIR)/lib/relocatable.c \
-				 $(LIBICONV_DIR)/libcharset/lib/localcharset.c
-
-COMMON_DEFINES += -DWANT_ZLIB
-
 ifeq ($(WANT_LIBICONV), 1)
 INCDIR += \
 			 -I$(LIBICONV_DIR)/include \
 			 -I$(LIBICONV_DIR)/lib \
 			 -I$(LIBICONV_DIR)/libcharset/include
+
+SOURCES_C += $(LIBICONV_DIR)/lib/iconv.c \
+				 $(LIBICONV_DIR)/lib/relocatable.c \
+				 $(LIBICONV_DIR)/libcharset/lib/localcharset.c
+endif
+
+COMMON_DEFINES += -DWANT_ZLIB
 
 SOURCES_C += $(ZLIB_DIR)/adler32.c \
 				 $(ZLIB_DIR)/compress.c \
@@ -453,4 +454,3 @@ SOURCES_C += $(ZLIB_DIR)/adler32.c \
 				 $(ZLIB_DIR)/trees.c \
 				 $(ZLIB_DIR)/uncompr.c \
 				 $(ZLIB_DIR)/zutil.c
-endif
