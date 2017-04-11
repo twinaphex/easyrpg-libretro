@@ -59,15 +59,16 @@ CXX      += -miphoneos-version-min=8.0
 CFLAGS   += -miphoneos-version-min=8.0
 CXXFLAGS += -miphoneos-version-min=8.0
 else
-CC       += -miphoneos-version-min=5.0
-CXX      += -miphoneos-version-min=5.0
-CFLAGS   += -miphoneos-version-min=5.0
-CXXFLAGS += -miphoneos-version-min=5.0
+CC       += -miphoneos-version-min=7.0
+CXX      += -miphoneos-version-min=7.0
+CFLAGS   += -miphoneos-version-min=7.0
+CXXFLAGS += -miphoneos-version-min=7.0
 endif
+        LDFLAGS += -liconv
 
 # Theos iOS
 else ifeq ($(platform), theos_ios)
-	DEPLOYMENT_IOSVERSION = 5.0
+	DEPLOYMENT_IOSVERSION = 7.0
 	TARGET = iphone:latest:$(DEPLOYMENT_IOSVERSION)
 	ARCHS = armv7 armv7s
 	TARGET_IPHONEOS_DEPLOYMENT_VERSION=$(DEPLOYMENT_IOSVERSION)
