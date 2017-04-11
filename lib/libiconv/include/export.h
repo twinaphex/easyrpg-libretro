@@ -1,0 +1,2 @@
+
+#define LIBICONV_DLL_EXPORTED

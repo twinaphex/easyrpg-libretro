@@ -2,6 +2,8 @@ LOCAL_PATH := $(call my-dir)
 DEBUG = 0
 FRONTEND_SUPPORTS_RGB565 = 1
 
+WANT_LIBICONV=1
+
 include $(CLEAR_VARS)
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
@@ -29,7 +31,7 @@ LOCAL_CFLAGS   += $(ANDROID_FLAGS)
 CORE_DIR        := ../../..
 LOCAL_MODULE    := libretro
 
-CORE_DEFINE := -DUSE_LIBRETRO -DSUPPORT_AUDIO
+CORE_DEFINE := -DUSE_LIBRETRO -DSUPPORT_AUDIO -DWANT_LIBICONV
 
 TARGET_NAME := easyrpg_libretro
 
@@ -57,6 +59,7 @@ DEPS_DIR          := $(CORE_DIR)/lib
 LIBLCF_DIR        := $(DEPS_DIR)/liblcf
 PIXMAN_DIR			:= $(DEPS_DIR)/pixman
 LIBRETRO_COMM_DIR := $(DEPS_DIR)/libretro-common
+LIBICONV_DIR		:= $(DEPS_DIR)/libiconv
 LIBPNG_DIR        := $(DEPS_DIR)/libpng
 LIBSNDFILE_DIR    := $(DEPS_DIR)/libsndfile
 WILDMIDI_DIR		:= $(DEPS_DIR)/wildmidi
@@ -70,6 +73,8 @@ LOCAL_C_INCLUDES = \
 						$(DEPS_DIR) \
 						$(LIBPNG_DIR) \
 						$(ZLIB_DIR) \
+						$(LIBICONV_DIR)/include \
+						$(LIBICONV_DIR)/lib \
 						$(LIBLCF_DIR)/src \
 						$(PIXMAN_DIR) \
 						$(LIBLCF_DIR)/src \

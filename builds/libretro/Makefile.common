@@ -5,6 +5,7 @@ PIXMAN_DIR			:= $(DEPS_DIR)/pixman
 LIBRETRO_COMM_DIR := $(DEPS_DIR)/libretro-common
 LIBPNG_DIR        := $(DEPS_DIR)/libpng
 LIBSNDFILE_DIR    := $(DEPS_DIR)/libsndfile
+LIBICONV_DIR		:= $(DEPS_DIR)/libiconv
 WILDMIDI_DIR		:= $(DEPS_DIR)/wildmidi
 TREMOR_DIR        := $(DEPS_DIR)/tremor
 LIBSAMPLERATE_DIR := $(DEPS_DIR)/libsamplerate
@@ -425,7 +426,17 @@ ifeq ($(WANT_LIBSAMPLERATE), 1)
 					 $(LIBSAMPLERATE_DIR)/src_zoh.c
 endif
 
+SOURCES_C += $(LIBICONV_DIR)/lib/iconv.c \
+				 $(LIBICONV_DIR)/lib/relocatable.c \
+				 $(LIBICONV_DIR)/libcharset/lib/localcharset.c
+
 COMMON_DEFINES += -DWANT_ZLIB
+
+ifeq ($(WANT_LIBICONV), 1)
+INCDIR += \
+			 -I$(LIBICONV_DIR)/include \
+			 -I$(LIBICONV_DIR)/lib \
+			 -I$(LIBICONV_DIR)/libcharset/include
 
 SOURCES_C += $(ZLIB_DIR)/adler32.c \
 				 $(ZLIB_DIR)/compress.c \
@@ -442,3 +453,4 @@ SOURCES_C += $(ZLIB_DIR)/adler32.c \
 				 $(ZLIB_DIR)/trees.c \
 				 $(ZLIB_DIR)/uncompr.c \
 				 $(ZLIB_DIR)/zutil.c
+endif
