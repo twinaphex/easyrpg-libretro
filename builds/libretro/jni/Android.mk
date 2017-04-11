@@ -49,6 +49,7 @@ endif
 LDFLAGS += $(fpic) $(SHARED)
 FLAGS += $(fpic) $(NEW_GCC_FLAGS) $(INCFLAGS)
 
+FLAGS += -DWANT_ZLIB -DPIXMAN_NO_TLS
 FLAGS += $(CORE_DEFINE) -D__STDC_LIMIT_MACROS -D__LIBRETRO__ -DNDEBUG $(SOUND_DEFINE)
 
 LOCAL_CFLAGS =  $(FLAGS) 
@@ -75,6 +76,7 @@ LOCAL_C_INCLUDES = \
 						$(ZLIB_DIR) \
 						$(LIBICONV_DIR)/include \
 						$(LIBICONV_DIR)/lib \
+						$(LIBICONV_DIR)/libcharset/include \
 						$(LIBLCF_DIR)/src \
 						$(PIXMAN_DIR) \
 						$(LIBLCF_DIR)/src \
