@@ -1,7 +1,10 @@
 /*
- * Copyright (c) 2016 liblcf authors
- * This file is released under the MIT License
- * http://opensource.org/licenses/MIT
+ * This file is part of liblcf. Copyright (c) 2017 liblcf authors.
+ * https://github.com/EasyRPG/liblcf - https://easyrpg.org
+ *
+ * liblcf is Free/Libre Open Source Software, released under the MIT License.
+ * For the full copyright and license information, please view the COPYING
+ * file that was distributed with this source code.
  */
 
 #include <string>
@@ -136,6 +139,7 @@ void RawStruct<std::vector<RPG::EventCommand> >::ReadLcf(
 	// Has no size information. Is terminated by 4 times 0x00.
 	unsigned long startpos = stream.Tell();
 	unsigned long endpos = startpos + length;
+
 	for (;;) {
 		uint8_t ch;
 		stream.Read(ch);
@@ -143,12 +147,34 @@ void RawStruct<std::vector<RPG::EventCommand> >::ReadLcf(
 			stream.Seek(3, LcfReader::FromCurrent);
 			break;
 		}
+
+		if (stream.Tell() >= endpos) {
+			stream.Seek(endpos, LcfReader::FromStart);
+			fprintf(stderr, "Event command corrupted at %d\n", stream.Tell());
+			for (;;) {
+				// Try finding the real end of the event command (4 0-bytes)
+				int i = 0;
+				for (; i < 4; ++i) {
+					stream.Read(ch);
+
+					if (ch != 0) {
+						break;
+					}
+				}
+
+				if (i == 4 || stream.Eof()) {
+					break;
+				}
+			}
+
+			break;
+		}
+
 		stream.Ungetch(ch);
 		RPG::EventCommand command;
 		RawStruct<RPG::EventCommand>::ReadLcf(command, stream, 0);
 		event_commands.push_back(command);
 	}
-	assert(stream.Tell() == endpos);
 }
 
 void RawStruct<std::vector<RPG::EventCommand> >::WriteLcf(const std::vector<RPG::EventCommand>& event_commands, LcfWriter& stream) {

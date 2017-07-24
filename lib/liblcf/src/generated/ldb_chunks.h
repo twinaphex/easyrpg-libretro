@@ -1,9 +1,12 @@
-/* !!!! GENERATED FILE - DO NOT EDIT !!!! */
-
-/*
- * Copyright (c) 2016 liblcf authors
- * This file is released under the MIT License
- * http://opensource.org/licenses/MIT
+/* !!!! GENERATED FILE - DO NOT EDIT !!!!
+ * --------------------------------------
+ *
+ * This file is part of liblcf. Copyright (c) 2017 liblcf authors.
+ * https://github.com/EasyRPG/liblcf - https://easyrpg.org
+ *
+ * liblcf is Free/Libre Open Source Software, released under the MIT License.
+ * For the full copyright and license information, please view the COPYING
+ * file that was distributed with this source code.
  */
 
 #ifndef LCF_LDB_CHUNKS_H
@@ -715,6 +718,8 @@ namespace LDB_Reader {
 			terrain_set_size	= 0x04,
 			/** Array - Flag */
 			terrain_set			= 0x05,
+			/** Flag */
+			appear_randomly		= 0x06,
 			/** Array - RPG::TroopPage */
 			pages				= 0x0B 
 		};
@@ -900,9 +905,9 @@ namespace LDB_Reader {
 			/** String */
 			attacking			= 0x0B,
 			/** String */
-			actor_critical		= 0x0C,
+			enemy_critical		= 0x0C,
 			/** String */
-			enemy_critical		= 0x0D,
+			actor_critical		= 0x0D,
 			/** String */
 			defending			= 0x0E,
 			/** String */
@@ -940,9 +945,9 @@ namespace LDB_Reader {
 			/** String */
 			parameter_decrease	= 0x1F,
 			/** String */
-			actor_hp_absorbed	= 0x20,
+			enemy_hp_absorbed	= 0x20,
 			/** String */
-			enemy_hp_absorbed	= 0x21,
+			actor_hp_absorbed	= 0x21,
 			/** String */
 			resistance_increase	= 0x22,
 			/** String */

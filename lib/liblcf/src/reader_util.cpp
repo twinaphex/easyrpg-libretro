@@ -1,10 +1,13 @@
 /*
- * Copyright (c) 2016 liblcf authors
- * This file is released under the MIT License
- * http://opensource.org/licenses/MIT
+ * This file is part of liblcf. Copyright (c) 2017 liblcf authors.
+ * https://github.com/EasyRPG/liblcf - https://easyrpg.org
+ *
+ * liblcf is Free/Libre Open Source Software, released under the MIT License.
+ * For the full copyright and license information, please view the COPYING
+ * file that was distributed with this source code.
  */
 
-#include "reader_options.h"
+#include "lcf_options.h"
 
 #ifdef LCF_SUPPORT_ICU
 #   include <unicode/ucsdet.h>
@@ -154,6 +157,8 @@ std::vector<std::string> ReaderUtil::DetectEncodings(const std::string& database
 					encodings.push_back("ibm-943_P15A-2003"); // Japanese with \ as backslash
 				} else if (encoding == "EUC-KR") {
 					encodings.push_back("windows-949-2000"); // Korean with \ as backlash
+				} else if (encoding == "GB18030") {
+					encodings.push_back("windows-936-2000"); // Simplified Chinese
 				} else if (encoding == "ISO-8859-1" || encoding == "windows-1252") {
 					encodings.push_back("ibm-5348_P100-1997"); // Occidental with Euro
 				} else if (encoding == "ISO-8859-2" || encoding == "windows-1250") {
