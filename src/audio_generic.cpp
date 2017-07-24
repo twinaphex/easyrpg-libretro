@@ -18,6 +18,7 @@
 #include "system.h"
 
 #include <cstring>
+#include <cassert>
 #include "audio_generic.h"
 #include "filefinder.h"
 #include "output.h"
@@ -154,7 +155,7 @@ void GenericAudio::SE_Play(std::string const &file, int volume, int pitch) {
 		}
 	}
 
-	Output::Warning("Couldn't play %s SE: No free channel available", file.c_str());
+	Output::Warning("Couldn't play %s SE. No free channel available", FileFinder::GetPathInsideGamePath(file).c_str());
 }
 
 void GenericAudio::SE_Stop() {
@@ -179,7 +180,7 @@ bool GenericAudio::PlayOnChannel(BgmChannel& chan, const std::string& file, int 
 
 	FILE* filehandle = FileFinder::fopenUTF8(file, "rb");
 	if (!filehandle) {
-		Output::Warning("BGM file not readable: %s", file.c_str());
+		Output::Warning("BGM file not readable: %s", FileFinder::GetPathInsideGamePath(file).c_str());
 		return false;
 	}
 
@@ -193,7 +194,7 @@ bool GenericAudio::PlayOnChannel(BgmChannel& chan, const std::string& file, int 
 
 		return true;
 	} else {
-		Output::Warning("Couldn't play BGM %s: Format not supported", file.c_str());
+		Output::Warning("Couldn't play BGM %s. Format not supported", FileFinder::GetPathInsideGamePath(file).c_str());
 		fclose(filehandle);
 	}
 
@@ -216,7 +217,7 @@ bool GenericAudio::PlayOnChannel(SeChannel& chan, const std::string& file, int v
 
 		return true;
 	} else {
-		Output::Warning("Couldn't play SE %s: Format not supported", file.c_str());
+		Output::Warning("Couldn't play SE %s. Format not supported", FileFinder::GetPathInsideGamePath(file).c_str());
 	}
 
 	return false;
@@ -227,10 +228,12 @@ void GenericAudio::Decode(uint8_t* output_buffer, int buffer_length) {
 	float total_volume = 0;
 	int samples_per_frame = buffer_length / output_format.channels / 2;
 
-	if (sample_buffer.size() != buffer_length) {
+	assert(buffer_length > 0);
+
+	if (sample_buffer.size() != (size_t)buffer_length) {
 		sample_buffer.resize(buffer_length);
 	}
-	if (mixer_buffer.size() != buffer_length) {
+	if (mixer_buffer.size() != (size_t)buffer_length) {
 		mixer_buffer.resize(buffer_length);
 	}
 	scrap_buffer_size = samples_per_frame * output_format.channels * sizeof(uint32_t);
@@ -332,7 +335,7 @@ void GenericAudio::Decode(uint8_t* output_buffer, int buffer_length) {
 		//--------------------------------------------------------------------------------------------------------------------//
 
 		if (channel_used) {
-			for (unsigned ii = 0; ii < read_bytes / (samplesize * channels); ii++) {
+			for (unsigned ii = 0; ii < (unsigned)(read_bytes / (samplesize * channels)); ii++) {
 
 				float vall = volume;
 				float valr = vall;
@@ -394,7 +397,7 @@ void GenericAudio::Decode(uint8_t* output_buffer, int buffer_length) {
 	if (channel_active) {
 		if (total_volume > 1.0) {
 			float threshold = 0.8;
-			for (unsigned i = 0; i < samples_per_frame * 2; i++) {
+			for (unsigned i = 0; i < (unsigned)(samples_per_frame * 2); i++) {
 				float sample = mixer_buffer[i];
 				float sign = (sample < 0) ? -1.0 : 1.0;
 				sample /= sign;
@@ -407,7 +410,7 @@ void GenericAudio::Decode(uint8_t* output_buffer, int buffer_length) {
 			}
 		} else {
 			//No dynamic range compression necessary
-			for (unsigned i = 0; i < samples_per_frame * 2; i++) {
+			for (unsigned i = 0; i < (unsigned)(samples_per_frame * 2); i++) {
 				sample_buffer[i] = mixer_buffer[i] * 32768.0;
 			}
 		}

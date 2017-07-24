@@ -30,7 +30,6 @@ Window_SaveFile::Window_SaveFile(int ix, int iy, int iwidth, int iheight) :
 	index(0), hero_hp(0), hero_level(0), corrupted(false), has_save(false) {
 
 	SetContents(Bitmap::Create(width - 8, height - 16));
-	SetZ(9999);
 
 	Refresh();
 	UpdateCursorRect();
@@ -42,7 +41,7 @@ void Window_SaveFile::UpdateCursorRect() {
 	if (GetActive()) {
 		std::ostringstream out;
 		out << Data::terms.file << std::setw(2) << std::setfill(' ') << index + 1;
-		rect = Rect(0, 0, contents->GetFont()->GetSize(out.str()).width + 6, 16);
+		rect = Rect(0, 0, Font::Default()->GetSize(out.str()).width + 6, 16);
 	}
 
 	SetCursorRect(rect);

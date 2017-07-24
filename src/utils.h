@@ -42,6 +42,15 @@ namespace Utils {
 	std::string UpperCase(const std::string& str);
 
 	/**
+	 * Tests if a string starts with a substring.
+	 *
+	 * @param str String to search in
+	 * @param end Substring to check at the start of str
+	 * @return true when the start matches
+	 */
+	bool StartsWith(const std::string& str, const std::string& end);
+
+	/**
 	 * Tests if a string ends with a substring.
 	 *
 	 * @param str String to search in
@@ -110,6 +119,18 @@ namespace Utils {
 		stm << n ;
 		return stm.str();
 	}
+
+	/**
+	 * Calculates the modulo of number i ensuring the result is non-negative
+	 * for all values of i when m > 0.
+	 *
+	 * via: https://stackoverflow.com/q/14997165
+	 *
+	 * @param i Number
+	 * @param m Modulo
+	 * @return positive modulo of i % m
+	 */
+	int PositiveModulo(int i, int m);
 
 	/**
 	 * Checks if the platform is big endian
@@ -185,6 +206,19 @@ namespace Utils {
 	 * @return vector containing the elements between the tokens
 	 */
 	std::vector<std::string> Tokenize(const std::string& str_to_tokenize, const std::function<bool(char32_t)> predicate);
+
+	/**
+	 * Replaces placeholders (like %S, %O, %V, %U) in strings.
+	 *
+	 * @param text_template String with placeholders to replace.
+	 * @param types Vector of uppercase characters like 'S',
+	 * 'O', 'V', 'U'. Should have the same number of elements
+	 * as the values param.
+	 * @param values Vector of replacements strings,
+	 * should match types in number of elements and order.
+	 * @return A new string with placeholders replaced.
+	 */
+	std::string ReplacePlaceholders(const std::string& text_template, std::vector<char> types, std::vector<std::string> values);
 
 } // namespace Utils
 

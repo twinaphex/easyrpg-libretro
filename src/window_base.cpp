@@ -39,7 +39,7 @@ Window_Base::Window_Base(int x, int y, int width, int height) {
 	SetWidth(width);
 	SetHeight(height);
 	SetStretch(Game_System::GetMessageStretch() == RPG::System::Stretch_stretch);
-	SetZ(3000);
+	SetZ(Priority_Window);
 }
 
 void Window_Base::Update() {
@@ -274,7 +274,7 @@ void Window_Base::DrawCurrencyValue(int money, int cx, int cy) {
 	std::stringstream gold;
 	gold << money;
 
-	Rect gold_text_size = contents->GetFont()->GetSize(Data::terms.gold);
+	Rect gold_text_size = Font::Default()->GetSize(Data::terms.gold);
 	contents->TextDraw(cx, cy, 1, Data::terms.gold, Text::AlignRight);
 
 	contents->TextDraw(cx - gold_text_size.width, cy, Font::ColorDefault, gold.str(), Text::AlignRight);

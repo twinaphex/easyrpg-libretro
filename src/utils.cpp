@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <random>
+#include <cctype>
 
 namespace {
 	std::mt19937 rng;
@@ -41,7 +42,13 @@ std::string Utils::UpperCase(const std::string& str) {
 	return result;
 }
 
-bool Utils::EndsWith(const std::string &str, const std::string &end) {
+
+bool Utils::StartsWith(const std::string& str, const std::string& start) {
+	return str.length() >= start.length() &&
+		   0 == str.compare(0, start.length(), start);
+}
+
+bool Utils::EndsWith(const std::string& str, const std::string& end) {
 	return str.length() >= end.length() &&
 		0 == str.compare(str.length() - end.length(), end.length(), end);
 }
@@ -260,16 +267,19 @@ std::string Utils::EncodeUTF(const std::u32string& str) {
 
 template<size_t WideSize>
 static std::wstring ToWideStringImpl(const std::string&);
-template<> // utf16
-std::wstring ToWideStringImpl<2>(const std::string& str) {
-	std::u16string const tmp = Utils::DecodeUTF16(str);
-	return std::wstring(tmp.begin(), tmp.end());
-}
+#if __SIZEOF_WCHAR_T__ == 4 || __WCHAR_MAX__ > 0x10000
 template<> // utf32
 std::wstring ToWideStringImpl<4>(const std::string& str) {
 	std::u32string const tmp = Utils::DecodeUTF32(str);
 	return std::wstring(tmp.begin(), tmp.end());
 }
+#else
+template<> // utf16
+std::wstring ToWideStringImpl<2>(const std::string& str) {
+	std::u16string const tmp = Utils::DecodeUTF16(str);
+	return std::wstring(tmp.begin(), tmp.end());
+}
+#endif
 
 std::wstring Utils::ToWideString(const std::string& str) {
 	return ToWideStringImpl<sizeof(wchar_t)>(str);
@@ -277,36 +287,33 @@ std::wstring Utils::ToWideString(const std::string& str) {
 
 template<size_t WideSize>
 static std::string FromWideStringImpl(const std::wstring&);
-template<> // utf16
-std::string FromWideStringImpl<2>(const std::wstring& str) {
-	return Utils::EncodeUTF(std::u16string(str.begin(), str.end()));
-}
+#if __SIZEOF_WCHAR_T__ == 4 || __WCHAR_MAX__ > 0x10000
 template<> // utf32
 std::string FromWideStringImpl<4>(const std::wstring& str) {
 	return Utils::EncodeUTF(std::u32string(str.begin(), str.end()));
 }
+#else
+template<> // utf16
+std::string FromWideStringImpl<2>(const std::wstring& str) {
+	return Utils::EncodeUTF(std::u16string(str.begin(), str.end()));
+}
+#endif
 
 std::string Utils::FromWideString(const std::wstring& str) {
 	return FromWideStringImpl<sizeof(wchar_t)>(str);
 }
 
+int Utils::PositiveModulo(int i, int m) {
+	return (i % m + m) % m;
+}
+
 bool Utils::IsBigEndian() {
-	static bool ran_once = false;
-	static bool is_big = false;
-
-	if (ran_once) {
-		return is_big;
-	}
-
 	union {
 		uint32_t i;
 		char c[4];
 	} d = {0x01020304};
 
-	ran_once = true;
-	is_big = d.c[0] == 1;
-
-	return is_big;
+	return d.c[0] == 1;
 }
 
 void Utils::SwapByteOrder(uint16_t& us) {
@@ -437,4 +444,31 @@ std::vector<std::string> Utils::Tokenize(const std::string &str_to_tokenize, con
 	tokens.push_back(EncodeUTF(cur_token));
 
 	return tokens;
+}
+
+
+std::string Utils::ReplacePlaceholders(const std::string& text_template, std::vector<char> types, std::vector<std::string> values) {
+	std::string str = text_template;
+	size_t index = str.find("%");
+	while (index != std::string::npos) {
+		if (index + 1 < str.length()) {
+			char type = str[index + 1];
+			if (type != '%') {
+				auto v_it = values.begin();
+				for (auto t_it = types.begin();
+					t_it != types.end() && v_it != values.end();
+					++t_it, ++v_it) {
+					if (std::toupper(type) == *t_it) {
+						str.replace(index, 2, *v_it);
+						index += (*v_it).length() - 2;
+						break;
+					}
+				}
+			}
+		}
+
+		index = str.find("%", index + 1);
+	}
+
+	return str;
 }

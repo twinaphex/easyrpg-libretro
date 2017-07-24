@@ -449,6 +449,8 @@
     <ClCompile Include="..\..\src\decoder_mpg123.cpp" />
     <ClCompile Include="..\..\src\decoder_wav.cpp" />
     <ClCompile Include="..\..\src\decoder_oggvorbis.cpp" />
+    <ClCompile Include="..\..\src\decoder_wildmidi.cpp" />
+    <ClCompile Include="..\..\src\decoder_xmp.cpp" />
     <ClCompile Include="..\..\src\filefinder.cpp" />
     <ClCompile Include="..\..\src\font.cpp" />
     <ClCompile Include="..\..\src\frame.cpp" />
@@ -527,7 +529,9 @@
     <ClCompile Include="..\..\src\sdl_ui.cpp" />
     <ClCompile Include="..\..\src\shinonome_gothic.cpp" />
     <ClCompile Include="..\..\src\shinonome_mincho.cpp" />
-    <ClCompile Include="..\..\src\shinonome_wqy.cpp" />
+    <ClCompile Include="..\..\src\bitmapfont_wqy.cpp" />
+    <ClCompile Include="..\..\src\bitmapfont_ttyp0.cpp" />
+    <ClCompile Include="..\..\src\bitmapfont_rmg2000.cpp" />
     <ClCompile Include="..\..\src\sprite.cpp" />
     <ClCompile Include="..\..\src\spriteset_battle.cpp" />
     <ClCompile Include="..\..\src\spriteset_map.cpp" />
@@ -600,6 +604,8 @@
     <ClInclude Include="..\..\src\color.h" />
     <ClInclude Include="..\..\src\decoder_libsndfile.h" />
     <ClInclude Include="..\..\src\decoder_oggvorbis.h" />
+    <ClInclude Include="..\..\src\decoder_wildmidi.h" />
+    <ClInclude Include="..\..\src\decoder_xmp.h" />
     <ClInclude Include="..\..\src\default_graphics.h" />
     <ClInclude Include="..\..\src\decoder_fmmidi.h" />
     <ClInclude Include="..\..\src\decoder_wav.h" />
@@ -689,7 +695,7 @@
     <ClInclude Include="..\..\src\scene_title.h" />
     <ClInclude Include="..\..\src\screen.h" />
     <ClInclude Include="..\..\src\sdl_ui.h" />
-    <ClInclude Include="..\..\src\shinonome.h" />
+    <ClInclude Include="..\..\src\bitmapfont.h" />
     <ClInclude Include="..\..\src\sprite.h" />
     <ClInclude Include="..\..\src\spriteset_battle.h" />
     <ClInclude Include="..\..\src\spriteset_map.h" />

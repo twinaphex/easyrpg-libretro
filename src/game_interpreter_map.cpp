@@ -393,20 +393,58 @@ bool Game_Interpreter_Map::CommandShowInn(RPG::EventCommand const& com) { // cod
 
 	switch (inn_type) {
 		case 0:
-			out << Data::terms.inn_a_greeting_1
-				<< " " << Game_Temp::inn_price
-				<< " " << Data::terms.gold
-				<< Data::terms.inn_a_greeting_2;
-			Game_Message::texts.push_back(out.str());
-			Game_Message::texts.push_back(Data::terms.inn_a_greeting_3);
+			if (Player::IsRPG2kE()) {
+				out << Game_Temp::inn_price;
+				Game_Message::texts.push_back(
+					Utils::ReplacePlaceholders(
+						Data::terms.inn_a_greeting_1,
+						{'V', 'U'},
+						{out.str(), Data::terms.gold}
+					)
+				);
+				Game_Message::texts.push_back(
+					Utils::ReplacePlaceholders(
+						Data::terms.inn_a_greeting_3,
+						{'V', 'U'},
+						{out.str(), Data::terms.gold}
+					)
+				);
+			}
+			else {
+				out << Data::terms.inn_a_greeting_1
+					<< " " << Game_Temp::inn_price
+					<< " " << Data::terms.gold
+					<< Data::terms.inn_a_greeting_2;
+				Game_Message::texts.push_back(out.str());
+				Game_Message::texts.push_back(Data::terms.inn_a_greeting_3);
+			}
 			break;
 		case 1:
-			out << Data::terms.inn_b_greeting_1
-				<< " " << Game_Temp::inn_price
-				<< " " << Data::terms.gold
-				<< Data::terms.inn_b_greeting_2;
-			Game_Message::texts.push_back(out.str());
-			Game_Message::texts.push_back(Data::terms.inn_b_greeting_3);
+			if (Player::IsRPG2kE()) {
+				out << Game_Temp::inn_price;
+				Game_Message::texts.push_back(
+					Utils::ReplacePlaceholders(
+						Data::terms.inn_b_greeting_1,
+						{'V', 'U'},
+						{out.str(), Data::terms.gold}
+					)
+				);
+				Game_Message::texts.push_back(
+					Utils::ReplacePlaceholders(
+						Data::terms.inn_b_greeting_3,
+						{'V', 'U'},
+						{out.str(), Data::terms.gold}
+					)
+				);
+			}
+			else {
+				out << Data::terms.inn_b_greeting_1
+					<< " " << Game_Temp::inn_price
+					<< " " << Data::terms.gold
+					<< Data::terms.inn_b_greeting_2;
+				Game_Message::texts.push_back(out.str());
+				Game_Message::texts.push_back(Data::terms.inn_b_greeting_3);
+			}
 			break;
 		default:
 			return false;
@@ -820,7 +858,7 @@ bool Game_Interpreter_Map::CommandPlayMovie(RPG::EventCommand const& com) { // c
 	int res_x = com.parameters[3];
 	int res_y = com.parameters[4];
 
-	Output::Warning("Couldn't play movie: %s.\nMovie playback is not implemented (yet).", filename.c_str());
+	Output::Warning("Couldn't play movie: %s. Movie playback is not implemented (yet).", filename.c_str());
 
 	Main_Data::game_screen->PlayMovie(filename, pos_x, pos_y, res_x, res_y);
 

@@ -23,19 +23,9 @@
 #include "main_data.h"
 #include "player.h"
 #include "output.h"
-#include "rpg_battleranimation.h"
-#include "rpg_battleranimationextension.h"
 
 Sprite_Battler::Sprite_Battler(Game_Battler* battler) :
-	battler(battler),
-	anim_state(AnimationState_Idle),
-	cycle(0),
-	sprite_file(""),
-	sprite_frame(-1),
-	fade_out(255),
-	flash_counter(0),
-	old_hidden(false),
-	idling(true) {
+	battler(battler) {
 }
 
 Sprite_Battler::~Sprite_Battler() {
@@ -144,6 +134,8 @@ void Sprite_Battler::Update() {
 					case LoopState_LoopAnimation:
 						cycle = 0;
 						break;
+					default:
+						assert(false && "Bad loop state");
 				}
 			}
 
@@ -152,10 +144,6 @@ void Sprite_Battler::Update() {
 			}
 		}
 	}
-
-	SetX(battler->GetDisplayX());
-	SetY(battler->GetDisplayY());
-	SetZ(battler->GetBattleY());
 }
 
 void Sprite_Battler::SetAnimationState(int state, LoopState loop) {
@@ -184,7 +172,7 @@ void Sprite_Battler::SetAnimationState(int state, LoopState loop) {
 
 			if (ext.animation_type == RPG::BattlerAnimationExtension::AnimType_animation) {
 				SetBitmap(BitmapRef());
-				if (ext.animation_id < 1 || ext.animation_id > Data::animations.size()) {
+				if (ext.animation_id < 1 || ext.animation_id > (int)Data::animations.size()) {
 					Output::Warning("Invalid battle animation: %d", ext.animation_id);
 					animation.reset();
 				} else {
@@ -269,7 +257,8 @@ void Sprite_Battler::CreateSprite() {
 
 	SetX(battler->GetDisplayX());
 	SetY(battler->GetDisplayY());
-	SetZ(battler->GetBattleY()); // Not a typo
+	// Battlers at the bottom appear above battlers at the top
+	SetZ(Priority_Battler + battler->GetBattleY());
 
 	// Not animated -> Monster
 	if (battler->GetBattleAnimationId() == 0) {

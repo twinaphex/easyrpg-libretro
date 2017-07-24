@@ -221,6 +221,11 @@ void Game_Interpreter::Update() {
 			break;
 		}
 
+		if (Game_Temp::battle_running && Player::IsRPG2k3() && Game_Battle::CheckWin()) {
+			// Interpreter is cancelled when a win condition is fulfilled in RPG2k3 battle
+			break;
+		}
+
 		// FIXME?
 		// After calling SkipTo this index++ will skip execution of e.g. END.
 		// This causes a different timing because loop_count reaches 10000
@@ -1537,6 +1542,8 @@ bool Game_Interpreter::CommandChangeSystemGraphics(RPG::EventCommand const& com)
 	request->Start();
 
 	Game_System::SetMessageStretch((RPG::System::Stretch)com.parameters[0]);
+	Game_System::SetFontId(com.parameters[1]);
+
 
 	return true;
 }
@@ -2197,7 +2204,7 @@ bool Game_Interpreter::CommandConditionalBranch(RPG::EventCommand const& com) { 
 		break;
 	case 2:
 		value1 = Main_Data::game_party->GetTimer(Main_Data::game_party->Timer1);
-		value2 = com.parameters[1] * DEFAULT_FPS;
+		value2 = com.parameters[1];
 		switch (com.parameters[2]) {
 		case 0:
 			result = (value1 >= value2);
@@ -2293,7 +2300,7 @@ bool Game_Interpreter::CommandConditionalBranch(RPG::EventCommand const& com) { 
 		break;
 	case 10:
 		value1 = Main_Data::game_party->GetTimer(Main_Data::game_party->Timer2);
-		value2 = com.parameters[1] * DEFAULT_FPS;
+		value2 = com.parameters[1];
 		switch (com.parameters[2]) {
 		case 0:
 			result = (value1 >= value2);

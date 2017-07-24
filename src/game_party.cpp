@@ -61,7 +61,7 @@ int Game_Party::GetBattlerCount() const {
 
 void Game_Party::SetupBattleTestMembers() {
 	Clear();
-	
+
 	std::vector<RPG::TestBattler>::const_iterator it;
 	for (it = Data::system.battletest_data.begin();
 		it != Data::system.battletest_data.end(); ++it) {
@@ -102,7 +102,7 @@ int Game_Party::GetItemCount(int item_id, bool get_equipped) {
 			if (data.item_ids[i] == item_id)
 				return data.item_counts[i];
 	}
-	
+
 	return 0;
 }
 
@@ -118,7 +118,7 @@ void Game_Party::LoseGold(int n) {
 
 void Game_Party::AddItem(int item_id, int amount) {
 	if (item_id < 1 || item_id > (int) Data::items.size()) {
-		Output::Debug("Can't add item to party.\n%04d is not a valid item ID.",
+		Output::Debug("Can't add item to party. %04d is not a valid item ID.",
 						item_id);
 		return;
 	}
@@ -149,7 +149,7 @@ void Game_Party::AddItem(int item_id, int amount) {
 	}
 
 	// Item isn't in the inventory yet
-	
+
 	if (amount <= 0) {
 		return;
 	}
@@ -176,7 +176,7 @@ void Game_Party::ConsumeItemUse(int item_id) {
 	}
 
 	if (item_id < 1 || item_id > (int) Data::items.size()) {
-		Output::Warning("Can't use up item.\n%04d is not a valid item ID.",
+		Output::Warning("Can't use up item. %04d is not a valid item ID.",
 						item_id);
 		return;
 	}
@@ -299,7 +299,7 @@ bool Game_Party::IsSkillUsable(int skill_id, const Game_Actor* target, bool from
 		if (Game_Temp::battle_running) {
 			return true;
 		}
-		
+
 		// Self targeting skills can not cure states only (except if called by an item).
 		// RPG_RT logic...
 
@@ -492,15 +492,15 @@ void Game_Party::UpdateTimers() {
 int Game_Party::GetTimer(int which) {
 	switch (which) {
 		case Timer1:
-			return data.timer1_secs;
+			return (int)std::ceil(data.timer1_secs / (float)DEFAULT_FPS);
 		case Timer2:
-			return data.timer2_secs;
+			return (int)std::ceil(data.timer2_secs / (float)DEFAULT_FPS);
 		default:
 			return 0;
 	}
 }
 
-int Game_Party::GetTimer(int which, bool& visible, bool& battle) {
+int Game_Party::GetTimerFrames(int which, bool& visible, bool& battle) {
 	switch (which) {
 		case Timer1:
 			visible = data.timer1_visible;
@@ -543,7 +543,7 @@ int Game_Party::GetFatigue() {
 	int hp = 0;
 	int total_hp = 0;
 	int sp = 0;
-	int total_sp = 0; 
+	int total_sp = 0;
 	for (Game_Actor* a : actors) {
 		hp += a->GetHp();
 		total_hp += a->GetMaxHp();
