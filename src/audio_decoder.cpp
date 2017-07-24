@@ -27,6 +27,7 @@
 #include "decoder_fmmidi.h"
 #include "decoder_mpg123.h"
 #include "decoder_oggvorbis.h"
+#include "decoder_opus.h"
 #include "decoder_wildmidi.h"
 #include "decoder_libsndfile.h"
 #include "decoder_wav.h"
@@ -90,7 +91,7 @@ int AudioDecoder::DecodeAsMono(uint8_t* left, uint8_t* right, int size) {
 	if ((int)mono_buffer.size() < size * 2) {
 		mono_buffer.resize(size * 2);
 	}
-	
+
 	int read = Decode(mono_buffer.data(), size * 2);
 	if (read < 0) {
 		memset(left, '\0', size);
@@ -129,7 +130,8 @@ const char wma_magic[] = { (char)0x30, (char)0x26, (char)0xB2, (char)0x75 };
 
 std::unique_ptr<AudioDecoder> AudioDecoder::Create(FILE* file, const std::string& filename) {
 	char magic[4] = { 0 };
-	fread(magic, 4, 1, file);
+	if (fread(magic, 4, 1, file) != 1)
+		return nullptr;
 	fseek(file, 0, SEEK_SET);
 
 #if !(defined(HAVE_WILDMIDI) || defined(HAVE_XMP))
@@ -172,21 +174,43 @@ std::unique_ptr<AudioDecoder> AudioDecoder::Create(FILE* file, const std::string
 
 	// Try to use internal OGG decoder
 	if (!strncmp(magic, "OggS", 4)) { // OGG
-#if defined(HAVE_TREMOR) || defined(HAVE_OGGVORBIS)
+#ifdef HAVE_OPUS
+		fseek(file, 28, SEEK_SET);
+		if (fread(magic, 4, 1, file) != 1)
+			return nullptr;
+		fseek(file, 0, SEEK_SET);
+		if (!strncmp(magic, "Opus", 4)) {
 #  ifdef USE_AUDIO_RESAMPLER
-		return std::unique_ptr<AudioDecoder>(new AudioResampler(new OggVorbisDecoder()));
+			return std::unique_ptr<AudioDecoder>(new AudioResampler(new OpusDecoder()));
 #  else
-		return std::unique_ptr<AudioDecoder>(new OggVorbisDecoder());
+			return std::unique_ptr<AudioDecoder>(new OpusDecoder());
 #  endif
+		}
+#endif
+
+#if defined(HAVE_TREMOR) || defined(HAVE_OGGVORBIS)
+		fseek(file, 29, SEEK_SET);
+		if (fread(magic, 4, 1, file) != 1)
+			return nullptr;
+		fseek(file, 0, SEEK_SET);
+
+		if (!strncmp(magic, "vorb", 4)) {
+#  ifdef USE_AUDIO_RESAMPLER
+			return std::unique_ptr<AudioDecoder>(new AudioResampler(new OggVorbisDecoder()));
+#  else
+			return std::unique_ptr<AudioDecoder>(new OggVorbisDecoder());
+#  endif
+		}
 #endif
 	}
-	
+
 #ifdef WANT_FASTWAV
 	// Try to use a basic decoder for faster wav decoding if not ADPCM
 	if (!strncmp(magic, "RIFF", 4)) {
 		fseek(file, 20, SEEK_SET);
 		uint16_t raw_enc;
-		fread(&raw_enc, 2, 1, file);
+		if (fread(&raw_enc, 2, 1, file) != 1)
+			return nullptr;
 		Utils::SwapByteOrder(raw_enc);
 		fseek(file, 0, SEEK_SET);
 		if (raw_enc == 0x01) { // Codec is normal PCM
@@ -199,7 +223,7 @@ std::unique_ptr<AudioDecoder> AudioDecoder::Create(FILE* file, const std::string
 	}
 
 #endif
-	
+
 	// Try to use libsndfile for common formats
 	if (!strncmp(magic, "RIFF", 4) || // WAV
 		!strncmp(magic, "FORM", 4) || // WAV AIFF
@@ -299,7 +323,7 @@ void AudioDecoder::Update(int delta) {
 	if (fade_time <= 0.0) {
 		return;
 	}
-	
+
 	fade_time -= delta;
 	volume += delta * delta_step;
 

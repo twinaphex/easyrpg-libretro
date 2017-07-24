@@ -60,9 +60,6 @@ namespace {
 	std::vector<Game_CommonEvent> common_events;
 
 	std::unique_ptr<RPG::Map> map;
-	int scroll_direction;
-	int scroll_rest;
-	int scroll_speed;
 
 	std::unique_ptr<Game_Interpreter_Map> interpreter;
 	std::vector<std::shared_ptr<Game_Interpreter> > free_interpreters;
@@ -88,9 +85,6 @@ void Game_Map::Init() {
 	refresh_type = Refresh_All;
 
 	location.map_id = 0;
-	scroll_direction = 0;
-	scroll_rest = 0;
-	scroll_speed = 0;
 	interpreter.reset(new Game_Interpreter_Map(0, true));
 	map_info.encounter_rate = 0;
 
@@ -238,10 +232,6 @@ void Game_Map::SetupCommon(int _id) {
 
 	refresh_type = Refresh_All;
 
-	scroll_direction = 2;
-	scroll_rest = 0;
-	scroll_speed = 4;
-
 	int current_index = GetMapIndex(location.map_id);
 	map_info.encounter_rate = Data::treemap.maps[current_index].encounter_steps;
 
@@ -338,64 +328,45 @@ void Game_Map::ReserveInterpreterDeletion(std::shared_ptr<Game_Interpreter> inte
 	free_interpreters.push_back(interpreter);
 }
 
-void Game_Map::ScrollDown(int distance) {
-	int map_height = GetHeight() * SCREEN_TILE_WIDTH;
-	int screen_height = 15 * SCREEN_TILE_WIDTH;
-
-	if (LoopVertical()) {
-		map_info.position_y =
-			(map_info.position_y + distance + map_height) % map_height;
-	} else {
-		int new_pos = map_info.position_y + distance;
-
-		bool in_bounds =
-			0 <= new_pos &&
-			new_pos + screen_height <= map_height;
-		if (!in_bounds) return;
-
-		map_info.position_y = new_pos;
-	}
-
-	Parallax::Scroll(0, distance);
-}
-
-
 void Game_Map::ScrollRight(int distance) {
-	int map_width = GetWidth() * SCREEN_TILE_WIDTH;
-	int screen_width = 20 * SCREEN_TILE_WIDTH;
-
-	if (LoopHorizontal()) {
-		map_info.position_x =
-			(map_info.position_x + distance + map_width) % map_width;
-	} else {
-		int new_pos = map_info.position_x + distance;
-
-		bool in_bounds =
-			0 <= new_pos &&
-			new_pos + screen_width <= map_width;
-		if (!in_bounds) return;
-
-		map_info.position_x = new_pos;
-	}
-
+	AddScreenX(map_info.position_x, distance);
 	Parallax::Scroll(distance, 0);
 }
 
-void Game_Map::ScrollLeft(int distance) {
-	ScrollRight(-distance);
+void Game_Map::ScrollDown(int distance) {
+	AddScreenY(map_info.position_y, distance);
+	Parallax::Scroll(0, distance);
 }
 
-void Game_Map::ScrollUp(int distance) {
-	ScrollDown(-distance);
+// Add inc to acc, clamping the result into the range [low, high].
+// If the result is clamped, inc is also modified to be actual amount
+// that acc changed by.
+static void ClampingAdd(int low, int high, int& acc, int& inc) {
+	int original_acc = acc;
+	acc = std::max(low, std::min(high, acc + inc));
+	inc = acc - original_acc;
+}
+
+void Game_Map::AddScreenX(int& screen_x, int& inc) {
+	int map_width = GetWidth() * SCREEN_TILE_WIDTH;
+	if (LoopHorizontal()) {
+		screen_x = Utils::PositiveModulo(screen_x + inc, map_width);
+	} else {
+		ClampingAdd(0, map_width - SCREEN_WIDTH, screen_x, inc);
+	}
+}
+
+void Game_Map::AddScreenY(int& screen_y, int& inc) {
+	int map_height = GetHeight() * SCREEN_TILE_WIDTH;
+	if (LoopVertical()) {
+		screen_y = Utils::PositiveModulo(screen_y + inc, map_height);
+	} else {
+		ClampingAdd(0, map_height - SCREEN_HEIGHT, screen_y, inc);
+	}
 }
 
 bool Game_Map::IsValid(int x, int y) {
 	return (x >= 0 && x < GetWidth() && y >= 0 && y < GetHeight());
-}
-
-static int ReverseDir(int d) {
-	assert(0 <= d && d < 4);
-	return (d + 2) & 3;
 }
 
 static int DirToMask(int d) {
@@ -486,7 +457,7 @@ static CollisionResult TestCollisionDuringMove(
 		if (other.IsInPosition(x,y) && (passages_up[tile_id] & DirToMask(d)) != 0) {
 			return CanStepOffCurrentTile;
 		}
-		else if (other.IsInPosition(new_x, new_y) && (passages_up[tile_id] & DirToMask(ReverseDir(d))) != 0) {
+		else if (other.IsInPosition(new_x, new_y) && (passages_up[tile_id] & DirToMask(Game_Character::ReverseDir(d))) != 0) {
 			return CanStepOntoNewTile;
 		} else {
 			return Collision;
@@ -544,7 +515,7 @@ bool Game_Map::MakeWay(int x, int y, int d, const Game_Character& self) {
 
 	return
 		(stepped_off_event || IsPassableTile(DirToMask(d), x + y * GetWidth()))
-		&& (stepped_onto_event || IsPassableTile(DirToMask(ReverseDir(d)), new_x + new_y * GetWidth()));
+		&& (stepped_onto_event || IsPassableTile(DirToMask(Game_Character::ReverseDir(d)), new_x + new_y * GetWidth()));
 }
 
 bool Game_Map::IsPassable(int x, int y, int d, const Game_Character* self_event) {
@@ -726,7 +697,11 @@ bool Game_Map::IsCounter(int x, int y) {
 	return !!(passages_up[index] & Passable::Counter);
 }
 
-int Game_Map::GetTerrainTag(int const x, int const y) {
+int Game_Map::GetTerrainTag(int x, int y) {
+	// Terrain tag wraps on looping maps
+	x = RoundX(x);
+	y = RoundY(y);
+
 	if (!Game_Map::IsValid(x, y)) return 9;
 
 	unsigned const chipID = map->lower_layer[x + y * GetWidth()];
@@ -777,16 +752,16 @@ bool Game_Map::LoopVertical() {
 }
 
 int Game_Map::RoundX(int x) {
-	if ( LoopHorizontal() ) {
-		return (x + GetWidth()) % GetWidth();
+	if (LoopHorizontal()) {
+		return Utils::PositiveModulo(x, GetWidth());
 	} else {
 		return x;
 	}
 }
 
 int Game_Map::RoundY(int y) {
-	if ( LoopVertical() ) {
-		return (y + GetHeight()) % GetHeight();
+	if (LoopVertical()) {
+		return Utils::PositiveModulo(y, GetHeight());
 	} else {
 		return y;
 	}
@@ -810,40 +785,8 @@ int Game_Map::CheckEvent(int x, int y) {
 	return 0;
 }
 
-void Game_Map::StartScroll(int direction, int distance, int speed) {
-	scroll_direction = direction;
-	scroll_rest = distance * SCREEN_TILE_WIDTH;
-	scroll_speed = speed;
-}
-
-bool Game_Map::IsScrolling() {
-	return scroll_rest > 0;
-}
-
-void Game_Map::UpdateScroll() {
-	if (scroll_rest > 0) {
-		int distance = (1 << scroll_speed) / 2;
-		switch (scroll_direction) {
-			case 2:
-				ScrollDown(distance);
-				break;
-			case 4:
-				ScrollLeft(distance);
-				break;
-			case 6:
-				ScrollRight(distance);
-				break;
-			case 8:
-				ScrollUp(distance);
-				break;
-		}
-		scroll_rest -= distance;
-	}
-}
-
 void Game_Map::Update(bool only_parallel) {
 	if (GetNeedRefresh() != Refresh_None) Refresh();
-	UpdateScroll();
 	UpdatePan();
 	Parallax::Update();
 	if (animation) {
@@ -952,15 +895,27 @@ void Game_Map::ResetEncounterSteps() {
 	}
 }
 
-void Game_Map::GetEncountersAt(int x, int y, std::vector<int>& out) {
+std::vector<int> Game_Map::GetEncountersAt(int x, int y) {
+	int terrain_tag = GetTerrainTag(Main_Data::game_player->GetX(), Main_Data::game_player->GetY());
+
+	std::function<bool(int)> is_acceptable = [=](int troop_id) {
+		std::vector<bool>& terrain_set = Data::troops[troop_id - 1].terrain_set;
+
+		// RPG_RT optimisation: Omitted entries are the default value (true)
+		return terrain_set.size() <= (unsigned)(terrain_tag - 1) ||
+				terrain_set[terrain_tag - 1];
+	};
+
+	std::vector<int> out;
+
 	for (unsigned int i = 0; i < Data::treemap.maps.size(); ++i) {
 		RPG::MapInfo& map = Data::treemap.maps[i];
 
 		if (map.ID == location.map_id) {
-			std::vector<RPG::Encounter>& encounters = map.encounters;
-			for (std::vector<RPG::Encounter>::iterator it = encounters.begin();
-				it != encounters.end(); ++it) {
-					out.push_back((*it).troop_id);
+			for (const RPG::Encounter& enc : map.encounters) {
+				if (is_acceptable(enc.troop_id)) {
+					out.push_back(enc.troop_id);
+				}
 			}
 		} else if (map.parent_map == location.map_id && map.type == 2) {
 			// Area
@@ -968,14 +923,16 @@ void Game_Map::GetEncountersAt(int x, int y, std::vector<int>& out) {
 			Rect player_rect(x, y, 1, 1);
 
 			if (!player_rect.IsOutOfBounds(area_rect)) {
-				std::vector<RPG::Encounter>& encounters = map.encounters;
-				for (std::vector<RPG::Encounter>::iterator it = encounters.begin();
-					it != encounters.end(); ++it) {
-						out.push_back((*it).troop_id);
+				for (const RPG::Encounter& enc : map.encounters) {
+					if (is_acceptable(enc.troop_id)) {
+						out.push_back(enc.troop_id);
+					}
 				}
 			}
 		}
 	}
+
+	return out;
 }
 
 bool Game_Map::PrepareEncounter() {
@@ -986,8 +943,7 @@ bool Game_Map::PrepareEncounter() {
 	int x = Main_Data::game_player->GetX();
 	int y = Main_Data::game_player->GetY();
 
-	std::vector<int> encounters;
-	GetEncountersAt(x, y, encounters);
+	std::vector<int> encounters = GetEncountersAt(x, y);
 
 	if (encounters.empty()) {
 		// No enemies on this map :(
@@ -1068,17 +1024,27 @@ void Game_Map::SetBattlebackName(std::string new_battleback_name) {
 	battleback_name = new_battleback_name;
 }
 
+int Game_Map::GetPositionX() {
+	return map_info.position_x;
+}
+
 int Game_Map::GetDisplayX() {
 	int shake_in_pixels = Main_Data::game_data.screen.shake_position;
 	return map_info.position_x + shake_in_pixels * 16;
 }
+
 void Game_Map::SetPositionX(int new_position_x) {
 	map_info.position_x = new_position_x;
+}
+
+int Game_Map::GetPositionY() {
+	return map_info.position_y;
 }
 
 int Game_Map::GetDisplayY() {
 	return map_info.position_y;
 }
+
 void Game_Map::SetPositionY(int new_position_y) {
 	map_info.position_y = new_position_y;
 }
@@ -1290,6 +1256,14 @@ int Game_Map::GetPanY() {
 	return location.pan_current_y;
 }
 
+int Game_Map::GetTargetPanX() {
+	return location.pan_finish_x;
+}
+
+int Game_Map::GetTargetPanY() {
+	return location.pan_finish_y;
+}
+
 bool Game_Map::IsTeleportDelayed() {
 	return teleport_delay;
 }
@@ -1405,6 +1379,11 @@ void Game_Map::Parallax::Update() {
 	}
 }
 
+/** Return the argument that is closer to zero. */
+static int closer_to_zero(int x, int y) {
+	return (std::abs(x) < std::abs(y)) ? x : y;
+}
+
 void Game_Map::Parallax::Scroll(int distance_right, int distance_down) {
 	Params params = GetParallaxParams();
 
@@ -1417,7 +1396,7 @@ void Game_Map::Parallax::Scroll(int distance_right, int distance_down) {
 		GetHeight() > 15 && parallax_height > SCREEN_TARGET_HEIGHT
 	) {
 		parallax_y -=
-			std::min(
+			closer_to_zero(
 				distance_down,
 				distance_down * (parallax_height - SCREEN_TARGET_HEIGHT) / (GetHeight() - 15) / (SCREEN_TILE_WIDTH / TILE_SIZE)
 			);
@@ -1430,9 +1409,9 @@ void Game_Map::Parallax::Scroll(int distance_right, int distance_down) {
 		GetWidth() > 20 && parallax_width > SCREEN_TARGET_WIDTH
 	) {
 		parallax_x -=
-			std::min(
+			closer_to_zero(
 				distance_right,
-				distance_right * (parallax_width - SCREEN_TARGET_HEIGHT) / (GetWidth() - 20) / (SCREEN_TILE_WIDTH / TILE_SIZE)
+				distance_right * (parallax_width - SCREEN_TARGET_WIDTH) / (GetWidth() - 20) / (SCREEN_TILE_WIDTH / TILE_SIZE)
 			);
 	}
 }

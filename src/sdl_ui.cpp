@@ -162,7 +162,7 @@ SdlUi::SdlUi(long width, long height, bool fs_flag) :
 
 #if (defined(USE_JOYSTICK) && defined(SUPPORT_JOYSTICK)) || (defined(USE_JOYSTICK_AXIS) && defined(SUPPORT_JOYSTICK_AXIS)) || (defined(USE_JOYSTICK_HAT) && defined(SUPPORT_JOYSTICK_HAT))
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
-		Output::Warning("Couldn't initialize joystick.\n%s", SDL_GetError());
+		Output::Warning("Couldn't initialize joystick. %s", SDL_GetError());
 	}
 
 	SDL_JoystickEventState(1);
@@ -696,14 +696,13 @@ void SdlUi::ProcessEvent(SDL_Event &evnt) {
 }
 
 void SdlUi::ProcessActiveEvent(SDL_Event &evnt) {
-#if PAUSE_GAME_WHEN_FOCUS_LOST
 	int state;
 #if SDL_MAJOR_VERSION==1
 	state = evnt.active.state;
 #else
 	state = evnt.window.event;
 #endif
-
+#if PAUSE_GAME_WHEN_FOCUS_LOST
 	if (
 #if SDL_MAJOR_VERSION==1
 	(state == SDL_APPINPUTFOCUS && !evnt.active.gain)
@@ -786,8 +785,11 @@ void SdlUi::ProcessKeyDownEvent(SDL_Event &evnt) {
 			EndDisplayModeChange();
 			return;
 		}
-
 		// Continue if return/enter not handled by fullscreen hotkey
+#  if __GNUC__ >= 7
+		__attribute__((fallthrough));
+#  endif
+
 	default:
 		// Update key state
 #  if SDL_MAJOR_VERSION==1

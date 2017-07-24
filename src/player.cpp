@@ -123,6 +123,9 @@ namespace {
 void Player::Init(int argc, char *argv[]) {
 	frames = 0;
 
+	// Must be called before the first call to Output
+	Graphics::Init();
+
 	// Display a nice version string
 	std::stringstream header;
 	std::string addtl_ver(PLAYER_ADDTL);
@@ -169,7 +172,7 @@ void Player::Init(int argc, char *argv[]) {
 		var dirs = ['Backdrop', 'Battle', 'Battle2', 'BattleCharSet', 'BattleWeapon', 'CharSet', 'ChipSet', 'FaceSet', 'Frame', 'GameOver', 'Monster', 'Movie', 'Music', 'Panorama', 'Picture', 'Sound', 'System', 'System2', 'Title', 'Save'];
 		dirs.forEach(function(dir) { FS.mkdir(dir) });
 
-		FS.mount(IDBFS, {}, 'Save');
+		FS.mount(Module.EASYRPG_FS, {}, 'Save');
 
 		FS.syncfs(true, function(err) {
 		});
@@ -188,7 +191,6 @@ void Player::Init(int argc, char *argv[]) {
 			 RUN_ZOOM);
 	}
 
-	Graphics::Init();
 	Input::Init(replay_input_path, record_input_path);
 }
 
@@ -310,8 +312,9 @@ void Player::Update(bool update_scene) {
 			Graphics::Update(false);
 			Scene::instance->Update();
 			++frames;
-			// Scene changed, not save to Update again, setup code must run
-			if (&*old_instance != &*Scene::instance) {
+			// Scene changed or webplayer waits for files.
+			// Not save to Update again, setup code must run
+			if (&*old_instance != &*Scene::instance || AsyncHandler::IsImportantFilePending()) {
 				break;
 			}
 		}
@@ -344,7 +347,7 @@ void Player::Exit() {
 	BitmapRef surface = DisplayUi->GetDisplaySurface();
 	std::string error = "You can turn off your browser now.";
 
-	Text::Draw(*surface, 55, DisplayUi->GetHeight() / 2 - 6, Color(255, 255, 255, 255), error);
+	Text::Draw(*surface, 55, DisplayUi->GetHeight() / 2 - 6, Color(255, 255, 255, 255), Font::Default(), error);
 	DisplayUi->UpdateDisplay();
 #endif
 
@@ -538,6 +541,9 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 			else if (*it == "rpg2kv150" || *it == "2000v150") {
 				engine = EngineRpg2k | EngineMajorUpdated;
 			}
+			else if (*it == "rpg2ke" || *it == "2000e") {
+				engine = EngineRpg2k | EngineMajorUpdated | EngineEnglish;
+			}
 			else if (*it == "rpg2k3" || *it == "2003") {
 				engine = EngineRpg2k3;
 			}
@@ -545,7 +551,7 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 				engine = EngineRpg2k3 | EngineMajorUpdated;
 			}
 			else if (*it == "rpg2k3e") {
-				engine = EngineRpg2k3 | EngineMajorUpdated | EngineRpg2k3E;
+				engine = EngineRpg2k3 | EngineMajorUpdated | EngineEnglish;
 			}
 		}
 		else if (*it == "--record-input") {
@@ -655,21 +661,27 @@ void Player::CreateGameObjects() {
 					Output::Debug("Using RPG2k3 Interpreter");
 				}
 			} else {
-				engine |= EngineRpg2k3E;
+				engine |= EngineEnglish;
 				Output::Debug("Using RPG2k3 (English release, v1.11) Interpreter");
 			}
 		} else {
 			engine = EngineRpg2k;
 			Output::Debug("Using RPG2k Interpreter");
+			if (Data::data.version >= 1) {
+				engine |= EngineEnglish | EngineMajorUpdated;
+				Output::Debug("RM2k >= v.1.61 (English release) detected");
+			}
 		}
-		if (FileFinder::IsMajorUpdatedTree()) {
-			engine |= EngineMajorUpdated;
-			Output::Debug("RPG2k >= v1.50 / RPG2k3 >= v1.05 detected");
-		} else {
-			Output::Debug("RPG2k < v1.50 / RPG2k3 < v1.05 detected");
+		if (!(engine & EngineMajorUpdated)) {
+			if (FileFinder::IsMajorUpdatedTree()) {
+				engine |= EngineMajorUpdated;
+				Output::Debug("RPG2k >= v1.50 / RPG2k3 >= v1.05 detected");
+			} else {
+				Output::Debug("RPG2k < v1.50 / RPG2k3 < v1.05 detected");
+			}
 		}
 	}
-	Output::Debug("Engine configured as: 2k=%d 2k3=%d 2k3Legacy=%d MajorUpdated=%d 2k3E=%d", Player::IsRPG2k(), Player::IsRPG2k3(), Player::IsRPG2k3Legacy(), Player::IsMajorUpdatedVersion(), Player::IsRPG2k3E());
+	Output::Debug("Engine configured as: 2k=%d 2k3=%d 2k3Legacy=%d MajorUpdated=%d Eng=%d", Player::IsRPG2k(), Player::IsRPG2k3(), Player::IsRPG2k3Legacy(), Player::IsMajorUpdatedVersion(), Player::IsEnglish());
 
 	if (!no_rtp_flag) {
 		FileFinder::InitRtpPaths();
@@ -910,6 +922,7 @@ Options:
                            Possible options:
                             rpg2k      - RPG Maker 2000 engine (v1.00 - v1.10)
                             rpg2kv150  - RPG Maker 2000 engine (v1.50 - v1.51)
+                            rpg2ke     - RPG Maker 2000 (English release) engine (v1.61)
                             rpg2k3     - RPG Maker 2003 engine (v1.00 - v1.04)
                             rpg2k3v105 - RPG Maker 2003 engine (v1.05 - v1.09a)
                             rpg2k3e    - RPG Maker 2003 (English release) engine
@@ -978,11 +991,40 @@ bool Player::IsMajorUpdatedVersion() {
 }
 
 bool Player::IsRPG2k3E() {
-	return (engine & EngineRpg2k3E) == EngineRpg2k3E;
+	return ((engine & EngineRpg2k3) == EngineRpg2k3)
+		&& ((engine & EngineEnglish) == EngineEnglish);
+}
+
+bool Player::IsRPG2kE() {
+	return ((engine & EngineRpg2k) == EngineRpg2k)
+		&& ((engine & EngineEnglish) == EngineEnglish);
+}
+
+bool Player::IsEnglish() {
+	return (engine & EngineEnglish) == EngineEnglish;
 }
 
 bool Player::IsCP932() {
 	return (encoding == "ibm-943_P15A-2003" || encoding == "932");
+}
+
+bool Player::IsCP949() {
+	return (encoding == "windows-949-2000" ||
+			encoding == "949");
+}
+
+bool Player::IsBig5() {
+	return (encoding == "Big5" || encoding == "950");
+}
+
+bool Player::IsCP936() {
+	return (encoding == "windows-936-2000" ||
+			encoding == "932");
+}
+
+bool Player::IsCJK() {
+	return (IsCP932() || IsCP949() ||
+			IsBig5() || IsCP936());
 }
 
 #if (defined(_WIN32) && defined(NDEBUG) && defined(WINVER) && WINVER >= 0x0600)

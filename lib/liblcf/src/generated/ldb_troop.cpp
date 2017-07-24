@@ -1,9 +1,12 @@
-/* !!!! GENERATED FILE - DO NOT EDIT !!!! */
-
-/*
- * Copyright (c) 2016 liblcf authors
- * This file is released under the MIT License
- * http://opensource.org/licenses/MIT
+/* !!!! GENERATED FILE - DO NOT EDIT !!!!
+ * --------------------------------------
+ *
+ * This file is part of liblcf. Copyright (c) 2017 liblcf authors.
+ * https://github.com/EasyRPG/liblcf - https://easyrpg.org
+ *
+ * liblcf is Free/Libre Open Source Software, released under the MIT License.
+ * For the full copyright and license information, please view the COPYING
+ * file that was distributed with this source code.
  */
 
 // Headers
@@ -22,6 +25,7 @@ LCF_STRUCT_FIELDS_BEGIN()
 	LCF_STRUCT_TYPED_FIELD(bool, auto_alignment),
 	LCF_STRUCT_SIZE_FIELD(bool, terrain_set),
 	LCF_STRUCT_TYPED_FIELD(std::vector<bool>, terrain_set),
+	LCF_STRUCT_TYPED_FIELD(bool, appear_randomly),
 	LCF_STRUCT_TYPED_FIELD(std::vector<RPG::TroopPage>, pages),
 LCF_STRUCT_FIELDS_END()
 

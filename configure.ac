@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([easyrpg-player],[0.5.0],[https://github.com/EasyRPG/Player/issues],[easyrpg-player],[https://easyrpg.org])
+AC_INIT([easyrpg-player],[0.5.2],[https://github.com/EasyRPG/Player/issues],[easyrpg-player],[https://easyrpg.org])
 
 AC_CONFIG_AUX_DIR([builds/autoconf])
 AM_INIT_AUTOMAKE([1.11.4 foreign subdir-objects tar-ustar -Wall -Werror])
@@ -81,6 +81,11 @@ AC_ARG_WITH([oggvorbis],[AS_HELP_STRING([--without-oggvorbis],
 	[Disable Ogg Vorbis support @<:@default=auto@:>@])])
 AS_IF([test "x$with_oggvorbis" != "xno"],[
 	PKG_CHECK_MODULES([OGGVORBIS],[vorbisfile],[AC_DEFINE(HAVE_OGGVORBIS,[1],[Enable Ogg Vorbis support])],[auto_oggvorbis=0])
+])
+AC_ARG_WITH([opus],[AS_HELP_STRING([--without-opus],
+	[Disable Opus support @<:@default=auto@:>@])])
+AS_IF([test "x$with_opus" != "xno"],[
+	PKG_CHECK_MODULES([OPUS],[opusfile],[AC_DEFINE(HAVE_OPUS,[1],[Enable Opus support])],[auto_opus=0])
 ])
 AC_ARG_WITH([libsndfile],[AS_HELP_STRING([--without-libsndfile],
 	[Disable improved WAV support provided by libsndfile.  @<:@default=auto@:>@])])

@@ -1,10 +1,13 @@
 /*
- * Copyright (c) 2016 liblcf authors
- * This file is released under the MIT License
- * http://opensource.org/licenses/MIT
+ * This file is part of liblcf. Copyright (c) 2017 liblcf authors.
+ * https://github.com/EasyRPG/liblcf - https://easyrpg.org
+ *
+ * liblcf is Free/Libre Open Source Software, released under the MIT License.
+ * For the full copyright and license information, please view the COPYING
+ * file that was distributed with this source code.
  */
 
-#include "reader_options.h"
+#include "lcf_options.h"
 #include "rpg_actor.h"
 #include "rpg_event.h"
 #include "rpg_map.h"
@@ -140,6 +143,7 @@ void RPG::SaveSystem::Setup() {
 	battle_end_fadeout = system.battle_end_fadeout;
 	battle_end_fadein = system.battle_end_fadein;
 	message_stretch = system.message_stretch;
+	font_id = system.font_id;
 	teleport_allowed = true;
 	escape_allowed = true;
 	save_allowed = true;

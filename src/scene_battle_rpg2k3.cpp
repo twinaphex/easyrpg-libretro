@@ -32,6 +32,7 @@
 #include "game_battlealgorithm.h"
 #include "scene_gameover.h"
 #include "utils.h"
+#include "font.h"
 
 Scene_Battle_Rpg2k3::Scene_Battle_Rpg2k3() : Scene_Battle(),
 	battle_action_wait(30),
@@ -105,11 +106,11 @@ void Scene_Battle_Rpg2k3::OnSystem2Ready(FileRequestResult* result) {
 	BitmapRef system2 = Cache::System2(result->file);
 
 	ally_cursor->SetBitmap(system2);
-	ally_cursor->SetZ(999);
+	ally_cursor->SetZ(Priority_Window);
 	ally_cursor->SetVisible(false);
 
 	enemy_cursor->SetBitmap(system2);
-	enemy_cursor->SetZ(999);
+	enemy_cursor->SetZ(Priority_Window);
 	enemy_cursor->SetVisible(false);
 }
 
@@ -206,8 +207,9 @@ void Scene_Battle_Rpg2k3::UpdateCursors() {
 				for (auto state : states) {
 					std::string name = Data::states[state - 1].name;
 					int color = Data::states[state - 1].color;
+					FontRef font = Font::Default();
 					contents->TextDraw(text_width, 2, color, name, Text::AlignLeft);
-					text_width += contents->GetFont()->GetSize(name + "  ").width;
+					text_width += font->GetSize(name + "  ").width;
 				}
 			}
 		}
@@ -235,7 +237,7 @@ void Scene_Battle_Rpg2k3::DrawFloatText(int x, int y, int color, const std::stri
 	floating_text->SetX(x);
 	// Move 5 pixel down because the number "jumps" with the intended y as the peak
 	floating_text->SetY(y + 5);
-	floating_text->SetZ(500 + y);
+	floating_text->SetZ(Priority_Window + y);
 
 	FloatText float_text;
 	float_text.sprite = floating_text;
@@ -257,7 +259,8 @@ void Scene_Battle_Rpg2k3::CreateBattleTargetWindow() {
 	target_window.reset(new Window_Command(commands, 136, 4));
 	target_window->SetHeight(80);
 	target_window->SetY(SCREEN_TARGET_HEIGHT-80);
-	target_window->SetZ(3001);
+	// Above other windows
+	target_window->SetZ(Priority_Window + 10);
 
 	if (Data::battlecommands.battle_type != RPG::BattleCommands::BattleType_traditional) {
 		int transp = Data::battlecommands.transparency == RPG::BattleCommands::Transparency_transparent ? 128 : 255;
@@ -650,26 +653,26 @@ bool Scene_Battle_Rpg2k3::ProcessBattleAction(Game_BattleAlgorithm::AlgorithmBas
 
 			action->Apply();
 
-			if (action->GetTarget()) {
+			if (target) {
 				if (action->IsSuccess()) {
 					if (action->GetAffectedHp() != -1) {
 						DrawFloatText(
-							action->GetTarget()->GetBattleX(),
-							action->GetTarget()->GetBattleY(),
+							target->GetBattleX(),
+							target->GetBattleY(),
 							action->IsPositive() ? Font::ColorHeal : Font::ColorDefault,
 							Utils::ToString(action->GetAffectedHp()));
 					}
 
-					action->GetTarget()->BattlePhysicalStateHeal(action->GetPhysicalDamageRate());
+					target->BattlePhysicalStateHeal(action->GetPhysicalDamageRate());
 				} else {
 					DrawFloatText(
-						action->GetTarget()->GetBattleX(),
-						action->GetTarget()->GetBattleY(),
+						target->GetBattleX(),
+						target->GetBattleY(),
 						0,
 						Data::terms.miss);
 				}
 
-				targets.push_back(action->GetTarget());
+				targets.push_back(target);
 			}
 
 			status_window->Refresh();

@@ -1,7 +1,10 @@
 /*
- * Copyright (c) 2016 liblcf authors
- * This file is released under the MIT License
- * http://opensource.org/licenses/MIT
+ * This file is part of liblcf. Copyright (c) 2017 liblcf authors.
+ * https://github.com/EasyRPG/liblcf - https://easyrpg.org
+ *
+ * liblcf is Free/Libre Open Source Software, released under the MIT License.
+ * For the full copyright and license information, please view the COPYING
+ * file that was distributed with this source code.
  */
 
 #include <cstdarg>
@@ -53,7 +56,9 @@ void LcfReader::Read(void *ptr, size_t size, size_t nmemb) {
 #ifdef NDEBUG
 	Read0(ptr, size, nmemb);
 #else
-	assert(Read0(ptr, size, nmemb) == nmemb);
+	if (Read0(ptr, size, nmemb) != nmemb) {
+		fprintf(stderr, "Read error at %d. The file is probably corrupted\n", Tell());
+	}
 #endif
 }
 
@@ -82,7 +87,7 @@ void LcfReader::Read<uint32_t>(uint32_t& ref) {
 int LcfReader::ReadInt() {
 	int value = 0;
 	unsigned char temp = 0;
-
+	int loops = 0;
 	do {
 		value <<= 7;
 		if (Read0(&temp, 1, 1) == 0) {
@@ -90,8 +95,14 @@ int LcfReader::ReadInt() {
 			return 0;
 		}
 		value |= temp & 0x7F;
+
+		if (loops > 5) {
+			fprintf(stderr, "Invalid compressed integer at %d\n", Tell());
+		}
+		++loops;
 	} while (temp & 0x80);
-	return value;
+
+	return loops > 5 ? 0 : value;
 }
 
 template <>
@@ -160,10 +171,9 @@ void LcfReader::Read<uint32_t>(std::vector<uint32_t> &buffer, size_t size) {
 }
 
 void LcfReader::ReadString(std::string& ref, size_t size) {
-	char* chars = new char[size + 1];
-	chars[size] = '\0';
+	char* chars = new char[size];
 	Read(chars, 1, size);
-	ref = Encode(std::string(chars));
+	ref = Encode(std::string(chars, size));
 	delete[] chars;
 }
 
@@ -221,6 +231,9 @@ void LcfReader::SkipDebug(const struct LcfReader::Chunk& chunk_info, const char*
 		fprintf(stderr, "%02X ", byte);
 		if ((i+1) % 16 == 0) {
 			fprintf(stderr, "\n");
+		}
+		if (Eof()) {
+			break;
 		}
 	}
 	fprintf(stderr, "\n");

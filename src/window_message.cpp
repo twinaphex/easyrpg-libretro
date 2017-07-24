@@ -58,7 +58,8 @@ Window_Message::Window_Message(int ix, int iy, int iwidth, int iheight) :
 	}
 
 	visible = false;
-	SetZ(10000);
+	// Above other windows
+	SetZ(Priority_Window + 100);
 
 	escape_char = Utils::DecodeUTF32(Player::escape_symbol).front();
 	active = false;
@@ -77,17 +78,12 @@ Window_Message::~Window_Message() {
 	Game_Message::visible = false;
 }
 
-void Window_Message::StartMessageProcessing() {
-	contents->Clear();
-	text.clear();
-	for (const std::string& line : Game_Message::texts) {
-		text.append(Utils::DecodeUTF32(line)).append(1, U'\n');
-	}
-	Game_Message::texts.clear();
-	item_max = min(4, Game_Message::choice_max);
-
+void Window_Message::ApplyTextInsertingCommands() {
 	text_index = text.end();
 	end = text.end();
+
+	// Contains already substitued \N actors to prevent endless recursion
+	std::vector<int> replaced_actors;
 
 	if (!text.empty()) {
 		// Move on first valid char
@@ -95,7 +91,8 @@ void Window_Message::StartMessageProcessing() {
 
 		// Apply commands that insert text
 		while (std::distance(text_index, text.begin()) <= -1) {
-			switch (tolower(*text_index--)) {
+			char ch = tolower(*text_index--);
+			switch (ch) {
 			case 'n':
 			case 'v':
 			{
@@ -106,11 +103,17 @@ void Window_Message::StartMessageProcessing() {
 
 				auto start_code = text_index - 1;
 				bool success;
-				std::u32string command_result = Utils::DecodeUTF32(ParseCommandCode(success));
-				if (!success) {
+				int parsed_num;
+				std::u32string command_result = Utils::DecodeUTF32(ParseCommandCode(success, parsed_num));
+				if (!success || std::find(replaced_actors.begin(), replaced_actors.end(), parsed_num) != replaced_actors.end()) {
 					text_index = start_code - 2;
 					continue;
 				}
+
+				if (ch == 'n') {
+					replaced_actors.push_back(parsed_num);
+				}
+
 				text.replace(start_code, text_index + 1, command_result);
 				// Start from the beginning, the inserted text might add new commands
 				text_index = text.end();
@@ -126,7 +129,41 @@ void Window_Message::StartMessageProcessing() {
 			}
 		}
 	}
+}
 
+void Window_Message::StartMessageProcessing() {
+	contents->Clear();
+
+	if (Game_Message::is_word_wrapped) {
+		std::u32string wrapped_text;
+		for (const std::string& line : Game_Message::texts) {
+			/* TODO: don't take commands like \> \< into account when word-wrapping */
+			if (Game_Message::is_word_wrapped) {
+				// since ApplyTextInsertingCommands works for the text variable,
+				// we store line into text and use wrapped_text for the real 'text'
+				text = Utils::DecodeUTF32(line);
+				ApplyTextInsertingCommands();
+				Game_Message::WordWrap(
+						Utils::EncodeUTF(text),
+						width - 24,
+						[&wrapped_text](const std::string& wrapped_line) {
+							wrapped_text.append(Utils::DecodeUTF32(wrapped_line)).append(1, U'\n');
+						}
+				);
+				text = wrapped_text;
+			}
+		}
+	}
+	else {
+		text.clear();
+		for (const std::string& line : Game_Message::texts) {
+			text.append(Utils::DecodeUTF32(line)).append(1, U'\n');
+		}
+	}
+	Game_Message::texts.clear();
+	item_max = min(4, Game_Message::choice_max);
+
+	ApplyTextInsertingCommands();
 	text_index = text.begin();
 
 	InsertNewPage();
@@ -402,7 +439,7 @@ void Window_Message::UpdateMessage() {
 				break;
 			case '_':
 				// Insert half size space
-				contents_x += contents->GetFont()->GetSize(" ").width / 2;
+				contents_x += Font::Default()->GetSize(" ").width / 2;
 				break;
 			case '$':
 				// Show Gold Window
@@ -447,7 +484,7 @@ void Window_Message::UpdateMessage() {
 				if (*text_index == escape_char) {
 					// Show Escape Symbol
 					contents->TextDraw(contents_x, contents_y, text_color, Player::escape_symbol);
-					contents_x += contents->GetFont()->GetSize(Player::escape_symbol).width;
+					contents_x += Font::Default()->GetSize(Player::escape_symbol).width;
 				}
 			}
 		} else if (*text_index == '$'
@@ -463,7 +500,7 @@ void Window_Message::UpdateMessage() {
 			std::string const glyph(Utils::EncodeUTF(std::u32string(text_index, std::next(text_index))));
 
 			contents->TextDraw(contents_x, contents_y, text_color, glyph);
-			int glyph_width = contents->GetFont()->GetSize(glyph).width;
+			int glyph_width = Font::Default()->GetSize(glyph).width;
 			// Show full-width characters twice as slow as half-width characters
 			if (glyph_width >= 12)
 				loop_count++;
@@ -540,11 +577,11 @@ int Window_Message::ParseParameter(bool& is_valid) {
 	return num;
 }
 
-std::string Window_Message::ParseCommandCode(bool& success) {
-	int parameter;
+std::string Window_Message::ParseCommandCode(bool& success, int& parameter) {
 	bool is_valid;
 	uint32_t cmd_char = *text_index;
 	success = true;
+	parameter = -1;
 
 	switch (tolower(cmd_char)) {
 	case 'n':
@@ -554,7 +591,9 @@ std::string Window_Message::ParseCommandCode(bool& success) {
 			Game_Actor* actor = NULL;
 			if (parameter == 0) {
 				// Party hero
-				actor = Main_Data::game_party->GetActors()[0];
+				if (Main_Data::game_party->GetBattlerCount() > 0) {
+					actor = Main_Data::game_party->GetActors()[0];
+				}
 			} else {
 				actor = Game_Actors::GetActor(parameter);
 			}

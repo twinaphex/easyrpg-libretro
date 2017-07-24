@@ -264,10 +264,8 @@ void Game_Event::Setup(RPG::EventPage* new_page) {
 
 	tile_id = page->character_name.empty() ? page->character_index : 0;
 
-	if (original_pattern != page->character_pattern) {
-		pattern = page->character_pattern;
-		original_pattern = pattern;
-	}
+	pattern = page->character_pattern;
+	original_pattern = pattern;
 
 	move_type = page->move_type;
 	SetMoveSpeed(page->move_speed);
@@ -345,9 +343,14 @@ void Game_Event::Refresh() {
 		// Loop in reverse order to see whether any page meets conditions...
 		if (AreConditionsMet(*i)) {
 			new_page = &(*i);
+			SetVisible(true);
 			// Stop looking for more...
 			break;
 		}
+	}
+
+	if (!new_page) {
+		SetVisible(false);
 	}
 
 	// Only update the page pointer when game is loaded,
@@ -424,15 +427,15 @@ bool Game_Event::AreConditionsMet(const RPG::EventPage& page) {
 
 	// Timer
 	if (page.condition.flags.timer) {
-		int frames = Main_Data::game_party->GetTimer(Main_Data::game_party->Timer1);
-		if (frames > page.condition.timer_sec * DEFAULT_FPS)
+		int secs = Main_Data::game_party->GetTimer(Main_Data::game_party->Timer1);
+		if (secs > page.condition.timer_sec)
 			return false;
 	}
 
 	// Timer2
 	if (page.condition.flags.timer2) {
-		int frames = Main_Data::game_party->GetTimer(Main_Data::game_party->Timer2);
-		if (frames > page.condition.timer2_sec * DEFAULT_FPS)
+		int secs = Main_Data::game_party->GetTimer(Main_Data::game_party->Timer2);
+		if (secs > page.condition.timer2_sec)
 			return false;
 	}
 
@@ -583,22 +586,34 @@ void Game_Event::MoveTypeRandom() {
 	}
 }
 
-void Game_Event::MoveTypeCycleLeftRight() {
-	Move(cycle_stat ? Left : Right);
+void Game_Event::MoveTypeCycle(int default_dir) {
+	max_stop_count = (GetMoveFrequency() > 7) ? 0 : (1 << (9 - GetMoveFrequency()));
+	if (stop_count < max_stop_count) return;
+
+	int non_default_dir = ReverseDir(default_dir);
+	int move_dir = GetDirection();
+	if (!(move_dir == default_dir || move_dir == non_default_dir)) {
+		move_dir = default_dir;
+	}
+
+	Move(move_dir, MoveOption::IgnoreIfCantMove);
 
 	if (move_failed && stop_count >= max_stop_count + 20) {
-		cycle_stat = move_failed ? !cycle_stat : cycle_stat;
-		stop_count = 0;
+		if (stop_count >= max_stop_count + 60) {
+			Move(ReverseDir(move_dir));
+			stop_count = 0;
+		} else {
+			Move(ReverseDir(move_dir), MoveOption::IgnoreIfCantMove);
+		}
 	}
 }
 
-void Game_Event::MoveTypeCycleUpDown() {
-	Move(cycle_stat ? Up : Down);
+void Game_Event::MoveTypeCycleLeftRight() {
+	MoveTypeCycle(Right);
+}
 
-	if (move_failed && stop_count >= max_stop_count + 20) {
-		cycle_stat = !cycle_stat;
-		stop_count = 0;
-	}
+void Game_Event::MoveTypeCycleUpDown() {
+	MoveTypeCycle(Down);
 }
 
 void Game_Event::MoveTypeTowardsPlayer() {

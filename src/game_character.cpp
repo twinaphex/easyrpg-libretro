@@ -54,7 +54,6 @@ Game_Character::Game_Character() :
 	stop_count(0),
 	max_stop_count(0),
 	walk_animation(true),
-	cycle_stat(false),
 	opacity(255),
 	visible(true) {
 }
@@ -161,12 +160,18 @@ int Game_Character::GetScreenY() const {
 }
 
 int Game_Character::GetScreenZ() const {
-	int z = this == Main_Data::game_player.get() ? 1 : 0;
+	int z = 0;
+
+	if (GetLayer() == RPG::EventPage::Layers_same) {
+		z = Priority_Player;
+	} else if (GetLayer() == RPG::EventPage::Layers_below) {
+		z = Priority_EventsBelow;
+	} else if (GetLayer() == RPG::EventPage::Layers_above) {
+		z = Priority_EventsAbove;
+	}
 
 	// For events on the screen, this should be inside a 0-40 range
 	z += GetScreenY() >> 3;
-
-	z += GetLayer() * 50;
 
 	return z;
 }
@@ -253,6 +258,8 @@ void Game_Character::MoveTypeCustom() {
 		active_route = &original_move_route;
 		active_route_index = GetOriginalMoveRouteIndex();
 	}
+	MoveOption option =
+		active_route->skippable ? MoveOption::IgnoreIfCantMove : MoveOption::Normal;
 
 	if (IsStopping()) {
 		move_failed = false;
@@ -292,10 +299,10 @@ void Game_Character::MoveTypeCustom() {
 			case RPG::MoveCommand::Code::move_downright:
 			case RPG::MoveCommand::Code::move_downleft:
 			case RPG::MoveCommand::Code::move_upleft:
-				Move(move_command.command_id);
+				Move(move_command.command_id, option);
 				break;
 			case RPG::MoveCommand::Code::move_random:
-				MoveRandom();
+				MoveRandom(option);
 				break;
 			case RPG::MoveCommand::Code::move_towards_hero:
 				MoveTowardsPlayer();
@@ -304,7 +311,7 @@ void Game_Character::MoveTypeCustom() {
 				MoveAwayFromPlayer();
 				break;
 			case RPG::MoveCommand::Code::move_forward:
-				MoveForward();
+				MoveForward(option);
 				break;
 			case RPG::MoveCommand::Code::face_up:
 				Turn(Up);
@@ -449,17 +456,9 @@ void Game_Character::MoveTypeCustom() {
 	}
 }
 
-void Game_Character::Move(int dir) {
+void Game_Character::Move(int dir, MoveOption option) {
 	int dx = (dir == Right || dir == UpRight || dir == DownRight) - (dir == Left || dir == DownLeft || dir == UpLeft);
 	int dy = (dir == Down || dir == DownRight || dir == DownLeft) - (dir == Up || dir == UpRight || dir == UpLeft);
-
-	SetDirection(dir);
-	if (!(IsDirectionFixed() || IsFacingLocked() || IsSpinning())) {
-		if (dir > 3) // Diagonal
-			SetSpriteDirection(GetSpriteDirection() % 2 ? -dx + 2 : dy + 1);
-		else
-			SetSpriteDirection(dir);
-	}
 
 	if (jumping) {
 		jump_plus_x += dx;
@@ -468,6 +467,17 @@ void Game_Character::Move(int dir) {
 	}
 
 	move_failed = !MakeWay(GetX(), GetY(), dir);
+
+	if (!move_failed || option == MoveOption::Normal) {
+		SetDirection(dir);
+		if (!(IsDirectionFixed() || IsFacingLocked() || IsSpinning())) {
+			if (dir > 3) // Diagonal
+				SetSpriteDirection(GetSpriteDirection() % 2 ? -dx + 2 : dy + 1);
+			else
+				SetSpriteDirection(dir);
+		}
+	}
+
 	if (move_failed) {
 		if (!CheckEventTriggerTouch(Game_Map::RoundX(GetX() + dx), Game_Map::RoundY(GetY() + dy)))
 			return;
@@ -482,12 +492,12 @@ void Game_Character::Move(int dir) {
 	max_stop_count = (GetMoveFrequency() > 7) ? 0 : pow(2.0, 9 - GetMoveFrequency());
 }
 
-void Game_Character::MoveForward() {
-	Move(GetDirection());
+void Game_Character::MoveForward(MoveOption option) {
+	Move(GetDirection(), option);
 }
 
-void Game_Character::MoveRandom() {
-	Move(Utils::GetRandomNumber(0, 3));
+void Game_Character::MoveRandom(MoveOption option) {
+	Move(Utils::GetRandomNumber(0, 3), option);
 }
 
 void Game_Character::MoveTowardsPlayer() {
@@ -629,6 +639,40 @@ void Game_Character::BeginJump(const RPG::MoveRoute* current_route, int* current
 			case RPG::MoveCommand::Code::move_forward:
 				MoveForward();
 				break;
+			case RPG::MoveCommand::Code::face_up:
+				Turn(Up);
+				break;
+			case RPG::MoveCommand::Code::face_right:
+				Turn(Right);
+				break;
+			case RPG::MoveCommand::Code::face_down:
+				Turn(Down);
+				break;
+			case RPG::MoveCommand::Code::face_left:
+				Turn(Left);
+				break;
+			case RPG::MoveCommand::Code::turn_90_degree_right:
+				Turn90DegreeRight();
+				break;
+			case RPG::MoveCommand::Code::turn_90_degree_left:
+				Turn90DegreeLeft();
+				break;
+			case RPG::MoveCommand::Code::turn_180_degree:
+				Turn180Degree();
+				break;
+			case RPG::MoveCommand::Code::turn_90_degree_random:
+				Turn90DegreeLeftOrRight();
+				break;
+			case RPG::MoveCommand::Code::face_random_direction:
+				FaceRandomDirection();
+				break;
+			case RPG::MoveCommand::Code::face_hero:
+				TurnTowardHero();
+				break;
+			case RPG::MoveCommand::Code::face_away_from_hero:
+				TurnAwayFromHero();
+				break;
+
 			default:
 				break;
 		}
@@ -881,4 +925,10 @@ Game_Character* Game_Character::GetCharacter(int character_id, int event_id) {
 			// Other events
 			return Game_Map::GetEvent(character_id);
 	}
+}
+
+int Game_Character::ReverseDir(int dir) {
+	constexpr static char reversed[] =
+		{ Down, Left, Up, Right, DownLeft, UpLeft, UpRight, DownRight };
+	return reversed[dir];
 }

@@ -1,9 +1,12 @@
-/* !!!! GENERATED FILE - DO NOT EDIT !!!! */
-
-/*
- * Copyright (c) 2016 liblcf authors
- * This file is released under the MIT License
- * http://opensource.org/licenses/MIT
+/* !!!! GENERATED FILE - DO NOT EDIT !!!!
+ * --------------------------------------
+ *
+ * This file is part of liblcf. Copyright (c) 2017 liblcf authors.
+ * https://github.com/EasyRPG/liblcf - https://easyrpg.org
+ *
+ * liblcf is Free/Libre Open Source Software, released under the MIT License.
+ * For the full copyright and license information, please view the COPYING
+ * file that was distributed with this source code.
  */
 
 // Headers
@@ -28,8 +31,8 @@ LCF_STRUCT_FIELDS_BEGIN()
 	LCF_STRUCT_TYPED_FIELD(std::string, gold_recieved_b),
 	LCF_STRUCT_TYPED_FIELD(std::string, item_recieved),
 	LCF_STRUCT_TYPED_FIELD(std::string, attacking),
-	LCF_STRUCT_TYPED_FIELD(std::string, actor_critical),
 	LCF_STRUCT_TYPED_FIELD(std::string, enemy_critical),
+	LCF_STRUCT_TYPED_FIELD(std::string, actor_critical),
 	LCF_STRUCT_TYPED_FIELD(std::string, defending),
 	LCF_STRUCT_TYPED_FIELD(std::string, observing),
 	LCF_STRUCT_TYPED_FIELD(std::string, focus),
@@ -48,8 +51,8 @@ LCF_STRUCT_FIELDS_BEGIN()
 	LCF_STRUCT_TYPED_FIELD(std::string, hp_recovery),
 	LCF_STRUCT_TYPED_FIELD(std::string, parameter_increase),
 	LCF_STRUCT_TYPED_FIELD(std::string, parameter_decrease),
-	LCF_STRUCT_TYPED_FIELD(std::string, actor_hp_absorbed),
 	LCF_STRUCT_TYPED_FIELD(std::string, enemy_hp_absorbed),
+	LCF_STRUCT_TYPED_FIELD(std::string, actor_hp_absorbed),
 	LCF_STRUCT_TYPED_FIELD(std::string, resistance_increase),
 	LCF_STRUCT_TYPED_FIELD(std::string, resistance_decrease),
 	LCF_STRUCT_TYPED_FIELD(std::string, level_up),

@@ -118,8 +118,8 @@ void Game_System::SePlay(RPG::Sound const& se) {
 	if (se.name.length() >= end.length() &&
 		0 == se.name.compare(se.name.length() - end.length(), end.length(), end)) {
 		if (!ineluki_warning_shown) {
-			Output::Warning("This game seems to use Ineluki's key patch to support\n"
-				"additional keys, mouse or scripts. Such patches are\n"
+			Output::Warning("This game seems to use Ineluki's key patch to support "
+				"additional keys, mouse or scripts. Such patches are "
 				"unsupported, so this functionality will not work!");
 			ineluki_warning_shown = true;
 		}
@@ -252,6 +252,15 @@ void Game_System::SetMessageStretch(RPG::System::Stretch stretch) {
 	data.message_stretch = stretch;
 }
 
+
+int Game_System::GetFontId() {
+	return data.font_id;
+}
+
+void Game_System::SetFontId(int id) {
+	data.font_id = id;
+}
+
 int Game_System::GetTransition(int which) {
 	int transition = 0;
 
@@ -361,7 +370,7 @@ void Game_System::OnBgmReady(FileRequestResult* result) {
 		// The first line contains the path to the actual audio file to play
 		std::string line = Utils::ReadLine(*stream.get());
 		line = ReaderUtil::Recode(line, Player::encoding);
-		
+
 		Output::Debug("Ineluki link file: %s -> %s", path.c_str(), line.c_str());
 
 		#ifdef EMSCRIPTEN
@@ -369,19 +378,19 @@ void Game_System::OnBgmReady(FileRequestResult* result) {
 		return;
 		#else
 		std::string line_canonical = FileFinder::MakeCanonical(line, 1);
-		
+
 		std::string ineluki_path = FileFinder::FindDefault(line_canonical);
 		if (ineluki_path.empty()) {
 			Output::Debug("Music not found: %s", line_canonical.c_str());
 			return;
 		}
-		
+
 		Audio().BGM_Play(ineluki_path, data.current_music.volume, data.current_music.tempo, data.current_music.fadein);
-		
+
 		return;
 		#endif
 	}
-	
+
 	Audio().BGM_Play(path, data.current_music.volume, data.current_music.tempo, data.current_music.fadein);
 }
 

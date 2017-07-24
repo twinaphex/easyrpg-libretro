@@ -41,10 +41,12 @@ libeasyrpg_player_la_SOURCES = \
 	src/color.h \
 	src/decoder_libsndfile.cpp \
 	src/decoder_libsndfile.h \
-	src/decoder_oggvorbis.cpp \
-	src/decoder_oggvorbis.h \
 	src/decoder_mpg123.cpp \
 	src/decoder_mpg123.h \
+	src/decoder_oggvorbis.cpp \
+	src/decoder_oggvorbis.h \
+	src/decoder_opus.cpp \
+	src/decoder_opus.h \
 	src/decoder_fmmidi.cpp \
 	src/decoder_fmmidi.h \
 	src/decoder_wav.cpp \
@@ -214,10 +216,12 @@ libeasyrpg_player_la_SOURCES = \
 	src/screen.h \
 	src/sdl_ui.cpp \
 	src/sdl_ui.h \
-	src/shinonome.h \
+	src/bitmapfont.h \
 	src/shinonome_gothic.cpp \
 	src/shinonome_mincho.cpp \
-	src/shinonome_wqy.cpp \
+	src/bitmapfont_wqy.cpp \
+	src/bitmapfont_ttyp0.cpp \
+	src/bitmapfont_rmg2000.cpp \
 	src/sprite_airshipshadow.h \
 	src/sprite_airshipshadow.cpp \
 	src/sprite_battler.cpp \
@@ -348,6 +352,7 @@ libeasyrpg_player_la_CXXFLAGS = \
 	$(MPG123_CFLAGS) \
 	$(WILDMIDI_CFLAGS) \
 	$(OGGVORBIS_CFLAGS) \
+	$(OPUS_CFLAGS) \
 	$(SNDFILE_CFLAGS) \
 	$(XMP_CFLAGS) \
 	$(SPEEXDSP_CFLAGS)
@@ -363,6 +368,7 @@ libeasyrpg_player_la_LIBADD = \
 	$(MPG123_LIBS) \
 	$(WILDMIDI_LIBS) \
 	$(OGGVORBIS_LIBS) \
+	$(OPUS_LIBS) \
 	$(SNDFILE_LIBS) \
 	$(XMP_LIBS) \
 	$(SPEEXDSP_LIBS)

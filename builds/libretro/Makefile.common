@@ -27,58 +27,106 @@ INCDIR :=         \
 						-I$(LIBRETRO_COMM_DIR)/include/compat
 
 SOURCES_CXX := 	\
+						$(EASYRPG_DIR)/3ds_ui.cpp \
 						$(EASYRPG_DIR)/async_handler.cpp \
+						$(EASYRPG_DIR)/audio_3ds.cpp \
+						$(EASYRPG_DIR)/audio_al.cpp \
 						$(EASYRPG_DIR)/audio.cpp \
-						$(EASYRPG_DIR)/audio_generic.cpp \
 						$(EASYRPG_DIR)/audio_decoder.cpp \
-						$(EASYRPG_DIR)/audio_resampler.cpp \
-						$(EASYRPG_DIR)/audio_secache.cpp \
+						$(EASYRPG_DIR)/audio_generic.cpp \
 						$(EASYRPG_DIR)/audio_libretro.cpp \
+						$(EASYRPG_DIR)/audio_psp2.cpp \
+						$(EASYRPG_DIR)/audio_resampler.cpp \
+						$(EASYRPG_DIR)/audio_sdl.cpp \
+						$(EASYRPG_DIR)/audio_sdl_mixer.cpp \
+						$(EASYRPG_DIR)/audio_secache.cpp \
+						$(EASYRPG_DIR)/background.cpp \
+						$(EASYRPG_DIR)/baseui.cpp \
+						$(EASYRPG_DIR)/battle_animation.cpp \
+						$(EASYRPG_DIR)/bitmap.cpp \
+						$(EASYRPG_DIR)/bitmapfont_rmg2000.cpp \
+						$(EASYRPG_DIR)/bitmapfont_ttyp0.cpp \
+						$(EASYRPG_DIR)/bitmapfont_wqy.cpp \
+						$(EASYRPG_DIR)/cache.cpp \
 						$(EASYRPG_DIR)/color.cpp \
+						$(EASYRPG_DIR)/decoder_fmmidi.cpp \
+						$(EASYRPG_DIR)/decoder_libsndfile.cpp \
+						$(EASYRPG_DIR)/decoder_mpg123.cpp \
+						$(EASYRPG_DIR)/decoder_opus.cpp \
+						$(EASYRPG_DIR)/decoder_xmp.cpp \
 						$(EASYRPG_DIR)/filefinder.cpp \
+						$(EASYRPG_DIR)/font.cpp \
+						$(EASYRPG_DIR)/fps_overlay.cpp \
+						$(EASYRPG_DIR)/frame.cpp \
 						$(EASYRPG_DIR)/game_actor.cpp \
 						$(EASYRPG_DIR)/game_actors.cpp \
-						$(EASYRPG_DIR)/game_battle.cpp \
 						$(EASYRPG_DIR)/game_battlealgorithm.cpp \
+						$(EASYRPG_DIR)/game_battle.cpp \
 						$(EASYRPG_DIR)/game_battler.cpp \
 						$(EASYRPG_DIR)/game_character.cpp \
 						$(EASYRPG_DIR)/game_commonevent.cpp \
 						$(EASYRPG_DIR)/game_enemy.cpp \
 						$(EASYRPG_DIR)/game_enemyparty.cpp \
 						$(EASYRPG_DIR)/game_event.cpp \
-						$(EASYRPG_DIR)/game_interpreter.cpp \
 						$(EASYRPG_DIR)/game_interpreter_battle.cpp \
+						$(EASYRPG_DIR)/game_interpreter.cpp \
 						$(EASYRPG_DIR)/game_interpreter_map.cpp \
 						$(EASYRPG_DIR)/game_map.cpp \
 						$(EASYRPG_DIR)/game_message.cpp \
-						$(EASYRPG_DIR)/game_party.cpp \
 						$(EASYRPG_DIR)/game_party_base.cpp \
+						$(EASYRPG_DIR)/game_party.cpp \
+						$(EASYRPG_DIR)/game_picture.cpp \
 						$(EASYRPG_DIR)/game_player.cpp \
+						$(EASYRPG_DIR)/game_screen.cpp \
 						$(EASYRPG_DIR)/game_switches.cpp \
+						$(EASYRPG_DIR)/game_system.cpp \
 						$(EASYRPG_DIR)/game_targets.cpp \
 						$(EASYRPG_DIR)/game_temp.cpp \
 						$(EASYRPG_DIR)/game_variables.cpp \
 						$(EASYRPG_DIR)/game_vehicle.cpp \
+						$(EASYRPG_DIR)/graphics.cpp \
 						$(EASYRPG_DIR)/hslrgb.cpp \
 						$(EASYRPG_DIR)/image_bmp.cpp \
 						$(EASYRPG_DIR)/image_png.cpp \
 						$(EASYRPG_DIR)/image_xyz.cpp \
-						$(EASYRPG_DIR)/input.cpp \
 						$(EASYRPG_DIR)/input_buttons_desktop.cpp \
+						$(EASYRPG_DIR)/input_buttons_gekko.cpp \
+						$(EASYRPG_DIR)/input_buttons_opendingux.cpp \
+						$(EASYRPG_DIR)/input_buttons_psp.cpp \
+						$(EASYRPG_DIR)/input.cpp \
 						$(EASYRPG_DIR)/input_source.cpp \
+						$(EASYRPG_DIR)/libretro_ui.cpp \
 						$(EASYRPG_DIR)/libretro_wrapper.cpp \
 						$(EASYRPG_DIR)/main.cpp \
 						$(EASYRPG_DIR)/main_data.cpp \
+						$(EASYRPG_DIR)/message_overlay.cpp \
 						$(EASYRPG_DIR)/midisequencer.cpp \
 						$(EASYRPG_DIR)/midisynth.cpp \
+						$(EASYRPG_DIR)/output.cpp \
+						$(EASYRPG_DIR)/plane.cpp \
+						$(EASYRPG_DIR)/player.cpp \
+						$(EASYRPG_DIR)/psp2_ui.cpp \
 						$(EASYRPG_DIR)/rect.cpp \
+						$(EASYRPG_DIR)/registry.cpp \
 						$(EASYRPG_DIR)/registry_libretro.cpp \
+						$(EASYRPG_DIR)/registry_wine.cpp \
 						$(EASYRPG_DIR)/rtp_table.cpp \
-						$(EASYRPG_DIR)/scene.cpp \
 						$(EASYRPG_DIR)/scene_actortarget.cpp \
+						$(EASYRPG_DIR)/scene_battle.cpp \
+						$(EASYRPG_DIR)/scene_battle_rpg2k3.cpp \
+						$(EASYRPG_DIR)/scene_battle_rpg2k.cpp \
+						$(EASYRPG_DIR)/scene.cpp \
+						$(EASYRPG_DIR)/scene_debug.cpp \
+						$(EASYRPG_DIR)/scene_end.cpp \
 						$(EASYRPG_DIR)/scene_equip.cpp \
+						$(EASYRPG_DIR)/scene_file.cpp \
+						$(EASYRPG_DIR)/scene_gamebrowser.cpp \
+						$(EASYRPG_DIR)/scene_gameover.cpp \
 						$(EASYRPG_DIR)/scene_item.cpp \
 						$(EASYRPG_DIR)/scene_load.cpp \
+						$(EASYRPG_DIR)/scene_logo.cpp \
+						$(EASYRPG_DIR)/scene_map.cpp \
+						$(EASYRPG_DIR)/scene_menu.cpp \
 						$(EASYRPG_DIR)/scene_name.cpp \
 						$(EASYRPG_DIR)/scene_order.cpp \
 						$(EASYRPG_DIR)/scene_save.cpp \
@@ -86,53 +134,25 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/scene_skill.cpp \
 						$(EASYRPG_DIR)/scene_status.cpp \
 						$(EASYRPG_DIR)/scene_teleport.cpp \
-						$(EASYRPG_DIR)/shinonome_gothic.cpp \
-						$(EASYRPG_DIR)/shinonome_mincho.cpp \
-						$(EASYRPG_DIR)/shinonome_wqy.cpp \
-						$(EASYRPG_DIR)/spriteset_battle.cpp \
-						$(EASYRPG_DIR)/tone.cpp \
-						$(EASYRPG_DIR)/utils.cpp \
-						$(EASYRPG_DIR)/background.cpp \
-						$(EASYRPG_DIR)/baseui.cpp \
-						$(EASYRPG_DIR)/battle_animation.cpp \
-						$(EASYRPG_DIR)/bitmap.cpp \
-						$(EASYRPG_DIR)/cache.cpp \
-						$(EASYRPG_DIR)/font.cpp \
-						$(EASYRPG_DIR)/frame.cpp \
-						$(EASYRPG_DIR)/game_picture.cpp \
-						$(EASYRPG_DIR)/game_screen.cpp \
-						$(EASYRPG_DIR)/game_system.cpp \
-						$(EASYRPG_DIR)/graphics.cpp \
-						$(EASYRPG_DIR)/fps_overlay.cpp \
-						$(EASYRPG_DIR)/libretro_ui.cpp \
-						$(EASYRPG_DIR)/message_overlay.cpp \
-						$(EASYRPG_DIR)/output.cpp \
-						$(EASYRPG_DIR)/plane.cpp \
-						$(EASYRPG_DIR)/player.cpp \
-						$(EASYRPG_DIR)/scene_battle.cpp \
-						$(EASYRPG_DIR)/scene_battle_rpg2k.cpp \
-						$(EASYRPG_DIR)/scene_battle_rpg2k3.cpp \
-						$(EASYRPG_DIR)/scene_debug.cpp \
-						$(EASYRPG_DIR)/scene_end.cpp \
-						$(EASYRPG_DIR)/scene_file.cpp \
-						$(EASYRPG_DIR)/scene_gamebrowser.cpp \
-						$(EASYRPG_DIR)/scene_gameover.cpp \
-						$(EASYRPG_DIR)/scene_logo.cpp \
-						$(EASYRPG_DIR)/scene_map.cpp \
-						$(EASYRPG_DIR)/scene_menu.cpp \
 						$(EASYRPG_DIR)/scene_title.cpp \
 						$(EASYRPG_DIR)/screen.cpp \
-						$(EASYRPG_DIR)/sprite.cpp \
+						$(EASYRPG_DIR)/sdl_ui.cpp \
+						$(EASYRPG_DIR)/shinonome_gothic.cpp \
+						$(EASYRPG_DIR)/shinonome_mincho.cpp \
 						$(EASYRPG_DIR)/sprite_airshipshadow.cpp \
 						$(EASYRPG_DIR)/sprite_battler.cpp \
 						$(EASYRPG_DIR)/sprite_character.cpp \
-						$(EASYRPG_DIR)/sprite_timer.cpp \
+						$(EASYRPG_DIR)/sprite.cpp \
+						$(EASYRPG_DIR)/spriteset_battle.cpp \
 						$(EASYRPG_DIR)/spriteset_map.cpp \
+						$(EASYRPG_DIR)/sprite_timer.cpp \
 						$(EASYRPG_DIR)/text.cpp \
 						$(EASYRPG_DIR)/tilemap.cpp \
 						$(EASYRPG_DIR)/tilemap_layer.cpp \
+						$(EASYRPG_DIR)/tone.cpp \
+						$(EASYRPG_DIR)/utils.cpp \
+						$(EASYRPG_DIR)/util_win.cpp \
 						$(EASYRPG_DIR)/weather.cpp \
-						$(EASYRPG_DIR)/window.cpp \
 						$(EASYRPG_DIR)/window_about.cpp \
 						$(EASYRPG_DIR)/window_actorinfo.cpp \
 						$(EASYRPG_DIR)/window_actorstatus.cpp \
@@ -143,6 +163,7 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/window_battleoption.cpp \
 						$(EASYRPG_DIR)/window_battlestatus.cpp \
 						$(EASYRPG_DIR)/window_command.cpp \
+						$(EASYRPG_DIR)/window.cpp \
 						$(EASYRPG_DIR)/window_equip.cpp \
 						$(EASYRPG_DIR)/window_equipitem.cpp \
 						$(EASYRPG_DIR)/window_equipstatus.cpp \
@@ -158,16 +179,16 @@ SOURCES_CXX := 	\
 						$(EASYRPG_DIR)/window_numberinput.cpp \
 						$(EASYRPG_DIR)/window_savefile.cpp \
 						$(EASYRPG_DIR)/window_selectable.cpp \
-						$(EASYRPG_DIR)/window_shop.cpp \
 						$(EASYRPG_DIR)/window_shopbuy.cpp \
+						$(EASYRPG_DIR)/window_shop.cpp \
 						$(EASYRPG_DIR)/window_shopnumber.cpp \
 						$(EASYRPG_DIR)/window_shopparty.cpp \
 						$(EASYRPG_DIR)/window_shopsell.cpp \
 						$(EASYRPG_DIR)/window_shopstatus.cpp \
 						$(EASYRPG_DIR)/window_skill.cpp \
 						$(EASYRPG_DIR)/window_skillstatus.cpp \
-						$(EASYRPG_DIR)/window_teleport.cpp \
 						$(EASYRPG_DIR)/window_targetstatus.cpp \
+						$(EASYRPG_DIR)/window_teleport.cpp \
 						$(EASYRPG_DIR)/window_varlist.cpp \
 						$(LIBLCF_DIR)/src/data.cpp \
 						$(LIBLCF_DIR)/src/reader_struct.cpp \
@@ -405,14 +426,15 @@ ifeq ($(WANT_WILDMIDI), 1)
 					 $(WILDMIDI_DIR)/src/f_mus.c \
 					 $(WILDMIDI_DIR)/src/f_xmidi.c \
 					 $(WILDMIDI_DIR)/src/file_io.c \
+					 $(WILDMIDI_DIR)/src/getopt_long.c \
 					 $(WILDMIDI_DIR)/src/gus_pat.c \
 					 $(WILDMIDI_DIR)/src/internal_midi.c \
 					 $(WILDMIDI_DIR)/src/lock.c \
 					 $(WILDMIDI_DIR)/src/mus2mid.c \
 					 $(WILDMIDI_DIR)/src/patches.c \
-					 $(WILDMIDI_DIR)/src/wildmidi_lib.c \
-					 $(WILDMIDI_DIR)/src/sample.c \
 					 $(WILDMIDI_DIR)/src/reverb.c \
+					 $(WILDMIDI_DIR)/src/sample.c \
+					 $(WILDMIDI_DIR)/src/wildmidi_lib.c \
 					 $(WILDMIDI_DIR)/src/wm_error.c \
 					 $(WILDMIDI_DIR)/src/xmi2mid.c
 endif

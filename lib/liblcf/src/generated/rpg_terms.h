@@ -1,9 +1,12 @@
-/* !!!! GENERATED FILE - DO NOT EDIT !!!! */
-
-/*
- * Copyright (c) 2016 liblcf authors
- * This file is released under the MIT License
- * http://opensource.org/licenses/MIT
+/* !!!! GENERATED FILE - DO NOT EDIT !!!!
+ * --------------------------------------
+ *
+ * This file is part of liblcf. Copyright (c) 2017 liblcf authors.
+ * https://github.com/EasyRPG/liblcf - https://easyrpg.org
+ *
+ * liblcf is Free/Libre Open Source Software, released under the MIT License.
+ * For the full copyright and license information, please view the COPYING
+ * file that was distributed with this source code.
  */
 
 #ifndef LCF_RPG_TERMS_H
@@ -29,8 +32,8 @@ namespace RPG {
 		std::string gold_recieved_b;
 		std::string item_recieved;
 		std::string attacking;
-		std::string actor_critical;
 		std::string enemy_critical;
+		std::string actor_critical;
 		std::string defending;
 		std::string observing;
 		std::string focus;
@@ -49,8 +52,8 @@ namespace RPG {
 		std::string hp_recovery;
 		std::string parameter_increase;
 		std::string parameter_decrease;
-		std::string actor_hp_absorbed;
 		std::string enemy_hp_absorbed;
+		std::string actor_hp_absorbed;
 		std::string resistance_increase;
 		std::string resistance_decrease;
 		std::string level_up;
