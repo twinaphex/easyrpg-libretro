@@ -21,6 +21,12 @@ endif
 TARGET_NAME := easyrpg
 CORE_DIR    := ../..
 
+# Version information from git
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+   COMMON_DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
 # Unix
 ifeq ($(platform), unix)
 	TARGET := $(TARGET_NAME)_libretro.so
