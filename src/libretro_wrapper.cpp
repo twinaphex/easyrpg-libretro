@@ -135,7 +135,10 @@ RETRO_API void retro_get_system_info(struct retro_system_info *info) {
     static const char lib_extensions[] = "ini";
     memset(info, 0, sizeof(*info));
     info->library_name = lib_name;
-    info->library_version = lib_version;
+#ifndef GIT_VERSION
+#define GIT_VERSION ""
+#endif
+    info->library_version = lib_version GIT_VERSION;
     info->need_fullpath = true;
     info->valid_extensions = lib_extensions;
 }

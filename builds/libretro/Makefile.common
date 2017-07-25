@@ -13,6 +13,12 @@ ZLIB_DIR          := $(DEPS_DIR)/libz
 
 COMMON_DEFINES := -DHAVE_PTHREADS -DWANT_FMMIDI
 
+# Version information from git
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+   COMMON_DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
 INCDIR :=         \
 						-I$(CORE_DIR) \
 						-I$(EASYRPG_DIR) \
