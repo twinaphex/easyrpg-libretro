@@ -10,14 +10,7 @@ WILDMIDI_DIR		:= $(DEPS_DIR)/wildmidi
 TREMOR_DIR        := $(DEPS_DIR)/tremor
 LIBSAMPLERATE_DIR := $(DEPS_DIR)/libsamplerate
 ZLIB_DIR          := $(DEPS_DIR)/libz
-
-COMMON_DEFINES := -DHAVE_PTHREADS -DWANT_FMMIDI
-
-# Version information from git
-GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
-ifneq ($(GIT_VERSION)," unknown")
-   COMMON_DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
-endif
+COMMON_DEFINES    += -DHAVE_PTHREADS -DWANT_FMMIDI
 
 INCDIR :=         \
 						-I$(CORE_DIR) \
