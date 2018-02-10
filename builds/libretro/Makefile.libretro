@@ -34,6 +34,11 @@ ifeq ($(platform), unix)
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=$(CORE_DIR)/builds/libretro/link.T
 	LIBS += -lpthread
 
+# Haiku
+ifneq (,$(findstring Haiku,$(shell uname -s)))
+	LDFLAGS += -liconv
+endif
+
 # OS X
 else ifeq ($(platform), osx)
 	TARGET := $(TARGET_NAME)_libretro.dylib
