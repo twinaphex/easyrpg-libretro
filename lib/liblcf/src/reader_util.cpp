@@ -31,6 +31,10 @@
 #   include <locale>
 #endif
 
+#if defined(__HAIKU__)
+#include <iconv.h>
+#endif
+
 #include <cstdlib>
 #include <cstdio>
 #include <sstream>
