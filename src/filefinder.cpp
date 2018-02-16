@@ -794,10 +794,12 @@ FileFinder::Directory FileFinder::GetDirectoryMembers(const std::string& path, F
 		if (has_fast_dir_stat) {
 			#ifdef PSP2
 			is_directory = S_ISDIR(ent.d_stat.st_mode);
+			#elif defined(__HAIKU__)
+			struct stat s;
+			stat(ent->d_name, &s);
+			is_directory = S_ISDIR(s.st_mode);
 			#else
-			#ifndef __HAIKU__
 			is_directory = ent->d_type == DT_DIR;
-			#endif
 			#endif
 		} else {
 			is_directory = IsDirectory(MakePath(path, name));
