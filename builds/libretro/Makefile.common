@@ -323,7 +323,8 @@ SOURCES_C += 		\
 						$(PIXMAN_DIR)/pixman-trap.c \
 						$(PIXMAN_DIR)/pixman-utils.c \
 						$(PIXMAN_DIR)/pixman-x86.c \
-						$(PIXMAN_DIR)/pixman-arm.c
+						$(PIXMAN_DIR)/pixman-arm.c \
+						$(PIXMAN_DIR)/pixman-mips.c
 
 ifeq ($(HAVE_LIBSNDFILE), 1)
 COMMON_DEFINES += -DHAVE_LIBSNDFILE
