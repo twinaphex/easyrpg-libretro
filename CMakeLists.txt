@@ -103,8 +103,6 @@ add_library(${PROJECT_NAME}
 	src/scene_teleport.cpp
 	src/scene_title.cpp
 	src/screen.cpp
-	src/sdl_ui.cpp
-	src/sdl2_ui.cpp
 	src/shinonome_gothic.cpp
 	src/shinonome_mincho.cpp
 	src/bitmapfont_wqy.cpp
@@ -178,14 +176,37 @@ list(APPEND CMAKE_MODULE_PATH
 include(ConfigureWindows)
 include(PlayerFindPackage)
 
+# Platform setup
+set(PLAYER_TARGET_PLATFORM "Default" CACHE STRING "Platform to compile for. Options: Default libretro")
+set_property(CACHE PLAYER_TARGET_PLATFORM PROPERTY STRINGS Default libretro)
+set(PLAYER_BUILD_EXECUTABLE ON)
+
+if(${PLAYER_TARGET_PLATFORM} MATCHES "Default")
+	target_sources(${PROJECT_NAME} PRIVATE
+		src/sdl_ui.cpp
+		src/sdl2_ui.cpp)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC USE_SDL=2)
+	
+	find_package(SDL2 REQUIRED)
+	target_link_libraries(${PROJECT_NAME} SDL2::SDL2main)
+elseif(${PLAYER_TARGET_PLATFORM} MATCHES "libretro")
+	target_sources(${PROJECT_NAME} PRIVATE
+		src/audio_libretro.cpp
+		src/libretro_ui.cpp
+		src/libretro_wrapper.cpp)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC USE_LIBRETRO=1)
+	set(PLAYER_BUILD_EXECUTABLE OFF)
+	set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "easyrpg_libretro")
+else()
+	message(FATAL_ERROR "Invalid target platform")
+endif()
+
 # C++11 is required
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
 	target_compile_definitions(${PROJECT_NAME} PUBLIC _DEBUG=1)
 endif()
-
-target_compile_definitions(${PROJECT_NAME} PUBLIC USE_SDL=2)
 
 # Endianess check
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -228,9 +249,6 @@ target_link_libraries(${PROJECT_NAME} PNG::PNG)
 find_package(Pixman REQUIRED)
 target_link_libraries(${PROJECT_NAME} PIXMAN::PIXMAN)
 
-find_package(SDL2 REQUIRED)
-target_link_libraries(${PROJECT_NAME} SDL2::SDL2main)
-
 # Always enable Wine registry support on non-Windows
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_WINE=1)
@@ -256,24 +274,34 @@ if(Freetype_FOUND)
 endif()
 
 # Sound system to use
-set(PLAYER_AUDIO_BACKEND "Auto" CACHE STRING "Audio system to use. Options: Auto SDL2_mixer SDL2 OpenAL OFF")
-set_property(CACHE PLAYER_AUDIO_BACKEND PROPERTY STRINGS Auto SDL2 SDL2_mixer OpenAL OFF)
-
-# Configure Audio backends
-if(${PLAYER_AUDIO_BACKEND} MATCHES "Auto")
-	option(PLAYER_WITH_SDL2_MIXER "Use SDL2 mixer when available." ON)
-	player_find_package(
-		NAME SDL2_mixer
-		CONDITION PLAYER_WITH_SDL2_MIXER
-		TARGET SDL2::MIXER)
-	if(SDL2_MIXER_FOUND)
-		set(PLAYER_AUDIO_BACKEND "SDL2_mixer")
-	else()
-		set(PLAYER_AUDIO_BACKEND "SDL2")
+if(${PLAYER_TARGET_PLATFORM} MATCHES "Default")
+	set(PLAYER_AUDIO_BACKEND "Default" CACHE STRING "Audio system to use. Options: Default SDL2_mixer SDL2 OpenAL OFF")
+	set_property(CACHE PLAYER_AUDIO_BACKEND PROPERTY STRINGS Default SDL2 SDL2_mixer OpenAL OFF)
+	
+	if(${PLAYER_AUDIO_BACKEND} MATCHES "Default")
+		option(PLAYER_WITH_SDL2_MIXER "Use SDL2 mixer when available." ON)
+		player_find_package(
+			NAME SDL2_mixer
+			CONDITION PLAYER_WITH_SDL2_MIXER
+			TARGET SDL2::MIXER)
+		if(SDL2_MIXER_FOUND)
+			set(PLAYER_AUDIO_BACKEND "SDL2_mixer")
+		else()
+			set(PLAYER_AUDIO_BACKEND "SDL2")
+		endif()
+	endif()
+else()
+	set(PLAYER_AUDIO_BACKEND "Default" CACHE STRING "Audio system to use. Options: Default OFF")
+	set_property(CACHE PLAYER_AUDIO_BACKEND PROPERTY STRINGS Default OFF)
+	
+	if(${PLAYER_AUDIO_BACKEND} MATCHES "Default")
+		# Assuming that all platforms non targeting SDL have only one audio backend
+		set(PLAYER_AUDIO_BACKEND ${PLAYER_TARGET_PLATFORM})
 	endif()
 endif()
 
-if(${PLAYER_AUDIO_BACKEND} MATCHES "^SDL2$")
+# Configure Audio backends
+if(${PLAYER_AUDIO_BACKEND} MATCHES "^(SDL2|libretro)$")
 	target_compile_definitions(${PROJECT_NAME} PUBLIC SUPPORT_AUDIO=1)
 
 	# Provide fmmidi options
@@ -319,7 +347,7 @@ else()
 	message(FATAL_ERROR "Invalid Audio Backend")
 endif()
 
-if(${PLAYER_AUDIO_BACKEND} MATCHES "^SDL.*$")
+if(${PLAYER_AUDIO_BACKEND} MATCHES "^(SDL.*|libretro)$")
 	# speexdsp
 	option(PLAYER_WITH_SPEEXDSP "Resample audio with speexdsp." ON)
 	player_find_package(
@@ -384,30 +412,32 @@ if(${PLAYER_AUDIO_BACKEND} MATCHES "^SDL.*$")
 endif()
 
 # Executable
-# Windows: Only open console for Debug builds
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-	add_executable(${PROJECT_NAME}_exe "src/main.cpp")
-else()
-	add_executable(${PROJECT_NAME}_exe WIN32 "src/main.cpp")
+if (${PLAYER_BUILD_EXECUTABLE})
+	# Windows: Only open console for Debug builds
+	if(CMAKE_BUILD_TYPE MATCHES "Debug")
+		add_executable(${PROJECT_NAME}_exe "src/main.cpp")
+	else()
+		add_executable(${PROJECT_NAME}_exe WIN32 "src/main.cpp")
+	endif()
+
+	if(WIN32)
+		set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME "Player")
+	else()
+		set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME "easyrpg-player")
+	endif()
+
+	# Add Windows resources
+	if(WIN32)
+		target_sources(${PROJECT_NAME}_exe PRIVATE "resources/player.rc")
+	endif()
+
+	target_link_libraries(${PROJECT_NAME}_exe ${PROJECT_NAME})
+
+	# installation
+	include(GNUInstallDirs)
+	install(TARGETS ${PROJECT_NAME}_exe
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
-
-if(WIN32)
-	set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME "Player")
-else()
-	set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME "easyrpg-player")
-endif()
-
-# Add Windows resources
-if(WIN32)
-	target_sources(${PROJECT_NAME}_exe PRIVATE "resources/player.rc")
-endif()
-
-target_link_libraries(${PROJECT_NAME}_exe ${PROJECT_NAME})
-
-# installation
-include(GNUInstallDirs)
-install(TARGETS ${PROJECT_NAME}_exe
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # manpage
 # Handled as extra target "man"
@@ -491,20 +521,28 @@ if(PLAYER_ENABLE_TESTS)
 endif()
 
 # Print summary
+if(NOT ${PLAYER_TARGET_PLATFORM} MATCHES "Default")
+	message(STATUS "")
+	message(STATUS "Building for ${PLAYER_TARGET_PLATFORM}")
+endif()
+
 message(STATUS "")
 if(PLAYER_BUILD_LIBLCF)
 	message(STATUS "liblcf: Built from ${PLAYER_BUILD_LIBLCF_GIT}")
 	message(STATUS "")
 endif()
+
 message(STATUS "Audio backend: ${PLAYER_AUDIO_BACKEND}")
-if(${PLAYER_AUDIO_BACKEND} MATCHES "^SDL2.*$")
+if(${PLAYER_AUDIO_BACKEND} MATCHES "^(SDL.*|libretro)$")
 	message(STATUS "")
 
 	if(LIBSNDFILE_FOUND)
 		message(STATUS "WAV playback: libsndfile")
-	else()
+	elseif(SDL2_mixer_FOUND)
 		set(SDL_MIXER_USED ON)
 		message(STATUS "WAV playback: SDL2_mixer")
+	else()
+		message(STATUS "WAV playback: None")
 	endif()
 
 	if(WILDMIDI_FOUND)
