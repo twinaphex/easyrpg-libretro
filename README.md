@@ -94,8 +94,8 @@ Read more detailed instructions at:
 
 Building requirements:
 
-- pkg-config
-- CMake
+- pkg-config (only on Linux)
+- CMake 3.7 or newer
 
 Step-by-step instructions:
 
@@ -133,6 +133,23 @@ Compile the Player:
 Read detailed instructions at:
 
 * https://wiki.easyrpg.org/development/compiling/player/windows/visual-studio
+
+
+### Building a libretro core:
+
+Building for libretro is based on the CMake method.
+
+Additional commands required before building:
+
+    git submodule init   # Init submodules
+    git submodule update # Clone libretro-common submodule
+
+Invoke CMake with these additional parameters:
+
+    cmake . -DPLAYER_TARGET_PLATFORM=libretro -DBUILD_SHARED_LIBS=ON|OFF
+
+Set shared libs to ON or OFF depending on which type of libraries RetroArch
+uses on the platform you are targeting.
 
 
 ## Running EasyRPG Player
