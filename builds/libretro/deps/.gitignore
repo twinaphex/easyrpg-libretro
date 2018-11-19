@@ -1,0 +1,6 @@
+!*
+*.bz2
+*.xz
+*.gz
+*.tgz
+icu-native/
