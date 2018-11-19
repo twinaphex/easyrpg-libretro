@@ -1,0 +1,174 @@
+RETRO_CROSSCOMPILING=0
+
+ifeq ($(platform),)
+	platform = unix
+	ifeq ($(shell uname -a),)
+		platform = win
+	else ifneq ($(findstring MINGW,$(shell uname -a)),)
+		platform = win
+	else ifneq ($(findstring Darwin,$(shell uname -a)),)
+		platform = osx
+	else ifneq ($(findstring win,$(shell uname -a)),)
+		platform = win
+	endif
+endif
+
+TARGET_NAME := easyrpg
+CORE_DIR    := $(PWD)/../..
+
+# Version information from git
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+##   COMMON_DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
+# Unix
+ifeq ($(platform), unix)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,--no-undefined
+	LIBS += -lpthread
+
+# Haiku
+ifneq (,$(findstring Haiku,$(shell uname -s)))
+	LDFLAGS += -liconv
+endif
+
+# OS X
+else ifeq ($(platform), osx)
+	TARGET := $(TARGET_NAME)_libretro.dylib
+	fpic := -fPIC
+	SHARED := -dynamiclib
+	ifndef ($(NOUNIVERSAL))
+		CFLAGS += $(ARCHFLAGS)
+		CXXFLAGS += $(ARCHFLAGS)
+		LDFLAGS += $(ARCHFLAGS)
+	endif
+        LDFLAGS += -liconv
+
+# iOS
+else ifneq (,$(findstring ios,$(platform)))
+	TARGET := $(TARGET_NAME)_libretro_ios.dylib
+	RETRO_CROSSCOMPILING = 1
+
+	ifeq ($(IOSSDK),)
+		IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
+	endif
+ifeq ($(platform),ios-arm64)
+	CC = cc -arch arm64 -isysroot $(IOSSDK)
+	CXX = clang++ -arch arm64 -isysroot $(IOSSDK)
+else
+	CC = clang -arch armv7 -isysroot $(IOSSDK)
+	CXX = clang++ -arch armv7 -isysroot $(IOSSDK)
+endif
+	CXXFLAGS = -DUSE_POSIX_MEMALIGN -D__RETRO_ARM__
+	fpic := -fPIC
+	SHARED := -dynamiclib
+ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
+CC       += -miphoneos-version-min=8.0
+CXX      += -miphoneos-version-min=8.0
+CFLAGS   += -miphoneos-version-min=8.0
+CXXFLAGS += -miphoneos-version-min=8.0
+else
+CC       += -miphoneos-version-min=7.0
+CXX      += -miphoneos-version-min=7.0
+CFLAGS   += -miphoneos-version-min=7.0
+CXXFLAGS += -miphoneos-version-min=7.0
+endif
+
+# Android
+else ifeq ($(platform), android)
+	TARGET := $(TARGET_NAME)_libretro_android.so
+	CC = arm-linux-androideabi-gcc$(EXE_EXT)
+	CXX = arm-linux-androideabi-g++$(EXE_EXT)
+	CXXFLAGS += -D__RETRO_ARM__
+	fpic := -fPIC
+	SHARED := -shared
+
+	ifeq ($(RETRO_PROFILE),1)
+		LDFLAGS += -llog
+	endif
+
+	RETRO_CROSSCOMPILING = 1
+# ARM
+else ifneq (,$(findstring armv,$(platform)))
+	CXXFLAGS += -DUSE_POSIX_MEMALIGN -D__RETRO_ARM__
+	TARGET := $(TARGET_NAME)_libretro.so
+	SHARED := -shared -Wl,--no-undefined
+	LIBS += -lpthread
+	fpic := -fPIC
+	ifneq (,$(findstring clang,$(platform)))
+		CC = clang
+		CXX = clang++
+		AR = clang
+	endif
+	ifneq (,$(findstring cortexa5,$(platform)))
+		CXXFLAGS += -marm -mcpu=cortex-a5
+	else ifneq (,$(findstring cortexa8,$(platform)))
+		CXXFLAGS += -marm -mcpu=cortex-a8
+	else ifneq (,$(findstring cortexa9,$(platform)))
+		CXXFLAGS += -marm -mcpu=cortex-a9
+	else ifneq (,$(findstring cortexa15a7,$(platform)))
+		CXXFLAGS += -marm -mcpu=cortex-a15.cortex-a7
+	else
+		CXXFLAGS += -marm
+	endif
+	ifneq (,$(findstring softfloat,$(platform)))
+		CXXFLAGS += -mfloat-abi=softfp
+	else ifneq (,$(findstring hardfloat,$(platform)))
+		CXXFLAGS += -mfloat-abi=hard
+	endif
+	CXXFLAGS += -DARM
+
+# Windows
+else
+	TARGET := $(TARGET_NAME)_libretro.dll
+	CC = gcc
+	CXX = g++
+	SHARED := -shared -static-libgcc -static-libstdc++
+	ifeq ($(DEBUG), 0)
+		SHARED += -s
+	endif
+endif
+
+ifeq ($(DEBUG), 1)
+	CXXFLAGS += -g -O0
+else
+	CXXFLAGS += -DNDEBUG -O3
+endif
+
+ifeq ($(RETRO_PROFILE),1)
+	CXXFLAGS += -DRETRO_PROFILE=1
+endif
+
+OBJECTS		= $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
+CXXFLAGS       += -D__LIBRETRO__ -fpermissive $(fpic) $(INCDIR) $(COMMON_DEFINES)
+CFLAGS	       += -D__LIBRETRO__ $(fpic) $(INCDIR) $(COMMON_DEFINES)
+
+all: $(TARGET)
+$(TARGET):
+ifeq ($(RETRO_CROSSCOMPILING), 1)
+	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
+	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
+	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
+	RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_cross_toolchain.sh
+else
+	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
+	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
+	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
+	RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_toolchain.sh
+endif
+	cd $(CORE_DIR)/builds/libretro;\
+	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		cmake $(CORE_DIR) -DPLAYER_TARGET_PLATFORM=libretro \
+		-DBUILD_SHARED_LIBS=ON -DCMAKE_PREFIX_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
+		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF \
+		-DCMAKE_IGNORE_PATH="/lib;/usr/lib;/lib64;/usr/lib64"
+	cmake --build . -- -j4
+
+clean:
+	rm -f $(OBJECTS) $(TARGET)
+
+.PHONY: clean
+
+
