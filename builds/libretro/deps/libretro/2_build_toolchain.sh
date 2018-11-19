@@ -9,7 +9,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $SCRIPT_DIR/../shared/import.sh
 
 # Number of CPU
-nproc=$(nproc)
+if [ "$(uname)" == "Darwin" ]; then
+	nproc=$(getconf _NPROCESSORS_ONLN)
+else    
+	nproc=$(nproc)
+fi
 
 # Use ccache?
 test_ccache
@@ -36,9 +40,15 @@ if [ ! -f .patches-applied ]; then
         patch -Np1 < $SCRIPT_DIR/wildmidi-libretro.patch
         popd
 
+        # disable libsamplerate examples and tests
+        pushd $LIBSAMPLERATE_DIR
+        perl -pi -e 's/examples tests//' Makefile.am
+        autoreconf -fi
+        popd
+
         # Fix icu build
         # Custom patch because vita newlib provides pthread
-        cp -rup icu icu-native
+        cp -r icu icu-native
         patch -Np0 < $SCRIPT_DIR/icu59-libretro.patch
 
 	pushd $LIBOGG_DIR
