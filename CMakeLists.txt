@@ -360,6 +360,14 @@ if(${PLAYER_AUDIO_BACKEND} MATCHES "^(SDL.*|libretro)$")
 		DEFINITION HAVE_LIBSPEEXDSP
 		TARGET speexdsp::speexdsp)
 
+	# libsamplerate
+        option(PLAYER_WITH_LIBSAMPLERATE "Resample audio with libsamplerate." ON)
+        player_find_package(
+                NAME Samplerate
+                CONDITION PLAYER_WITH_LIBSAMPLERATE
+                DEFINITION HAVE_LIBSAMPLERATE
+                TARGET Samplerate::Samplerate)
+
 	# mpg123
 	option(PLAYER_WITH_MPG123 "Play MP3 audio with libmpg123." ON)
 	player_find_package(
@@ -602,6 +610,8 @@ if(${PLAYER_AUDIO_BACKEND} MATCHES "^(SDL.*|libretro)$")
 
 	if(SPEEXDSP_FOUND)
 		message(STATUS "Resampler: speexdsp")
+	elseif(SAMPLERATE_FOUND)
+		message(STATUS "Resampler: libsamplerate")
 	elseif(SDL2_mixer_FOUND)
 		set(SDL_MIXER_USED ON)
 		message(STATUS "Resampler: SDL2")
