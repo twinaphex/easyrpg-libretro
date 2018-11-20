@@ -34,6 +34,18 @@ ifeq ($(platform), unix)
 	SHARED := -Wl,--no-undefined
 	LIBS += -lpthread
 
+ifeq ($(CC), cc)
+else
+ifeq ($(CC), gcc)
+else
+ifeq ($(CC), clang)
+else
+	RETRO_CROSSCOMPILING = 1
+	RETRO_TARGET_HOST = $(subst -gcc,,$(CC))
+endif
+endif
+endif
+
 # Haiku
 ifneq (,$(findstring Haiku,$(shell uname -s)))
 	LDFLAGS += -liconv
@@ -54,6 +66,7 @@ else ifeq ($(platform), osx)
 else ifneq (,$(findstring ios,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro_ios.dylib
 	RETRO_CROSSCOMPILING = 1
+	RETRO_TARGET_HOST = arm-apple-darwin
 
 	ifeq ($(IOSSDK),)
 		IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
@@ -92,6 +105,7 @@ else ifeq ($(platform), android)
 	endif
 
 	RETRO_CROSSCOMPILING = 1
+	RETRO_TARGET_HOST = arm-linux-androideabi
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
 	CXXFLAGS += -DUSE_POSIX_MEMALIGN -D__RETRO_ARM__
@@ -166,7 +180,8 @@ ifeq ($(RETRO_CROSSCOMPILING), 1)
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
 	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
-	RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_cross_toolchain.sh
+	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
+	./2_build_cross_toolchain.sh
 else
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
@@ -180,6 +195,12 @@ endif
 		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF -DPLAYER_AUDIO_RESAMPLER=samplerate \
 		-DCMAKE_IGNORE_PATH="/lib;/usr/lib;/lib64;/usr/lib64"
 	cmake --build . -- -j4
+
+ifeq ($(platform), android)
+	mv $(TARGET_NAME)_libretro.so $(TARGET_NAME)_libretro_android.so
+else ifneq (,$(findstring ios,$(platform)))
+	mv $(TARGET_NAME)_libretro.dylib $(TARGET_NAME)_libretro_ios.dylib
+endif
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
