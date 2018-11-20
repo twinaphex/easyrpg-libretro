@@ -221,16 +221,31 @@ all: $(TARGET)
 $(TARGET):
 	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
 ifeq ($(RETRO_CROSSCOMPILING), 1)
-	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
-	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
-	RETRO_CFLAGS="$(CFLAGS)$(DEPCFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)$(DEPCXXFLAGS)" \
-	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
-	./2_build_cross_toolchain.sh
+	ifneq ($(RETRO_DEPFLAGS), 0)
+		cd $(CORE_DIR)/builds/libretro/deps/libretro; \
+		RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
+		RETRO_CFLAGS="$(DEPCFLAGS)" RETRO_CXXFLAGS="$(DEPCXXFLAGS)" \
+		RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
+		./2_build_cross_toolchain.sh
+	else
+		cd $(CORE_DIR)/builds/libretro/deps/libretro; \
+		RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
+		RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
+		RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
+		./2_build_cross_toolchain.sh
+	endif
 else
-	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
-	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
-	RETRO_CFLAGS="$(CFLAGS)$(DEPCFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)$(DEPCXXFLAGS)" \
-	RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_toolchain.sh
+	ifneq ($(RETRO_DEPFLAGS), 0)
+		cd $(CORE_DIR)/builds/libretro/deps/libretro; \
+		RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
+		RETRO_CFLAGS="$(DEPCFLAGS)" RETRO_CXXFLAGS="$(DEPCXXFLAGS)" \
+		RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_toolchain.sh
+	else
+		cd $(CORE_DIR)/builds/libretro/deps/libretro; \
+		RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
+		RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
+		RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_toolchain.sh
+	endif
 endif
 	cd $(CORE_DIR)/builds/libretro;\
 	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
