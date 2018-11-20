@@ -51,14 +51,6 @@ if [ ! -f .patches-applied ]; then
         cp -r icu icu-native
         patch -Np0 < $SCRIPT_DIR/icu59-libretro.patch
 
-	pushd $LIBOGG_DIR
-	autoreconf -fi
-	popd
-
-	pushd $LIBSAMPLERATE_DIR
-	autoreconf -fi
-	popd
-
         cd liblcf
         autoreconf -fi
 	cd ..
@@ -67,6 +59,16 @@ if [ ! -f .patches-applied ]; then
 fi
 
 cd $WORKSPACE
+
+for x in $LIBPNG_DIR $FREETYPE_DIR $PIXMAN_DIR $LIBOGG_DIR $LIBVORBIS_DIR $MPG123_DIR $LIBSNDFILE_DIR $LIBSAMPLERATE_DIR liblcf; do
+	pushd $x
+if [ "$(uname)" == "Darwin" ]; then
+	touch *
+else
+	touch --date="`LC_ALL=C date`" *
+fi
+	popd
+done
 
 echo "Preparing toolchain"
 
