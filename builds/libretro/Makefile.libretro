@@ -106,6 +106,42 @@ else ifeq ($(platform), android)
 
 	RETRO_CROSSCOMPILING = 1
 	RETRO_TARGET_HOST = arm-linux-androideabi
+	
+	
+# Classic Platforms ####################
+# Platform affix = classic_<ISA>_<µARCH>
+# Help at https://modmyclassic.com/comp
+
+# (armv7 a7, hard point, neon based) ### 
+# NESC, SNESC, C64 mini 
+else ifeq ($(platform), classic_armv7_a7)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	COMMON_DEFINES += -Ofast \
+	-fdata-sections -ffunction-sections -Wl,--gc-sections \
+	-fno-stack-protector -fno-ident -fomit-frame-pointer \
+	-falign-functions=1 -falign-jumps=1 -falign-loops=1 \
+	-fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops \
+	-fmerge-all-constants -fno-math-errno \
+	-marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+	LDFLAGS += -marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+	HAVE_NEON = 1
+	ARCH = arm
+	LIBS += -lpthread
+	COMMON_DEFINES += -DUSE_POSIX_MEMALIGN -D__RETRO_ARM__ -DARM
+	RETRO_CROSSCOMPILING = 1
+	RETRO_TARGET_HOST = arm-linux-gnueabihf
+	ifeq ($(shell echo `$(CC) -dumpversion` "< 4.9" | bc -l), 1)
+	  COMMON_DEFINES += -march=armv7-a
+	else
+	  COMMON_DEFINES += -march=armv7ve
+	  # If gcc is 5.0 or later
+	  ifeq ($(shell echo `$(CC) -dumpversion` ">= 5" | bc -l), 1)
+	    LDFLAGS += -static-libgcc -static-libstdc++
+	  endif
+	endif
+#######################################
+
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
 	CXXFLAGS += -DUSE_POSIX_MEMALIGN -D__RETRO_ARM__
@@ -176,6 +212,10 @@ endif
 
 all: $(TARGET)
 $(TARGET):
+	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
+	@echo "** $(RETRO_CROSSCOMPILING) **"
+	@echo "** $(RETRO_TARGET_HOST) **"
+	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
 ifeq ($(RETRO_CROSSCOMPILING), 1)
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
