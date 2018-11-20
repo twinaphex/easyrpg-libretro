@@ -1718,7 +1718,7 @@ psf_d2i_clip_array (const double *src, int *dest, int count, int normalize)
 
 FILE *
 psf_open_tmpfile (char * fname, size_t fnamelen)
-{	const char * tmpdir ;
+{	/*const char * tmpdir ;
 	FILE * file ;
 
 	if (OS_IS_WIN32)
@@ -1738,6 +1738,6 @@ psf_open_tmpfile (char * fname, size_t fnamelen)
 	if ((file = fopen (fname, "wb+")) != NULL)
 		return file ;
 
-	memset (fname, 0, fnamelen) ;
+	memset (fname, 0, fnamelen) ;*/
 	return NULL ;
 } /* psf_open_tmpfile */

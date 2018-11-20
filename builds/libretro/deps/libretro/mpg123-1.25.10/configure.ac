@@ -1217,6 +1217,20 @@ AC_CHECK_LIB([mx], [powf])
 #	AC_DEFINE( 
 #fi
 
+if test x"$ac_cv_header_sys_signal_h" = xyes; then
+	AC_CHECK_FUNCS( sigemptyset sigaddset sigprocmask sigaction )
+	if test x"$ac_cv_func_sigemptyset" = xno ||
+	   test x"$ac_cv_func_sigaddset" = xno ||
+	   test x"$ac_cv_func_sigprocmask" = xno ||
+	   test x"$ac_cv_func_sigaction" = xno; then
+		AC_DEFINE(DONT_CATCH_SIGNALS, 1, [ Signal handling is not supported on this platform ])
+	fi
+else
+	AC_DEFINE(DONT_CATCH_SIGNALS, 1, [ Signal handling is not supported on this platform ])
+fi
+
+AC_CHECK_FUNCS( sleep, [ have_sleep=yes ], [ have_sleep=no ] )
+
 dnl ############## Choose compiler flags and CPU
 
 # do not assume gcc here, so no flags by default

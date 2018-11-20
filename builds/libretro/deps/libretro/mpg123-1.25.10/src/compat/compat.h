@@ -85,7 +85,8 @@
 #include <sys/time.h>
 #endif
 /* For select(), I need select.h according to POSIX 2001, else: sys/time.h sys/types.h unistd.h */
-#ifdef HAVE_SYS_SELECT_H
+/* PSP2: Including sys/select.h results in fd_set undefined error */
+#if defined(HAVE_SYS_SELECT_H) && !defined(PSP2)
 #include <sys/select.h>
 #endif
 

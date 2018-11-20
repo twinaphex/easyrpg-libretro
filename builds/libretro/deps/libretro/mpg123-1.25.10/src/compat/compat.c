@@ -45,6 +45,15 @@
 #  endif
 #endif
 
+/* vitasdk support */
+#ifdef PSP2
+#  include <psp2/io/dirent.h>
+#  include <psp2/io/stat.h>
+
+#  define opendir sceIoDopen
+#  define closedir sceIoDclose
+#endif
+
 #include "debug.h"
 
 #ifndef WINDOWS_UWP
@@ -423,6 +432,8 @@ struct compat_dir
 	int gotone; /* Got a result stored from FindFirstFileW. */
 	WIN32_FIND_DATAW d;
 	HANDLE ffn;
+#elif PSP2
+	int dir;
 #else
 	DIR* dir;
 #endif
@@ -509,15 +520,25 @@ char* compat_nextfile(struct compat_dir *cd)
 	}
 #else
 	{
+#ifdef PSP2
+		struct SceIoDirent dp;
+		while (sceIoDread(cd->dir, &dp) > 0)
+#else
 		struct dirent *dp;
 		while((dp = readdir(cd->dir)))
+#endif
 		{
 			struct stat fst;
-			char *fullpath = compat_catpath(cd->path, dp->d_name);
+#ifdef PSP2
+			char *d_name = dp.d_name;
+#else
+			char *d_name = dp->d_name;
+#endif
+			char *fullpath = compat_catpath(cd->path, d_name);
 			if(fullpath && !stat(fullpath, &fst) && S_ISREG(fst.st_mode))
 			{
 				free(fullpath);
-				return compat_strdup(dp->d_name);
+				return compat_strdup(d_name);
 			}
 			free(fullpath);
 		}
@@ -543,15 +564,25 @@ char* compat_nextdir(struct compat_dir *cd)
 	}
 #else
 	{
+#ifdef PSP2
+		struct SceIoDirent dp;
+		while (sceIoDread(cd->dir, &dp) > 0)
+#else
 		struct dirent *dp;
 		while((dp = readdir(cd->dir)))
+#endif
 		{
 			struct stat fst;
-			char *fullpath = compat_catpath(cd->path, dp->d_name);
+#ifdef PSP2
+			char *d_name = dp.d_name;
+#else
+			char *d_name = dp->d_name;
+#endif
+			char *fullpath = compat_catpath(cd->path, d_name);
 			if(fullpath && !stat(fullpath, &fst) && S_ISDIR(fst.st_mode))
 			{
 				free(fullpath);
-				return compat_strdup(dp->d_name);
+				return compat_strdup(d_name);
 			}
 			free(fullpath);
 		}

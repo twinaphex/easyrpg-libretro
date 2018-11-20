@@ -220,6 +220,10 @@ case "$host_os" in
 		;;
 	esac
 
+TYPEOF_SF_COUNT_T="int64_t"
+SIZEOF_SF_COUNT_T=8
+SF_COUNT_MAX="0x7FFFFFFFFFFFFFFFLL"
+
 if test $SIZEOF_SF_COUNT_T = 4 ; then
 	SF_COUNT_MAX="0x7FFFFFFF"
 	fi

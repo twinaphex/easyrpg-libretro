@@ -28,7 +28,9 @@
 #include <ctype.h>
 #if !defined (WIN32) || defined (__CYGWIN__)
 #include <sys/wait.h>
+#ifdef NETWORK
 #include <sys/socket.h>
+#endif
 #endif
 #include <errno.h>
 #include <string.h>
@@ -311,8 +313,11 @@ int control_generic (mpg123_handle *fr)
  		outstream = stderr;
  	else
  		outstream = stdout;
- 		
-#ifndef WIN32
+
+#if defined(GEKKO) || defined(_3DS) || defined(SWITCH)
+	fprintf(outstream, "The control interface is not supported on this platform\n");
+	return 0;
+#elif !defined(WIN32)
  	setlinebuf(outstream);
 #else /* perhaps just use setvbuf as it's C89 */
 	/*

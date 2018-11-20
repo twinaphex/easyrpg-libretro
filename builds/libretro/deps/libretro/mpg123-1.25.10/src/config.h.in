@@ -28,6 +28,9 @@
 /* The default audio output module(s) to use */
 #undef DEFAULT_OUTPUT_MODULE
 
+/* Signal handling is not supported on this platform */
+#undef DONT_CATCH_SIGNALS
+
 /* Define if building with dynamcally linked libmpg123 */
 #undef DYNAMIC_BUILD
 
@@ -184,8 +187,23 @@
 /* Define to 1 if you have the `setuid' function. */
 #undef HAVE_SETUID
 
+/* Define to 1 if you have the `sigaction' function. */
+#undef HAVE_SIGACTION
+
+/* Define to 1 if you have the `sigaddset' function. */
+#undef HAVE_SIGADDSET
+
+/* Define to 1 if you have the `sigemptyset' function. */
+#undef HAVE_SIGEMPTYSET
+
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
+
+/* Define to 1 if you have the `sigprocmask' function. */
+#undef HAVE_SIGPROCMASK
+
+/* Define to 1 if you have the `sleep' function. */
+#undef HAVE_SLEEP
 
 /* Define to 1 if you have the <sndio.h> header file. */
 #undef HAVE_SNDIO_H
