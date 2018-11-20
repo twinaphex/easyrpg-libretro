@@ -700,7 +700,7 @@ wavlike_srate2blocksize (int srate_chan_product)
 } /* srate2blocksize */
 
 int
-wavlike_read_bext_chunk (SF_PRIVATE *psf, uint32_t chunksize)
+wavlike_read_bext_chunk (SF_PRIVATE *psf, unsigned int chunksize)
 {
 	SF_BROADCAST_INFO_16K * b ;
 	uint32_t bytes = 0 ;
@@ -787,7 +787,7 @@ wavlike_write_bext_chunk (SF_PRIVATE *psf)
 } /* wavlike_write_bext_chunk */
 
 int
-wavlike_read_cart_chunk (SF_PRIVATE *psf, uint32_t chunksize)
+wavlike_read_cart_chunk (SF_PRIVATE *psf, unsigned int chunksize)
 {	SF_CART_INFO_16K *c ;
 	uint32_t bytes = 0 ;
 	int k ;

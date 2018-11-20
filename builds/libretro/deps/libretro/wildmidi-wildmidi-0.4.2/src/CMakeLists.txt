@@ -248,7 +248,6 @@ SET(WILDMIDILIB_LIBDIR "${WILDMIDILIB_INSTALLDIR}")
 CONFIGURE_FILE("wildmidi.pc.in" "${CMAKE_BINARY_DIR}/wildmidi.pc" @ONLY)
 
 # install target (*nix OSes)
-IF (UNIX AND NOT APPLE)
     # install our libraries
     IF (WANT_STATIC)
         INSTALL(TARGETS libwildmidi_static DESTINATION ${WILDMIDILIB_INSTALLDIR})
@@ -274,8 +273,6 @@ IF (UNIX AND NOT APPLE)
 
     # install supporting man pages and headers
     INSTALL(FILES ${CMAKE_SOURCE_DIR}/include/wildmidi_lib.h DESTINATION include)
-    INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/docs/man/ DESTINATION share/man)
-ENDIF (UNIX AND NOT APPLE)
 
 # install target (Windows: MinGW or MinGW-w64)
 IF (WIN32 AND CMAKE_COMPILER_IS_MINGW)

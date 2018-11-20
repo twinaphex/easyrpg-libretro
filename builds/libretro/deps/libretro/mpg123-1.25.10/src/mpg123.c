@@ -1239,6 +1239,8 @@ int main(int sys_argc, char ** sys_argv)
 			if(param.verbose > 2) fprintf(stderr, "Note: pausing %i seconds before next track.\n", param.delay);
 #ifdef WIN32
 			Sleep(param.delay*1000);
+#elif !defined(HAVE_SLEEP)
+			fprintf(stderr, "sleep not supported on this platform\n");
 #else
 			sleep(param.delay);
 #endif

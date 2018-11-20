@@ -103,6 +103,7 @@ typedef size_t uintptr_t;
 #   define U_NL_LANGINFO_CODESET CODESET
 #endif
 
+#if 0
 #ifdef U_TZSET
     /* Use the predefined value. */
 #elif U_PLATFORM_USES_ONLY_WIN32_API
@@ -152,6 +153,7 @@ typedef size_t uintptr_t;
    /* not defined */
 #else
 #   define U_TZNAME tzname
+#endif
 #endif
 
 #ifdef U_HAVE_MMAP

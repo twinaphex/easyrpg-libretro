@@ -266,13 +266,6 @@ $(srcdir)/%.hh: $(srcdir)/%.rl
 	$(AM_V_GEN)(cd $(srcdir) && $(RAGEL) -e -F1 -o "$*.hh" "$*.rl") \
 	|| ($(RM) "$@"; false)
 
-noinst_PROGRAMS = \
-	main \
-	test \
-	test-buffer-serialize \
-	test-size-params \
-	test-would-substitute \
-	$(NULL)
 bin_PROGRAMS =
 
 main_SOURCES = main.cc

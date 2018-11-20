@@ -1,4 +1,4 @@
-SUBDIRS = pixman demos test
+SUBDIRS = pixman
 
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA=pixman-1.pc
