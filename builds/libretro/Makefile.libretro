@@ -1,4 +1,9 @@
 RETRO_CROSSCOMPILING=0
+RETRO_DEPFLAGS=0
+
+ifeq ($(COMPILER_CORE_COUNT),)
+	COMPILER_CORE_COUNT=4
+endif
 
 ifeq ($(platform),)
 	platform = unix
@@ -123,6 +128,12 @@ else ifeq ($(platform), classic_armv7_a7)
 	-fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops \
 	-fmerge-all-constants -fno-math-errno \
 	-marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+	RETRO_DEPFLAGS += -Ofast \
+	-fno-stack-protector -fno-ident -fomit-frame-pointer \
+	-falign-functions=1 -falign-jumps=1 -falign-loops=1 \
+	-fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops \
+	-fmerge-all-constants -fno-math-errno \
+	-marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
 	LDFLAGS += -marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
 	HAVE_NEON = 1
 	ARCH = arm
@@ -193,25 +204,32 @@ ifeq ($(RETRO_PROFILE),1)
 endif
 
 OBJECTS		= $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
-CXXFLAGS       += -D__LIBRETRO__ -fpermissive $(fpic) $(INCDIR) $(COMMON_DEFINES)
-CFLAGS	       += -D__LIBRETRO__ $(fpic) $(INCDIR) $(COMMON_DEFINES)
+
+# RETRO_DEPFLAGS are used for compiler flags specificly for dependencies and seperated
+# away from the Libretro target compiler flags.
+ifneq ($(RETRO_DEPFLAGS), 0)
+	DEPCXXFLAGS    += -D__LIBRETRO__ -fpermissive $(fpic) $(INCDIR) $(RETRO_DEPFLAGS)
+	DEPCFLAGS	   += -D__LIBRETRO__ $(fpic) $(INCDIR) $(RETRO_DEPFLAGS)
+	CXXFLAGS       += -D__LIBRETRO__ -fpermissive $(fpic) $(INCDIR) $(COMMON_DEFINES)
+	CFLAGS	       += -D__LIBRETRO__ $(fpic) $(INCDIR) $(COMMON_DEFINES)
+else
+	CXXFLAGS       += -D__LIBRETRO__ -fpermissive $(fpic) $(INCDIR) $(COMMON_DEFINES)
+	CFLAGS	       += -D__LIBRETRO__ $(fpic) $(INCDIR) $(COMMON_DEFINES)
+endif
 
 all: $(TARGET)
 $(TARGET):
 	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
-	@echo "** $(RETRO_CROSSCOMPILING) **"
-	@echo "** $(RETRO_TARGET_HOST) **"
-	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
 ifeq ($(RETRO_CROSSCOMPILING), 1)
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
-	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
+	RETRO_CFLAGS="$(CFLAGS)$(DEPCFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)$(DEPCXXFLAGS)" \
 	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
 	./2_build_cross_toolchain.sh
 else
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
-	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
+	RETRO_CFLAGS="$(CFLAGS)$(DEPCFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)$(DEPCXXFLAGS)" \
 	RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_toolchain.sh
 endif
 	cd $(CORE_DIR)/builds/libretro;\
@@ -220,7 +238,7 @@ endif
 		-DBUILD_SHARED_LIBS=ON -DCMAKE_PREFIX_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
 		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF \
 		-DCMAKE_IGNORE_PATH="/lib;/usr/lib;/lib64;/usr/lib64"
-	cmake --build . -- -j4
+	cmake --build . -- -j$(COMPILER_CORE_COUNT)
 
 ifeq ($(platform), android)
 	mv $(TARGET_NAME)_libretro.so $(TARGET_NAME)_libretro_android.so
