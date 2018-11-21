@@ -2,6 +2,7 @@
 # When you are crosscompiling and the target platform is not unix you must set
 # RETRO_CROSSCOMPILING=1 and set RETRO_TARGET_HOST to the platform triplet.
 # When you use gcc the triplet is usually the filename before "-gcc".
+# Requires a C++11 capable compiler (gcc 4.8 or newer).
 
 RETRO_CROSSCOMPILING=0
 RETRO_DEPFLAGS=0
@@ -48,6 +49,7 @@ ifeq ($(CC), clang)
 else
 	RETRO_CROSSCOMPILING = 1
 	RETRO_TARGET_HOST = $(subst -gcc,,$(CC))
+	LDFLAGS += -static-libgcc -static-libstdc++
 endif
 endif
 endif
