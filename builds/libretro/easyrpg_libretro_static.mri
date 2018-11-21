@@ -1,0 +1,18 @@
+create easyrpg_libretro_static.a
+addlib deps/libretro/lib/liblcf.a
+addlib deps/libretro/lib/libexpat.a
+addlib deps/libretro/lib/libpixman-1.a
+addlib deps/libretro/lib/libicuuc.a
+addlib deps/libretro/lib/libicui18n.a
+addlib deps/libretro/lib/libicudata.a
+addlib deps/libretro/lib/libfreetype.a
+addlib deps/libretro/lib/libmpg123.a
+addlib deps/libretro/lib/libsndfile.a
+addlib deps/libretro/lib/libvorbisfile.a
+addlib deps/libretro/lib/libvorbis.a
+addlib deps/libretro/lib/libogg.a
+addlib deps/libretro/lib/libWildMidi.a
+addlib deps/libretro/lib/libsamplerate.a
+addlib easyrpg_libretro.a
+save
+end

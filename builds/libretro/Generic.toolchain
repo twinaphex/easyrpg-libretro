@@ -1,0 +1,14 @@
+cmake_minimum_required( VERSION 2.6.3 )
+
+if( DEFINED CMAKE_CROSSCOMPILING )
+  # subsequent toolchain loading is not really needed
+  return()
+endif()
+
+if( CMAKE_TOOLCHAIN_FILE )
+  # touch toolchain variable to suppress "unused variable" warning
+endif()
+
+set( CMAKE_SYSTEM_NAME Generic )
+set( CMAKE_SYSTEM_VERSION 1 )
+

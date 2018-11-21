@@ -23,8 +23,10 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <stdarg.h>
+#ifndef LIBXMP_CORE_PLAYER
 #ifndef WIN32
 #include <dirent.h>
+#endif
 #endif
 
 #include "xmp.h"

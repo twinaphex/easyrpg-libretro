@@ -77,8 +77,9 @@ echo "Preparing toolchain"
 
 export PLATFORM_PREFIX=$WORKSPACE
 export TARGET_HOST=$RETRO_TARGET_HOST
-export PKG_CONFIG_PATH=$PLATFORM_PREFIX/lib/pkgconfig
-export PKG_CONFIG_LIBDIR=$PKG_CONFIG_PATH
+unset PKG_CONFIG_PATH
+export PKG_CONFIG_LIBDIR=$PLATFORM_PREFIX/lib/pkgconfig
+export PKG_CONFIG=pkg-config
 export MAKEFLAGS="-j${nproc:-4}"
 
 function set_build_flags {
