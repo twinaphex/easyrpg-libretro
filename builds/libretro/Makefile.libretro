@@ -254,7 +254,7 @@ else
 endif
 endif
 	cd $(CORE_DIR)/builds/libretro;\
-	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS) -DWANT_FASTWAV" LDFLAGS="$(LDFLAGS)" \
 		$(CMAKE) $(CORE_DIR) -G "Unix Makefiles" -DPLAYER_TARGET_PLATFORM=libretro \
 		-DBUILD_SHARED_LIBS=ON -DCMAKE_FIND_ROOT_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
 		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF \
