@@ -47,6 +47,7 @@
 #include "unicode/uclean.h"
 #include "uoptions.h"
 #include "pkg_genc.h"
+#include "filetools.h"
 
 #define MAX_COLUMN ((uint32_t)(0xFFFFFFFFU))
 

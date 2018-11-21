@@ -25,6 +25,7 @@ endif
 
 TARGET_NAME := easyrpg
 CORE_DIR    := $(PWD)/../..
+CMAKE       = cmake
 
 # Version information from git
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
@@ -185,10 +186,13 @@ else
 	TARGET := $(TARGET_NAME)_libretro.dll
 	CC = gcc
 	CXX = g++
+	CMAKE = /usr/bin/cmake
 	SHARED := -static-libgcc -static-libstdc++
 	ifeq ($(DEBUG), 0)
 		SHARED += -s
 	endif
+	fpic := -fPIC
+	CMAKE_EXTRA_ARGS = -DWIN32=1
 endif
 
 ifeq ($(DEBUG), 1)
@@ -249,14 +253,17 @@ endif
 endif
 	cd $(CORE_DIR)/builds/libretro;\
 	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		cmake $(CORE_DIR) -DPLAYER_TARGET_PLATFORM=libretro \
-		-DBUILD_SHARED_LIBS=ON -DCMAKE_PREFIX_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
-		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF -DPLAYER_AUDIO_RESAMPLER=samplerate \
-		-DCMAKE_IGNORE_PATH="/lib;/usr/lib;/lib64;/usr/lib64"
-	cmake --build . -- -j$(COMPILER_CORE_COUNT)
+		$(CMAKE) $(CORE_DIR) -G "Unix Makefiles" -DPLAYER_TARGET_PLATFORM=libretro \
+		-DBUILD_SHARED_LIBS=ON -DCMAKE_FIND_ROOT_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
+		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF \
+		-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+		$(CMAKE_EXTRA_ARGS)
+	$(CMAKE) --build . -- -j$(COMPILER_CORE_COUNT)
 
 ifeq ($(platform), android)
 	mv $(TARGET_NAME)_libretro.so $(TARGET_NAME)_libretro_android.so
+else ifeq ($(platform), win)
+	mv $(TARGET_NAME)_libretro.so $(TARGET_NAME)_libretro.dll
 else ifneq (,$(findstring ios,$(platform)))
 	mv $(TARGET_NAME)_libretro.dylib $(TARGET_NAME)_libretro_ios.dylib
 endif

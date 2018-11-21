@@ -366,7 +366,7 @@ int control_generic (mpg123_handle *fr)
 #ifdef WANT_WIN32_FIFO
 			n = win32_fifo_read_peek(&tv);
 #else
-			n = select(32, &fds, NULL, NULL, &tv);
+			n = 0;//select(32, &fds, NULL, NULL, &tv);
 #endif
 			if (n == 0) {
 				if (!play_frame())
@@ -410,7 +410,7 @@ int control_generic (mpg123_handle *fr)
 #ifdef WANT_WIN32_FIFO
 				n = win32_fifo_read_peek(NULL);
 #else
-				n = select(32, &fds, NULL, NULL, NULL);
+				n = 0;//select(32, &fds, NULL, NULL, NULL);
 #endif
 				if (n > 0)
 					break;

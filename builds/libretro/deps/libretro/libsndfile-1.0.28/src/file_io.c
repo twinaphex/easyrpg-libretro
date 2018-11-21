@@ -468,7 +468,7 @@ psf_is_pipe (SF_PRIVATE *psf)
 		return SF_TRUE ;
 		} ;
 
-	if (S_ISFIFO (statbuf.st_mode) || S_ISSOCK (statbuf.st_mode))
+	if (S_ISFIFO (statbuf.st_mode) /*|| S_ISSOCK (statbuf.st_mode)*/)
 		return SF_TRUE ;
 
 	return SF_FALSE ;

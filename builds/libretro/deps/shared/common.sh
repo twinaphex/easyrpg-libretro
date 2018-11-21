@@ -79,7 +79,15 @@ function install_lib_cmake {
 	pushd $1
 	shift
 	rm -rf CMakeCache.txt CMakeFiles/
-	$CMAKE_WRAPPER cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF \
+
+if [[ "$(uname)" == MINGW* ]]; then
+	# Force msys2 cmake because mingw CMake has problems with the path separator
+	CMAKE=/usr/bin/cmake
+else
+	CMAKE=cmake
+fi
+
+	$CMAKE_WRAPPER $CMAKE . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF \
 		-DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS $CPPFLAGS" \
 		-DCMAKE_INSTALL_PREFIX=$PLATFORM_PREFIX -DCMAKE_SYSTEM_NAME=Generic $@
 	make clean
