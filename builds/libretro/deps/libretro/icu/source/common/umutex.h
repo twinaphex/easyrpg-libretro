@@ -374,9 +374,12 @@ struct UConditionVar {
  */
 
 //#include <pthread.h>
-
+#ifndef PTHREAD_MUTEX_INITIALIZER
 #define PTHREAD_MUTEX_INITIALIZER 0
+#endif
+#ifndef PTHREAD_CONF_INITIALIZER
 #define PTHREAD_COND_INITIALIZER 0
+#endif
 //typedef int pthread_mutex_t;
 //typedef int pthread_cond_t;
 
