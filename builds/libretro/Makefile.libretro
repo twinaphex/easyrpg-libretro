@@ -34,15 +34,12 @@ ifneq ($(GIT_VERSION),unknown)
 	COMMON_DEFINES_GIT += -DGIT_VERSION=$(GIT_VERSION)
 endif
 
-RETRO_TARGET_IS_LINUX = 0
-
 # Unix
 ifeq ($(platform), unix)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -Wl,--no-undefined
 	LIBS += -lpthread
-	RETRO_TARGET_IS_LINUX = 1
 
 ifeq ($(CC), cc)
 else
@@ -291,7 +288,7 @@ $(TARGET):
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
 	RETRO_CFLAGS="$(DEPCFLAGS)" RETRO_CXXFLAGS="$(DEPCXXFLAGS)" \
 	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
-	RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" ICU_VERSION="$(ICU_VERSION)" \
+	ICU_VERSION="$(ICU_VERSION)" \
 	$(BUILD_TOOLCHAIN_CMD)
 
 	cd $(CORE_DIR)/builds/libretro;\

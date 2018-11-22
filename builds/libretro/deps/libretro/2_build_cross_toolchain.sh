@@ -96,12 +96,8 @@ function set_build_flags {
 	export LDFLAGS="-L$PLATFORM_PREFIX/lib $RETRO_LDFLAGS"
 }
 
-# Build native icu59
+# Build native icu
 install_lib_icu_native
-
-if [ "$RETRO_TARGET_IS_LINUX" != 1 ]; then
-        cp umutex_patched.h icu/source/common/umutex.h
-fi
 
 # Install libraries
 set_build_flags
