@@ -325,6 +325,7 @@ const NumberFormatTestTupleFieldData gFieldData[] = {
     FIELD_INIT(positiveSuffix, &gStrOps),
     FIELD_INIT(negativePrefix, &gStrOps),
     FIELD_INIT(negativeSuffix, &gStrOps),
+    FIELD_INIT(signAlwaysShown, &gIntOps),
     FIELD_INIT(localizedPattern, &gStrOps),
     FIELD_INIT(toPattern, &gStrOps),
     FIELD_INIT(toLocalizedPattern, &gStrOps),
@@ -335,6 +336,7 @@ const NumberFormatTestTupleFieldData gFieldData[] = {
     FIELD_INIT(parseIntegerOnly, &gIntOps),
     FIELD_INIT(decimalPatternMatchRequired, &gIntOps),
     FIELD_INIT(parseNoExponent, &gIntOps),
+    FIELD_INIT(parseCaseSensitive, &gIntOps),
     FIELD_INIT(outputCurrency, &gStrOps)
 };
 

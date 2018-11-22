@@ -60,6 +60,22 @@
 #include "listformattertest.h"  // ListFormatterTest
 #include "regiontst.h"      // RegionTest
 
+// NumberFormatter is disabled on some platforms due to C++11 compatibility
+#if !UPRV_INCOMPLETE_CPP11_SUPPORT
+#   include "numbertest.h"     // All NumberFormatter tests
+#else
+class NumberTest : public IntlTest {
+  public:
+    void runIndexedTest(int32_t index, UBool exec, const char*& name, char*) {
+        if (index > 0) { name = ""; return; } // base case
+        name = "NumberTest";
+        if (exec) {
+            infoln(u"   NOTE: NumberTest is disabled on this platform; see ICU ticket #13393.");
+        }
+    }
+};
+#endif
+
 extern IntlTest *createCompactDecimalFormatTest();
 extern IntlTest *createGenderInfoTest();
 #if !UCONFIG_NO_BREAK_ITERATION
@@ -204,7 +220,7 @@ void IntlTestFormat::runIndexedTest( int32_t index, UBool exec, const char* &nam
             callTest(*test, par);
           }
           break;
-       case 49:
+        case 49:
           name = "ScientificNumberFormatterTest";
           if (exec) {
             logln("ScientificNumberFormatterTest test---");
@@ -213,15 +229,16 @@ void IntlTestFormat::runIndexedTest( int32_t index, UBool exec, const char* &nam
             callTest(*test, par);
           }
           break;
-      case 50: 
-        name = "NumberFormat2Test"; 
+        case 50:
+          name = "NumberFormat2Test"; 
           if (exec) { 
             logln("NumberFormat2Test test---"); 
             logln((UnicodeString)""); 
             LocalPointer<IntlTest> test(createNumberFormat2Test()); 
             callTest(*test, par); 
           } 
-          break; 
+          break;
+        TESTCLASS(51,NumberTest);
         default: name = ""; break; //needed to end loop
     }
     if (exec) {

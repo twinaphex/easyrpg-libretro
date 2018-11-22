@@ -774,7 +774,7 @@ static int32_t populatePrefixSuffix(
 
   // ICU 59 HACK: Ignore negative part of format string, mimicking ICU 58 behavior.
   // TODO(sffc): Make sure this is fixed during the overhaul port in ICU 60.
-  int32_t semiPos = formatStr.indexOf((UChar32)';', (int32_t)0);
+  int32_t semiPos = formatStr.indexOf(';', 0);
   if (semiPos == -1) {
     semiPos = formatStr.length();
   }

@@ -116,7 +116,7 @@ LB12:        GL CM* [^CM];
 
 LB12a:       [^SP BA HY] CM* GL;
 
-# LB 13 ICU Tailoring, matches tailoring exmaple 8 from UAX 14.
+# LB 13 ICU Tailoring, matches tailoring example 8 from UAX 14.
 #
 #   LB13.1   [^SP] CM* [CL CP EX IS SY]    # original UAX 14 rule.
 #   LB13.2   SP    CM* [CL CP EX IS SY]

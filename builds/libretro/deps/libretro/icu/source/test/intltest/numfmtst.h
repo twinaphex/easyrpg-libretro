@@ -215,8 +215,12 @@ class NumberFormatTest: public CalendarTimeZoneTest {
     void Test11475_signRecognition();
     void Test11640_getAffixes();
     void Test11649_toPatternWithMultiCurrency();
+    void Test13327_numberingSystemBufferOverflow();
+    void Test13391_chakmaParsing();
 
     void checkExceptionIssue11735();
+    void Test11035_FormatCurrencyAmount();
+    void Test11318_DoubleConversion();
 
  private:
     UBool testFormattableAsUFormattable(const char *file, int line, Formattable &f);

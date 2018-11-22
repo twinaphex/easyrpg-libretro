@@ -373,24 +373,16 @@ struct UConditionVar {
  *  POSIX platform
  */
 
-//#include <pthread.h>
-#ifndef PTHREAD_MUTEX_INITIALIZER
-#define PTHREAD_MUTEX_INITIALIZER 0
-#endif
-#ifndef PTHREAD_CONF_INITIALIZER
-#define PTHREAD_COND_INITIALIZER 0
-#endif
-//typedef int pthread_mutex_t;
-//typedef int pthread_cond_t;
+#include <pthread.h>
 
 struct UMutex {
-    uint32_t  fMutex;
+    pthread_mutex_t  fMutex;
 };
 typedef struct UMutex UMutex;
 #define U_MUTEX_INITIALIZER  {PTHREAD_MUTEX_INITIALIZER}
 
 struct UConditionVar {
-    uint32_t  fCondition;
+    pthread_cond_t   fCondition;
 };
 #define U_CONDITION_INITIALIZER {PTHREAD_COND_INITIALIZER}
 
