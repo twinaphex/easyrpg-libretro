@@ -34,12 +34,15 @@ ifneq ($(GIT_VERSION)," unknown")
 ##   COMMON_DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
 endif
 
+RETRO_TARGET_IS_LINUX = 0
+
 # Unix
 ifeq ($(platform), unix)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -Wl,--no-undefined
 	LIBS += -lpthread
+	RETRO_TARGET_IS_LINUX = 1
 
 ifeq ($(CC), cc)
 else
@@ -198,6 +201,7 @@ else ifeq ($(platform), libnx)
 	CC = $(RETRO_TARGET_HOST)-gcc
 	CXX = $(RETRO_TARGET_HOST)-g++
 	CMAKE_EXTRA_ARGS = -DCMAKE_TOOLCHAIN_FILE=Generic.toolchain
+	ICU_VERSION = 59
 
 # Vita
 else ifeq ($(platform), vita)
@@ -216,6 +220,7 @@ else ifeq ($(platform), vita)
 	RETRO_CROSSCOMPILING = 1
 	RETRO_TARGET_HOST = arm-vita-eabi
 	CMAKE_EXTRA_ARGS = -DCMAKE_TOOLCHAIN_FILE=Generic.toolchain
+	ICU_VERSION = 59
 
 # Windows
 else
@@ -266,12 +271,14 @@ ifneq ($(RETRO_DEPFLAGS), 0)
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
 	RETRO_CFLAGS="$(DEPCFLAGS)" RETRO_CXXFLAGS="$(DEPCXXFLAGS)" \
 	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
+	RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" ICU_VERSION="$(ICU_VERSION)" \
 	./2_build_cross_toolchain.sh
 else
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
 	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
 	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
+	RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" ICU_VERSION="$(ICU_VERSION)" \
 	./2_build_cross_toolchain.sh
 endif
 else
@@ -279,12 +286,14 @@ ifneq ($(RETRO_DEPFLAGS), 0)
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
 	RETRO_CFLAGS="$(DEPCFLAGS)" RETRO_CXXFLAGS="$(DEPCXXFLAGS)" \
-	RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_toolchain.sh
+	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" \
+	./2_build_toolchain.sh
 else
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
 	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
-	RETRO_LDFLAGS="$(LDFLAGS)" ./2_build_toolchain.sh
+	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" \
+	./2_build_toolchain.sh
 endif
 endif
 ifeq ($(STATIC_LINKING), 1)

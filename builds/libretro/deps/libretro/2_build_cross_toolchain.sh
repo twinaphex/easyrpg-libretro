@@ -99,6 +99,10 @@ function set_build_flags {
 # Build native icu59
 install_lib_icu_native
 
+if [ "$RETRO_TARGET_IS_LINUX" != 1 ]; then
+        cp umutex_patched.h icu/source/common/umutex.h
+fi
+
 # Install libraries
 set_build_flags
 install_lib_zlib

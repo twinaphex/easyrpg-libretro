@@ -130,6 +130,10 @@ if [ "$ENABLE_CCACHE" ]; then
 	export CXX="ccache $RETRO_CXX"
 fi
 
+if [ "$RETRO_TARGET_IS_LINUX" != 1 ]; then
+	cp umutex_patched.h icu/source/common/umutex.h
+fi
+
 if [[ "$(uname)" == MINGW* ]]; then
 	install_lib_zlib_windows
 else

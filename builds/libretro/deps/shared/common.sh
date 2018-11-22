@@ -155,7 +155,7 @@ function install_lib_icu_cross {
 	# Cross compile
 	export ICU_CROSS_BUILD=$PWD/icu-native/source
 
-	pushd icu/source
+	pushd icu$ICU_VERSION/source
 
 	cp config/mh-linux config/mh-unknown
 
