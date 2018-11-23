@@ -106,18 +106,7 @@ endif
 
 # Android
 else ifeq ($(platform), android)
-	TARGET := $(TARGET_NAME)_libretro_android.so
-	CC = arm-linux-androideabi-gcc$(EXE_EXT)
-	CXX = arm-linux-androideabi-g++$(EXE_EXT)
-	CXXFLAGS += -D__RETRO_ARM__
-	fpic := -fPIC
-
-	ifeq ($(RETRO_PROFILE),1)
-		LDFLAGS += -llog
-	endif
-
-	RETRO_CROSSCOMPILING = 1
-	RETRO_TARGET_HOST = arm-linux-androideabi
+	$(error Not supported, use ndk-build)
 
 # Classic Platforms ####################
 # Platform affix = classic_<ISA>_<µARCH>

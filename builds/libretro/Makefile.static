@@ -1,6 +1,7 @@
 EASYRPG_DIR       := $(CORE_DIR)/src
-DEPS_DIR          := $(CORE_DIR)/builds/libretro/deps/libretro
 LIBRETRO_COMM_DIR := $(CORE_DIR)/builds/libretro/libretro-common
+
+DEPS_DIR          := $(CORE_DIR)/builds/libretro/deps/libretro
 
 COMMON_DEFINES := \
 		-DUSE_LIBRETRO \
@@ -14,8 +15,8 @@ LIBS :=  \
 	-licuuc -licui18n -licudata \
 	-lfreetype -lharfbuzz -lfreetype -lmpg123 \
 	-lsndfile -lvorbisfile -lvorbis -logg \
-	-lWildMidi -lsamplerate 
-	
+	-lWildMidi -lsamplerate
+
 ifeq ($(platform), win)
 LIBS += -lShlwapi
 endif
