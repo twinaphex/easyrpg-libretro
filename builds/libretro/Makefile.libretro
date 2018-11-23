@@ -7,6 +7,10 @@
 RETRO_CROSSCOMPILING=0
 RETRO_DEPFLAGS=0
 
+# Don't set this to 1 unless the default CMake build doesn't work.
+# The static Makefile has the risk of going out of sync and breaking.
+STATIC_MAKEFILE=0
+
 ifeq ($(COMPILER_CORE_COUNT),)
 	COMPILER_CORE_COUNT=4
 endif
@@ -38,7 +42,7 @@ endif
 ifeq ($(platform), unix)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
-	SHARED := -Wl,--no-undefined
+	LDFLAGS := -Wl,--no-undefined
 	LIBS += -lpthread
 
 ifeq ($(CC), cc)
@@ -68,7 +72,7 @@ else ifeq ($(platform), osx)
 		CXXFLAGS += $(ARCHFLAGS)
 		LDFLAGS += $(ARCHFLAGS)
 	endif
-        LDFLAGS += -liconv
+	LDFLAGS += -liconv
 
 # iOS
 else ifneq (,$(findstring ios,$(platform)))
@@ -157,7 +161,7 @@ else ifeq ($(platform), classic_armv7_a7)
 else ifneq (,$(findstring armv,$(platform)))
 	CXXFLAGS += -DUSE_POSIX_MEMALIGN -D__RETRO_ARM__
 	TARGET := $(TARGET_NAME)_libretro.so
-	SHARED := -Wl,--no-undefined
+	LDFLAGS += -Wl,--no-undefined
 	LIBS += -lpthread
 	fpic := -fPIC
 	ifneq (,$(findstring clang,$(platform)))
@@ -227,12 +231,16 @@ else
 	CC = gcc
 	CXX = g++
 	CMAKE = /usr/bin/cmake
-	SHARED := -static-libgcc -static-libstdc++
+	CFLAGS += -DUNICODE -D_UNICODE -DWILDMIDI_STATIC
+	CXXFLAGS += $(CFLAGS)
+	LDFLAGS += -lShlwapi -static-libgcc -static-libstdc++
+	SHARED := -shared
 	ifeq ($(DEBUG), 0)
 		SHARED += -s
 	endif
-	fpic := -fPIC
 	CMAKE_EXTRA_ARGS = -DWIN32=1
+	# CMake on the buildbot fails to find liblcf...
+	STATIC_MAKEFILE = 1
 endif
 
 ifeq ($(DEBUG), 1)
@@ -244,8 +252,6 @@ endif
 ifeq ($(RETRO_PROFILE),1)
 	CXXFLAGS += -DRETRO_PROFILE=1
 endif
-
-OBJECTS		= $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 
 # RETRO_DEPFLAGS are used for compiler flags specificly for dependencies and seperated
 # away from the Libretro target compiler flags.
@@ -280,10 +286,14 @@ endif
 CFLAGS   += $(COMMON_DEFINES_GIT) -DWANT_FASTWAV
 CXXFLAGS += $(COMMON_DEFINES_GIT) -DWANT_FASTWAV -std=c++11
 
-LDFLAGS        += $(SHARED)
+ifeq ($(STATIC_MAKEFILE), 1)
+include Makefile.static
+OBJECTS	= $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
+endif
 
 all: $(TARGET)
-$(TARGET):
+
+easyrpg_libs:
 	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
 
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
@@ -292,14 +302,18 @@ $(TARGET):
 	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
 	ICU_VERSION="$(ICU_VERSION)" \
 	$(BUILD_TOOLCHAIN_CMD)
+	touch easyrpg_libs
 
+$(OBJECTS): easyrpg_libs
+
+$(TARGET): $(OBJECTS) easyrpg_libs
+ifeq ($(STATIC_MAKEFILE), 0)
 	cd $(CORE_DIR)/builds/libretro;\
 	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		$(CMAKE) $(CORE_DIR) -DPLAYER_TARGET_PLATFORM=libretro \
 		-DBUILD_SHARED_LIBS=$(BUILD_SHARED_LIBS) -DCMAKE_FIND_ROOT_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
 		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF \
 		-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY $(CMAKE_EXTRA_ARGS)
-
 	$(CMAKE) --build . -- -j$(COMPILER_CORE_COUNT)
 
 ifeq ($(platform), android)
@@ -316,8 +330,12 @@ else ifeq ($(platform), vita)
 	mv $(TARGET_NAME)_libretro_static.a $(TARGET_NAME)_libretro_$(platform).a
 endif
 
+else
+	$(CXX) $(LDFLAGS) $(fpic) $(SHARED) -o $@ $(OBJECTS) $(LIBS)
+endif
+
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) $(TARGET) easyrpg_libs
 	rm -rf CMakeCache.txt CMakeLists/
 	rm -rf deps/libretro/icu-native
 	rm -rf deps/libretro/lib
@@ -325,5 +343,4 @@ clean:
 	rm -f deps/libretro/config.cache
 
 .PHONY: clean
-
 

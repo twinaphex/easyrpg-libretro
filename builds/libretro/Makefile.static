@@ -1,0 +1,39 @@
+EASYRPG_DIR       := $(CORE_DIR)/src
+DEPS_DIR          := $(CORE_DIR)/builds/libretro/deps/libretro
+LIBRETRO_COMM_DIR := $(CORE_DIR)/builds/libretro/libretro-common
+
+COMMON_DEFINES := \
+		-DUSE_LIBRETRO \
+		-DHAVE_MPG123 -DWANT_FMMIDI -DHAVE_WILDMIDI \
+		-DHAVE_OGGVORBIS -DHAVE_LIBSNDFILE \
+		-DHAVE_LIBSAMPLERATE -DSUPPORT_AUDIO
+
+LIBS :=  \
+	-L$(DEPS_DIR)/lib \
+	-llcf -lexpat -lpixman-1 -lpng -lz \
+	-licuuc -licui18n -licudata \
+	-lfreetype -lharfbuzz -lfreetype -lmpg123 \
+	-lsndfile -lvorbisfile -lvorbis -logg \
+	-lWildMidi -lsamplerate 
+	
+ifeq ($(platform), win)
+LIBS += -lShlwapi
+endif
+
+INCDIR := \
+	-I$(EASYRPG_DIR) \
+	-I$(DEPS_DIR)/include \
+	-I$(DEPS_DIR)/include/liblcf \
+	-I$(DEPS_DIR)/include/pixman-1 \
+	-I$(DEPS_DIR)/include/opus \
+	-I$(DEPS_DIR)/include/libxmp-lite \
+	-I$(DEPS_DIR)/include/freetype2 \
+	-I$(LIBRETRO_COMM_DIR)/include \
+	-I$(LIBRETRO_COMM_DIR)/include/compat
+
+SOURCES_CXX := \
+	$(wildcard $(EASYRPG_DIR)/*.cpp) \
+
+SOURCES_C := \
+	$(wildcard $(EASYRPG_DIR)/*.c) \
+	$(LIBRETRO_COMM_DIR)/rthreads/rthreads.c

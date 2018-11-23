@@ -102,14 +102,6 @@ function install_lib_icu_windows {
 	make install
 
 	popd
-
-	# Fix ICU static library names
-	pushd lib
-	mv libsicudt.a libicudt.a
-	mv libsicuin.a libicuin.a
-	mv libsicutu.a libicutu.a
-	mv libsicuuc.a libicuuc.a
-	popd
 }
 
 echo "Preparing toolchain"
@@ -156,3 +148,13 @@ else
 	install_lib $ICU_DIR/source $ICU_ARGS
 fi
 install_lib liblcf
+
+if [[ "$(uname)" == MINGW* ]]; then
+	# Fix ICU static library names
+	pushd lib
+	mv sicudt.a libicudata.a
+	mv libsicuin.a libicui18n.a
+	mv libsicutu.a libicutu.a
+	mv libsicuuc.a libicuuc.a
+	popd
+fi
