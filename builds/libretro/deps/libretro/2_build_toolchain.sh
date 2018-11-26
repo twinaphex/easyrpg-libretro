@@ -152,7 +152,11 @@ install_lib liblcf
 if [[ "$(uname)" == MINGW* ]]; then
 	# Fix ICU static library names
 	pushd lib
-	mv sicudt.a libicudata.a
+	if [ -e "sicudt.a" ]; then
+		mv sicudt.a libicudata.a
+	else
+		mv libsicudt.a libicudata.a
+	fi
 	mv libsicuin.a libicui18n.a
 	mv libsicutu.a libicutu.a
 	mv libsicuuc.a libicuuc.a
