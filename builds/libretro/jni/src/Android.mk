@@ -102,7 +102,7 @@ $(TARGET_ARCH_ABI): native_icu.built
 	RETRO_CXXFLAGS="$(TARGET_CFLAGS$@) $(EXTRA_FLAGS$@)" \
 	RETRO_LDFLAGS="$(TARGET_LDFLAGS$@)" \
 	RETRO_TARGET_HOST="$(TOOLCHAIN_NAME$@)" \
-	ICU_VERSION="$(ICU_VERSION)" \
+	ICU_VERSION="59" \
 	ICU_CROSS_BUILD="$(CORE_DIR$@)/builds/libretro/deps/libretro/icu-native" \
 	ac_cv_func_mmap_fixed_mapped=yes \
 	ac_cv_func_getisax=0 \
