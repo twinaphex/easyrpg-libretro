@@ -39,7 +39,7 @@ ifneq ($(GIT_VERSION),unknown)
 endif
 
 # Unix
-ifeq ($(platform), unix)
+ifneq (,$(findstring unix,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	LDFLAGS := -Wl,--no-undefined
