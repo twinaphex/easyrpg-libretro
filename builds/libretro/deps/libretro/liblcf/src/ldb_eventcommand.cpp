@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -149,7 +149,7 @@ void RawStruct<std::vector<RPG::EventCommand> >::ReadLcf(
 
 		if (stream.Tell() >= endpos) {
 			stream.Seek(endpos, LcfReader::FromStart);
-			fprintf(stderr, "Event command corrupted at %d\n", stream.Tell());
+			fprintf(stderr, "Event command corrupted at %" PRIu32 "\n", stream.Tell());
 			for (;;) {
 				// Try finding the real end of the event command (4 0-bytes)
 				int i = 0;

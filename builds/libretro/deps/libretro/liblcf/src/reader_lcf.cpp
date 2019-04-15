@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -17,9 +17,9 @@
 
 std::string LcfReader::error_str;
 
-LcfReader::LcfReader(std::istream& filestream, std::string encoding) :
-	encoding(encoding),
-	stream(filestream)
+LcfReader::LcfReader(std::istream& filestream, std::string encoding)
+	: stream(filestream)
+	, encoder(std::move(encoding))
 {
 }
 
@@ -46,7 +46,7 @@ void LcfReader::Read(void *ptr, size_t size, size_t nmemb) {
 	Read0(ptr, size, nmemb);
 #else
 	if (Read0(ptr, size, nmemb) != nmemb) {
-		fprintf(stderr, "Read error at %d. The file is probably corrupted\n", Tell());
+		fprintf(stderr, "Read error at %" PRIu32 ". The file is probably corrupted\n", Tell());
 	}
 #endif
 }
@@ -91,7 +91,7 @@ int LcfReader::ReadInt() {
 		value |= temp & 0x7F;
 
 		if (loops > 5) {
-			fprintf(stderr, "Invalid compressed integer at %d\n", Tell());
+			fprintf(stderr, "Invalid compressed integer at %" PRIu32 "\n", Tell());
 		}
 		++loops;
 	} while (temp & 0x80);
@@ -181,14 +181,13 @@ void LcfReader::Read<uint32_t>(std::vector<uint32_t> &buffer, size_t size) {
 }
 
 void LcfReader::ReadString(std::string& ref, size_t size) {
-	char* chars = new char[size];
-	Read(chars, 1, size);
-	ref = Encode(std::string(chars, size));
-	delete[] chars;
+	ref.resize(size);
+	Read((size > 0 ? &ref.front(): nullptr), 1, size);
+	Encode(ref);
 }
 
 bool LcfReader::IsOk() const {
-	return (stream.good());
+	return stream.good() && encoder.IsOk();
 }
 
 bool LcfReader::Eof() const {
@@ -232,8 +231,8 @@ void LcfReader::SkipDebug(const struct LcfReader::Chunk& chunk_info, const char*
 	} else {
 		srcfilename++;
 	}
-	fprintf(stderr, "Skipped Chunk %02X (%d byte) in lcf at %X (%s)\n",
-			chunk_info.ID, chunk_info.length,  Tell(),
+	fprintf(stderr, "Skipped Chunk %02X (%" PRIu32 " byte) in lcf at %" PRIX32 " (%s)\n",
+			chunk_info.ID, chunk_info.length, Tell(),
 			srcfilename);
 	for (uint32_t i = 0; i < chunk_info.length; ++i) {
 		uint8_t byte;
@@ -271,8 +270,8 @@ const std::string& LcfReader::GetError() {
 	return error_str;
 }
 
-std::string LcfReader::Encode(const std::string& str_to_encode) {
-	return ReaderUtil::Recode(str_to_encode, encoding, "UTF-8");
+void LcfReader::Encode(std::string& str) {
+	encoder.Encode(str);
 }
 
 int LcfReader::IntSize(unsigned int x) {

@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "enum_tags.h"
 
 /**
  * RPG::SaveActor class.
@@ -23,6 +24,15 @@
 namespace RPG {
 	class SaveActor {
 	public:
+		enum RowType {
+			RowType_front = 0,
+			RowType_back = 1
+		};
+		static constexpr auto kRowTypeTags = makeEnumTags<RowType>(
+			"front",
+			"back"
+		);
+
 		void Setup(int actor_id);
 		void Fixup(int actor_id);
 		void UnFixup();
@@ -58,6 +68,43 @@ namespace RPG {
 		bool super_guard = false;
 		int32_t battler_animation = 0;
 	};
+
+	inline bool operator==(const SaveActor& l, const SaveActor& r) {
+		return l.name == r.name
+		&& l.title == r.title
+		&& l.sprite_name == r.sprite_name
+		&& l.sprite_id == r.sprite_id
+		&& l.sprite_flags == r.sprite_flags
+		&& l.face_name == r.face_name
+		&& l.face_id == r.face_id
+		&& l.level == r.level
+		&& l.exp == r.exp
+		&& l.hp_mod == r.hp_mod
+		&& l.sp_mod == r.sp_mod
+		&& l.attack_mod == r.attack_mod
+		&& l.defense_mod == r.defense_mod
+		&& l.spirit_mod == r.spirit_mod
+		&& l.agility_mod == r.agility_mod
+		&& l.skills_size == r.skills_size
+		&& l.skills == r.skills
+		&& l.equipped == r.equipped
+		&& l.current_hp == r.current_hp
+		&& l.current_sp == r.current_sp
+		&& l.battle_commands == r.battle_commands
+		&& l.status == r.status
+		&& l.changed_battle_commands == r.changed_battle_commands
+		&& l.class_id == r.class_id
+		&& l.row == r.row
+		&& l.two_weapon == r.two_weapon
+		&& l.lock_equipment == r.lock_equipment
+		&& l.auto_battle == r.auto_battle
+		&& l.super_guard == r.super_guard
+		&& l.battler_animation == r.battler_animation;
+	}
+
+	inline bool operator!=(const SaveActor& l, const SaveActor& r) {
+		return !(l == r);
+	}
 }
 
 #endif

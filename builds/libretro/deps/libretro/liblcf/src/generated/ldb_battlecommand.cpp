@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -12,17 +12,30 @@
 // Headers
 #include "ldb_reader.h"
 #include "ldb_chunks.h"
-#include "reader_struct.h"
+#include "reader_struct_impl.h"
 
 // Read BattleCommand.
 
-#define LCF_CHUNK_SUFFIX LDB_Reader
-#define LCF_CURRENT_STRUCT BattleCommand
+template <>
+char const* const Struct<RPG::BattleCommand>::name = "BattleCommand";
 
-LCF_STRUCT_FIELDS_BEGIN()
-	LCF_STRUCT_TYPED_FIELD(std::string, name, 1, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, type, 0, 0),
-LCF_STRUCT_FIELDS_END()
+template <>
+Field<RPG::BattleCommand> const* Struct<RPG::BattleCommand>::fields[] = {
+	new TypedField<RPG::BattleCommand, std::string>(
+		&RPG::BattleCommand::name,
+		LDB_Reader::ChunkBattleCommand::name,
+		"name",
+		1,
+		0
+	),
+	new TypedField<RPG::BattleCommand, int32_t>(
+		&RPG::BattleCommand::type,
+		LDB_Reader::ChunkBattleCommand::type,
+		"type",
+		0,
+		0
+	),
+	NULL
+};
 
-#undef LCF_CURRENT_STRUCT
-#undef LCF_CHUNK_SUFFIX
+template class Struct<RPG::BattleCommand>;

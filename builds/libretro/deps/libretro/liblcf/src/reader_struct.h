@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -10,14 +10,16 @@
 #ifndef LCF_READER_STRUCT_H
 #define LCF_READER_STRUCT_H
 
+#ifdef LCF_DEBUG_TRACE
+#include <iostream>
+#endif
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
 #include <cstring>
 #include <cstdlib>
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/stringize.hpp>
+#include <cinttypes>
 #include "reader_lcf.h"
 #include "writer_lcf.h"
 #include "reader_xml.h"
@@ -148,14 +150,20 @@ struct Primitive {
 		// FIXME: Bug #174
 		if (length != LcfSizeT<T>::value) {
 			dif = length - LcfSizeT<T>::value;
-			fprintf(stderr, "Reading Primitive of incorrect size %d (expected %d) at %X\n",
+			fprintf(stderr, "Reading Primitive of incorrect size %" PRIu32 " (expected %" PRIu32 ") at %" PRIX32 "\n",
 				length, LcfSizeT<T>::value, stream.Tell());
 		}
 
 		stream.Read(ref);
+#ifdef LCF_DEBUG_TRACE
+		DebugPrint(ref);
+#endif
 
 		if (dif != 0) {
 			// Fix incorrect read pointer position
+#ifdef LCF_DEBUG_TRACE
+			printf("Invalid %s at %X\n", typeid(T).name(), stream.Tell());
+#endif
 			stream.Seek(dif, LcfReader::FromCurrent);
 		}
 	}
@@ -171,6 +179,19 @@ struct Primitive {
 	static void ParseXml(T& ref, const std::string& data) {
 		XmlReader::Read(ref, data);
 	}
+	private:
+#ifdef LCF_DEBUG_TRACE
+	template <typename U>
+		static void DebugPrint(U& ref) {
+			std::cout << ref << '\n';
+		}
+	static void DebugPrint(int8_t ref) {
+		std::cout << (int)ref << '\n';
+	}
+	static void DebugPrint(uint8_t ref) {
+		std::cout << (int)ref << '\n';
+	}
+#endif
 };
 
 /**
@@ -320,78 +341,6 @@ struct Field {
 		name(name), id(id), present_if_default(present_if_default), is2k3(is2k3) {}
 };
 
-// Equivalence traits
-
-template <class T>
-struct Class_Test {
-	typedef char yes;
-	typedef int no;
-
-	template <class C>
-	static yes& check(void(C::*)(void));
-	template <class C>
-	static no&  check(...);
-
-	static const bool value = sizeof(check<T>(0)) == sizeof(yes);
-};
-
-template <class T>
-struct Compare_Test {
-	static const bool value = !Class_Test<T>::value;
-};
-
-template <class T>
-struct Compare_Test<std::vector<T>> {
-	static const bool value = Compare_Test<T>::value;
-};
-
-template <>
-struct Compare_Test<std::string> {
-	static const bool value = true;
-};
-
-template <>
-struct Compare_Test<RPG::Terrain::Flags> {
-	static const bool value = true;
-};
-
-template <>
-struct Compare_Test<RPG::SavePicture::Flags> {
-	static const bool value = true;
-};
-
-template <class T, bool comparable>
-struct Compare_Traits_Impl {};
-
-template <class T>
-struct Compare_Traits_Impl<T, true> {
-	static bool IsEqual(const T& a, const T& b) {
-		return a == b;
-	}
-};
-
-template <class T>
-struct Compare_Traits_Impl<T, false> {
-	static bool IsEqual(const T& /* a */, const T& /* b */) {
-		return false;
-	}
-};
-
-template <class T>
-struct Compare_Traits_Impl<std::vector<T>, false> {
-	static bool IsEqual(const std::vector<T>& a, const std::vector<T>& b) {
-		return a.empty() && b.empty();
-	}
-};
-
-template <class T>
-struct Compare_Traits {
-	typedef Compare_Traits_Impl<T, Compare_Test<T>::value> impl_type;
-	static bool IsEqual(const T& a, const T& b) {
-		return impl_type::IsEqual(a, b);
-	}
-};
-
 /**
  * TypedField class template.
  */
@@ -420,7 +369,7 @@ struct TypedField : public Field<S> {
 		TypeReader<T>::ParseXml(obj.*ref, data);
 	}
 	bool IsDefault(const S& a, const S& b) const {
-		return Compare_Traits<T>::IsEqual(a.*ref, b.*ref);
+		return a.*ref == b.*ref;
 	}
 
 	TypedField(T S::*ref, int id, const char* name, bool present_if_default, bool is2k3) :
@@ -462,17 +411,17 @@ struct EmptyField : public Field<S> {
 
 	using Field<S>::Field;
 
-	void ReadLcf(S& obj, LcfReader& stream, uint32_t length) const { }
-	void WriteLcf(const S& obj, LcfWriter& stream) const { }
-	int LcfSize(const S& obj, LcfWriter& stream) const {
+	void ReadLcf(S& /* obj */, LcfReader& /* stream */, uint32_t /* length */) const { }
+	void WriteLcf(const S& /* obj */, LcfWriter& /* stream */) const { }
+	int LcfSize(const S& /* obj */, LcfWriter& /* stream */) const {
 		//This is always an "empty block"
 		return 0;
 	}
-	void WriteXml(const S& obj, XmlWriter& stream) const { }
-	void BeginXml(S& obj, XmlReader& stream) const { }
-	void ParseXml(S& obj, const std::string& data) const { }
+	void WriteXml(const S& /* obj */, XmlWriter& /* stream */) const { }
+	void BeginXml(S& /* obj */, XmlReader& /* stream */) const { }
+	void ParseXml(S& /* obj */, const std::string& /* data */) const { }
 
-	bool IsDefault(const S& a, const S& b) const {
+	bool IsDefault(const S& /* a */, const S& /* b */) const {
 		return true;
 	}
 
@@ -529,7 +478,7 @@ struct CountField : public SizeField<S,T> {
 		int size = (obj.*(this->ref)).size();
 		TypeReader<int32_t>::WriteLcf(size, stream);
 	}
-	int LcfSize(const S& obj, LcfWriter& stream) const {
+	int LcfSize(const S& obj, LcfWriter& /* stream */) const {
 		int size = (obj.*(this->ref)).size();
 		return LcfReader::IntSize(size);
 	}
@@ -789,62 +738,5 @@ private:
 	const char* const name;
 
 };
-
-// Macros
-
-// needs define of
-// - LCF_CHUNK_SUFFIX
-// - LCF_CURRENT_STRUCT
-
-#define LCF_STRUCT_FIELDS_BEGIN() \
-	template <> \
-	char const* const Struct<RPG::LCF_CURRENT_STRUCT>::name = BOOST_PP_STRINGIZE(LCF_CURRENT_STRUCT); \
-	template <> \
-	Field<RPG::LCF_CURRENT_STRUCT> const* Struct<RPG::LCF_CURRENT_STRUCT>::fields[] = { \
-
-#define LCF_STRUCT_FIELDS_END() \
-	NULL }; \
-
-#define LCF_STRUCT_TYPED_FIELD(T, REF, PRESENTIFDEFAULT, IS2K3) \
-	new TypedField<RPG::LCF_CURRENT_STRUCT, T>( \
-		  &RPG::LCF_CURRENT_STRUCT::REF \
-		, LCF_CHUNK_SUFFIX::BOOST_PP_CAT(Chunk, LCF_CURRENT_STRUCT)::REF \
-		, BOOST_PP_STRINGIZE(REF) \
-		, PRESENTIFDEFAULT \
-		, IS2K3 \
-	) \
-
-#define LCF_STRUCT_DATABASE_VERSION_FIELD(T, REF, PRESENTIFDEFAULT, IS2K3) \
-	new DatabaseVersionField<RPG::LCF_CURRENT_STRUCT, T>( \
-		  &RPG::LCF_CURRENT_STRUCT::REF \
-		, LCF_CHUNK_SUFFIX::BOOST_PP_CAT(Chunk, LCF_CURRENT_STRUCT)::REF \
-		, BOOST_PP_STRINGIZE(REF) \
-		, PRESENTIFDEFAULT \
-		, IS2K3 \
-	) \
-
-#define LCF_STRUCT_EMPTY_FIELD(T, REF, PRESENTIFDEFAULT, IS2K3) \
-	new EmptyField<RPG::LCF_CURRENT_STRUCT>( \
-		  LCF_CHUNK_SUFFIX::BOOST_PP_CAT(Chunk, LCF_CURRENT_STRUCT)::REF \
-		, BOOST_PP_STRINGIZE(REF) \
-		, PRESENTIFDEFAULT \
-		, IS2K3 \
-	) \
-
-#define LCF_STRUCT_SIZE_FIELD(T, REF, PRESENTIFDEFAULT, IS2K3) \
-	new SizeField<RPG::LCF_CURRENT_STRUCT, T>( \
-		  &RPG::LCF_CURRENT_STRUCT::REF \
-		, LCF_CHUNK_SUFFIX::BOOST_PP_CAT(Chunk, LCF_CURRENT_STRUCT)::BOOST_PP_CAT(REF, _size) \
-		, PRESENTIFDEFAULT \
-		, IS2K3 \
-	) \
-
-#define LCF_STRUCT_COUNT_FIELD(T, REF, PRESENTIFDEFAULT, IS2K3) \
-	new CountField<RPG::LCF_CURRENT_STRUCT, T>( \
-		  &RPG::LCF_CURRENT_STRUCT::REF \
-		, LCF_CHUNK_SUFFIX::BOOST_PP_CAT(Chunk, LCF_CURRENT_STRUCT)::BOOST_PP_CAT(REF, _size) \
-		, PRESENTIFDEFAULT \
-		, IS2K3 \
-	) \
 
 #endif

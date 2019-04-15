@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -12,18 +12,37 @@
 // Headers
 #include "ldb_reader.h"
 #include "ldb_chunks.h"
-#include "reader_struct.h"
+#include "reader_struct_impl.h"
 
 // Read BattlerAnimationData.
 
-#define LCF_CHUNK_SUFFIX LDB_Reader
-#define LCF_CURRENT_STRUCT BattlerAnimationData
+template <>
+char const* const Struct<RPG::BattlerAnimationData>::name = "BattlerAnimationData";
 
-LCF_STRUCT_FIELDS_BEGIN()
-	LCF_STRUCT_TYPED_FIELD(int32_t, move, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, after_image, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, pose, 0, 0),
-LCF_STRUCT_FIELDS_END()
+template <>
+Field<RPG::BattlerAnimationData> const* Struct<RPG::BattlerAnimationData>::fields[] = {
+	new TypedField<RPG::BattlerAnimationData, int32_t>(
+		&RPG::BattlerAnimationData::move,
+		LDB_Reader::ChunkBattlerAnimationData::move,
+		"move",
+		0,
+		0
+	),
+	new TypedField<RPG::BattlerAnimationData, int32_t>(
+		&RPG::BattlerAnimationData::after_image,
+		LDB_Reader::ChunkBattlerAnimationData::after_image,
+		"after_image",
+		0,
+		0
+	),
+	new TypedField<RPG::BattlerAnimationData, int32_t>(
+		&RPG::BattlerAnimationData::pose,
+		LDB_Reader::ChunkBattlerAnimationData::pose,
+		"pose",
+		0,
+		0
+	),
+	NULL
+};
 
-#undef LCF_CURRENT_STRUCT
-#undef LCF_CHUNK_SUFFIX
+template class Struct<RPG::BattlerAnimationData>;

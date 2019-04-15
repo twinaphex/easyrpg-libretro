@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -12,22 +12,65 @@
 // Headers
 #include "ldb_reader.h"
 #include "ldb_chunks.h"
-#include "reader_struct.h"
+#include "reader_struct_impl.h"
 
 // Read TestBattler.
 
-#define LCF_CHUNK_SUFFIX LDB_Reader
-#define LCF_CURRENT_STRUCT TestBattler
+template <>
+char const* const Struct<RPG::TestBattler>::name = "TestBattler";
 
-LCF_STRUCT_FIELDS_BEGIN()
-	LCF_STRUCT_TYPED_FIELD(int32_t, actor_id, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, level, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, weapon_id, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, shield_id, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, armor_id, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, helmet_id, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, accessory_id, 0, 0),
-LCF_STRUCT_FIELDS_END()
+template <>
+Field<RPG::TestBattler> const* Struct<RPG::TestBattler>::fields[] = {
+	new TypedField<RPG::TestBattler, int32_t>(
+		&RPG::TestBattler::actor_id,
+		LDB_Reader::ChunkTestBattler::actor_id,
+		"actor_id",
+		0,
+		0
+	),
+	new TypedField<RPG::TestBattler, int32_t>(
+		&RPG::TestBattler::level,
+		LDB_Reader::ChunkTestBattler::level,
+		"level",
+		0,
+		0
+	),
+	new TypedField<RPG::TestBattler, int32_t>(
+		&RPG::TestBattler::weapon_id,
+		LDB_Reader::ChunkTestBattler::weapon_id,
+		"weapon_id",
+		0,
+		0
+	),
+	new TypedField<RPG::TestBattler, int32_t>(
+		&RPG::TestBattler::shield_id,
+		LDB_Reader::ChunkTestBattler::shield_id,
+		"shield_id",
+		0,
+		0
+	),
+	new TypedField<RPG::TestBattler, int32_t>(
+		&RPG::TestBattler::armor_id,
+		LDB_Reader::ChunkTestBattler::armor_id,
+		"armor_id",
+		0,
+		0
+	),
+	new TypedField<RPG::TestBattler, int32_t>(
+		&RPG::TestBattler::helmet_id,
+		LDB_Reader::ChunkTestBattler::helmet_id,
+		"helmet_id",
+		0,
+		0
+	),
+	new TypedField<RPG::TestBattler, int32_t>(
+		&RPG::TestBattler::accessory_id,
+		LDB_Reader::ChunkTestBattler::accessory_id,
+		"accessory_id",
+		0,
+		0
+	),
+	NULL
+};
 
-#undef LCF_CURRENT_STRUCT
-#undef LCF_CHUNK_SUFFIX
+template class Struct<RPG::TestBattler>;

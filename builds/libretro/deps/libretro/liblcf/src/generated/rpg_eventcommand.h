@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -156,142 +156,23 @@ namespace RPG {
 				EndBranch_B = 23311
 			};
 		};
-		static constexpr auto kCodeTags = makeEnumTags<Code::Index>(
-			"END",
-			"CallCommonEvent",
-			"ForceFlee",
-			"EnableCombo",
-			"ChangeClass",
-			"ChangeBattleCommands",
-			"OpenLoadMenu",
-			"ExitGame",
-			"ToggleAtbMode",
-			"ToggleFullscreen",
-			"OpenVideoOptions",
-			"ShowMessage",
-			"MessageOptions",
-			"ChangeFaceGraphic",
-			"ShowChoice",
-			"InputNumber",
-			"ControlSwitches",
-			"ControlVars",
-			"TimerOperation",
-			"ChangeGold",
-			"ChangeItems",
-			"ChangePartyMembers",
-			"ChangeExp",
-			"ChangeLevel",
-			"ChangeParameters",
-			"ChangeSkills",
-			"ChangeEquipment",
-			"ChangeHP",
-			"ChangeSP",
-			"ChangeCondition",
-			"FullHeal",
-			"SimulatedAttack",
-			"ChangeHeroName",
-			"ChangeHeroTitle",
-			"ChangeSpriteAssociation",
-			"ChangeActorFace",
-			"ChangeVehicleGraphic",
-			"ChangeSystemBGM",
-			"ChangeSystemSFX",
-			"ChangeSystemGraphics",
-			"ChangeScreenTransitions",
-			"EnemyEncounter",
-			"OpenShop",
-			"ShowInn",
-			"EnterHeroName",
-			"Teleport",
-			"MemorizeLocation",
-			"RecallToLocation",
-			"EnterExitVehicle",
-			"SetVehicleLocation",
-			"ChangeEventLocation",
-			"TradeEventLocations",
-			"StoreTerrainID",
-			"StoreEventID",
-			"EraseScreen",
-			"ShowScreen",
-			"TintScreen",
-			"FlashScreen",
-			"ShakeScreen",
-			"PanScreen",
-			"WeatherEffects",
-			"ShowPicture",
-			"MovePicture",
-			"ErasePicture",
-			"ShowBattleAnimation",
-			"SpriteTransparency",
-			"FlashSprite",
-			"MoveEvent",
-			"ProceedWithMovement",
-			"HaltAllMovement",
-			"Wait",
-			"PlayBGM",
-			"FadeOutBGM",
-			"MemorizeBGM",
-			"PlayMemorizedBGM",
-			"PlaySound",
-			"PlayMovie",
-			"KeyInputProc",
-			"ChangeMapTileset",
-			"ChangePBG",
-			"ChangeEncounterRate",
-			"TileSubstitution",
-			"TeleportTargets",
-			"ChangeTeleportAccess",
-			"EscapeTarget",
-			"ChangeEscapeAccess",
-			"OpenSaveMenu",
-			"ChangeSaveAccess",
-			"OpenMainMenu",
-			"ChangeMainMenuAccess",
-			"ConditionalBranch",
-			"Label",
-			"JumpToLabel",
-			"Loop",
-			"BreakLoop",
-			"EndEventProcessing",
-			"EraseEvent",
-			"CallEvent",
-			"Comment",
-			"GameOver",
-			"ReturntoTitleScreen",
-			"ChangeMonsterHP",
-			"ChangeMonsterMP",
-			"ChangeMonsterCondition",
-			"ShowHiddenMonster",
-			"ChangeBattleBG",
-			"ShowBattleAnimation_B",
-			"ConditionalBranch_B",
-			"TerminateBattle",
-			"ShowMessage_2",
-			"ShowChoiceOption",
-			"ShowChoiceEnd",
-			"VictoryHandler",
-			"EscapeHandler",
-			"DefeatHandler",
-			"EndBattle",
-			"Transaction",
-			"NoTransaction",
-			"EndShop",
-			"Stay",
-			"NoStay",
-			"EndInn",
-			"ElseBranch",
-			"EndBranch",
-			"EndLoop",
-			"Comment_2",
-			"ElseBranch_B",
-			"EndBranch_B"
-		);
 
 		int32_t code = 0;
 		int32_t indent = 0;
 		std::string string;
 		std::vector<int32_t> parameters;
 	};
+
+	inline bool operator==(const EventCommand& l, const EventCommand& r) {
+		return l.code == r.code
+		&& l.indent == r.indent
+		&& l.string == r.string
+		&& l.parameters == r.parameters;
+	}
+
+	inline bool operator!=(const EventCommand& l, const EventCommand& r) {
+		return !(l == r);
+	}
 }
 
 #endif

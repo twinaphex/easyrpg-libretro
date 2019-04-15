@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -48,6 +48,16 @@ namespace RPG {
 		int32_t after_image = 0;
 		int32_t pose = -1;
 	};
+
+	inline bool operator==(const BattlerAnimationData& l, const BattlerAnimationData& r) {
+		return l.move == r.move
+		&& l.after_image == r.after_image
+		&& l.pose == r.pose;
+	}
+
+	inline bool operator!=(const BattlerAnimationData& l, const BattlerAnimationData& r) {
+		return !(l == r);
+	}
 }
 
 #endif

@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -26,6 +26,16 @@ namespace RPG {
 		bool repeat = true;
 		bool skippable = false;
 	};
+
+	inline bool operator==(const MoveRoute& l, const MoveRoute& r) {
+		return l.move_commands == r.move_commands
+		&& l.repeat == r.repeat
+		&& l.skippable == r.skippable;
+	}
+
+	inline bool operator!=(const MoveRoute& l, const MoveRoute& r) {
+		return !(l == r);
+	}
 }
 
 #endif

@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -322,7 +322,7 @@ namespace LSD_Reader {
 			sprite_direction = 0x16,
 			/** ? */
 			anim_frame = 0x17,
-			/** 0 or 3 - Transparency level of the main party member */
+			/** 0 or 3 - Transparency level of the current event page */
 			transparency = 0x18,
 			/** From 0 to 255 - Remaining distance of the current move */
 			remaining_step = 0x1F,
@@ -332,7 +332,7 @@ namespace LSD_Reader {
 			layer = 0x21,
 			/** Flag */
 			overlap_forbidden = 0x22,
-			/** Integer */
+			/**  */
 			animation_type = 0x23,
 			/** facing locked */
 			lock_facing = 0x24,
@@ -358,7 +358,7 @@ namespace LSD_Reader {
 			stop_count = 0x34,
 			/** ? */
 			anim_count = 0x35,
-			/** 2^move_frequency - Once stop_count reaches it; the next move command is executed */
+			/** 2^move_frequency unless it's a random move route - Once stop_count reaches it; the next move command is executed */
 			max_stop_count = 0x36,
 			/** ? */
 			jumping = 0x3D,
@@ -366,7 +366,7 @@ namespace LSD_Reader {
 			begin_jump_x = 0x3E,
 			/** ? */
 			begin_jump_y = 0x3F,
-			/** Indicates paused movement for an event; set while the player is talking to the event so that it won't run away (not relevant for hero themselves) */
+			/** Indicates paused movement for an event; set while the player is talking to the event so that it won't run away */
 			pause = 0x47,
 			/** Flag */
 			flying = 0x48,
@@ -436,7 +436,7 @@ namespace LSD_Reader {
 			sprite_direction = 0x16,
 			/** ? */
 			anim_frame = 0x17,
-			/** always 0 */
+			/** 0 or 3 - Transparency level of the current event page */
 			transparency = 0x18,
 			/** From 0 to 255 - Remaining distance of the current move */
 			remaining_step = 0x1F,
@@ -460,6 +460,10 @@ namespace LSD_Reader {
 			move_route_index = 0x2B,
 			/** Boolean - Repeating move route has been completed at least once */
 			move_route_repeated = 0x2C,
+			/** bool */
+			sprite_transparent = 0x2E,
+			/** Whether the move route (MoveEvent or defined route) activated through mode. Almost the same as 0x33 (through). 0x2F represents that by MoveEvent the through mode has been activated; but 0x33 is what's actually checked for collisions. In several cases; 0x33 will be changed to indicate a condition in which an event or the hero is in through mode through other means than a MoveEvent; which can be: an event with an empty page being activated; player pressing Ctrl in test play; hero entering or exiting a vehicle (only very briefly) */
+			route_through = 0x2F,
 			/** ? */
 			anim_paused = 0x30,
 			/** Can go through anything */
@@ -468,7 +472,7 @@ namespace LSD_Reader {
 			stop_count = 0x34,
 			/** ? */
 			anim_count = 0x35,
-			/** 2^move_frequency - Once stop_count reaches it; the next move command is executed */
+			/** 2^move_frequency unless it's a random move route - Once stop_count reaches it; the next move command is executed */
 			max_stop_count = 0x36,
 			/** ? */
 			jumping = 0x3D,
@@ -476,7 +480,7 @@ namespace LSD_Reader {
 			begin_jump_x = 0x3E,
 			/** ? */
 			begin_jump_y = 0x3F,
-			/** Indicates paused movement for an event; set while the player is talking to the event so that it won't run away (not relevant for vehicles themselves) */
+			/** Indicates paused movement for an event; set while the player is talking to the event so that it won't run away */
 			pause = 0x47,
 			/** Flag */
 			flying = 0x48,
@@ -498,8 +502,6 @@ namespace LSD_Reader {
 			flash_time_left = 0x55,
 			/** Which vehicle */
 			vehicle = 0x65,
-			/** Index of custom move route */
-			original_move_route_index = 0x66,
 			/** From 0 to 255 - In flying vehicles; remaining distance to ascend */
 			remaining_ascent = 0x6A,
 			/** From 0 to 255 - In flying vehicles; remaining distance to descend */
@@ -562,7 +564,7 @@ namespace LSD_Reader {
 			changed_battle_commands = 0x53,
 			/** int class-id */
 			class_id = 0x5A,
-			/** RPG2003 Battle row (-1 Back; 1 Front) */
+			/** RPG2003 Battle row */
 			row = 0x5B,
 			/** bool */
 			two_weapon = 0x5C,
@@ -583,7 +585,7 @@ namespace LSD_Reader {
 			/** ? */
 			party = 0x02,
 			/** ? */
-			items_size = 0x0B,
+			item_ids_size = 0x0B,
 			/** short[]: item list */
 			item_ids = 0x0C,
 			/** ? */
@@ -592,21 +594,21 @@ namespace LSD_Reader {
 			item_usage = 0x0E,
 			/** int */
 			gold = 0x15,
-			/** int */
-			timer1_secs = 0x17,
-			/** bool */
+			/** Number of frames remaining for timer1; When set; the value is seconds * 60 + 59. */
+			timer1_frames = 0x17,
+			/** If timer1 is active */
 			timer1_active = 0x18,
-			/** bool */
+			/** If timer1 is visible */
 			timer1_visible = 0x19,
-			/** bool */
+			/** If timer1 will be active in battles */
 			timer1_battle = 0x1A,
-			/** int */
-			timer2_secs = 0x1B,
-			/** bool */
+			/** Number of frames remaining for timer2; When set; the value is seconds * 60 + 59. */
+			timer2_frames = 0x1B,
+			/** If timer2 is active */
 			timer2_active = 0x1C,
-			/** bool */
+			/** If timer2 is visible */
 			timer2_visible = 0x1D,
-			/** bool */
+			/** If timer2 will be active in battles */
 			timer2_battle = 0x1E,
 			/** ? */
 			battles = 0x20,
@@ -636,7 +638,7 @@ namespace LSD_Reader {
 			switch_id = 0x05
 		};
 	};
-	struct ChunkSaveEventCommands {
+	struct ChunkSaveEventExecFrame {
 		enum Index {
 			/** int */
 			commands_size = 0x01,
@@ -647,17 +649,17 @@ namespace LSD_Reader {
 			/** 0 if it's common event or in other map */
 			event_id = 0x0C,
 			/** Event was triggered by the Action Key */
-			actioned = 0x0D,
+			triggered_by_decision_key = 0x0D,
 			/** size of the 0x16 vector - indention level */
 			subcommand_path_size = 0x15,
 			/** byte For each indention level in the script; an ID is stored there which corresponds to the branch to take in case a command allows multiple branches. For example; the Show Choice command would write the result of the choice (for example 2 for the third item) into the current indention level's entry in this array; and the script processor would later look for the Case subcommand with the corresponding ID; if any; and jump to that one (if none found; it would jump to the End Case subcommand). Once the jump is executed; the ID is set to 255 (probably a protection mechanism even though there should normally not be multiple subcommands with the same ID). */
 			subcommand_path = 0x16
 		};
 	};
-	struct ChunkSaveEventData {
+	struct ChunkSaveEventExecState {
 		enum Index {
 			/** array */
-			commands = 0x01,
+			stack = 0x01,
 			/** Show Message command has been executed in the current move route */
 			show_message = 0x04,
 			/** Flag which is set before a fight if the EnemyEncounter event command had battle_escape_mode set to 1 (abort event on escape). After the fight; the interpreter checks if the battle result was an escape and this flag was set and abort the event in that case. */
@@ -675,31 +677,113 @@ namespace LSD_Reader {
 			/**  */
 			keyinput_cancel = 0x19,
 			/** In RM2k Value this is keyinput_shift */
-			keyinput_numbers = 0x1A,
+			keyinput_2kshift_2k3numbers = 0x1A,
 			/** In Value keyinput_down */
-			keyinput_operators = 0x1B,
+			keyinput_2kdown_2k3operators = 0x1B,
 			/** In Value keyinput_left */
-			keyinput_shift = 0x1C,
+			keyinput_2kleft_2k3shift = 0x1C,
 			/** Only in Value */
-			keyinput_value_right = 0x1D,
+			keyinput_2kright = 0x1D,
 			/** Only in Value */
-			keyinput_value_up = 0x1E,
+			keyinput_2kup = 0x1E,
 			/** int */
 			wait_time = 0x1F,
 			/**  */
 			keyinput_time_variable = 0x20,
 			/**  */
-			keyinput_down = 0x23,
+			keyinput_2k3down = 0x23,
 			/**  */
-			keyinput_left = 0x24,
+			keyinput_2k3left = 0x24,
 			/**  */
-			keyinput_right = 0x25,
+			keyinput_2k3right = 0x25,
 			/**  */
-			keyinput_up = 0x26,
+			keyinput_2k3up = 0x26,
 			/**  */
 			keyinput_timed = 0x29,
-			/** If enabled; an event waits for either the confirmation key to be pressed or one of the keys defined by KeyInputProc before continuing. This flag seems to be unused though since it is never written to (keyinput_wait is used instead). */
-			unused_wait_for_key_or_enter = 0x2A
+			/** Used for a wait command "Wait For Key Input" rm2k3 feature to wait for decision key press. */
+			wait_key_enter = 0x2A
+		};
+	};
+	struct ChunkSaveMapEventBase {
+		enum Index {
+			/** Flag */
+			active = 0x01,
+			/** ? */
+			map_id = 0x0B,
+			/** ? */
+			position_x = 0x0C,
+			/** ? */
+			position_y = 0x0D,
+			/** Facing direction */
+			direction = 0x15,
+			/** Sprite direction */
+			sprite_direction = 0x16,
+			/** ? */
+			anim_frame = 0x17,
+			/** 0 or 3 - Transparency level of the current event page */
+			transparency = 0x18,
+			/** From 0 to 255 - Remaining distance of the current move */
+			remaining_step = 0x1F,
+			/** ? */
+			move_frequency = 0x20,
+			/** ? */
+			layer = 0x21,
+			/** Flag */
+			overlap_forbidden = 0x22,
+			/**  */
+			animation_type = 0x23,
+			/** facing locked */
+			lock_facing = 0x24,
+			/**  */
+			move_speed = 0x25,
+			/** chunks: RPG::MoveRoute */
+			move_route = 0x29,
+			/** Use custom move route */
+			move_route_overwrite = 0x2A,
+			/** Index of MoveEvent command route */
+			move_route_index = 0x2B,
+			/** Boolean - Repeating move route has been completed at least once */
+			move_route_repeated = 0x2C,
+			/** bool */
+			sprite_transparent = 0x2E,
+			/** Whether the move route (MoveEvent or defined route) activated through mode. Almost the same as 0x33 (through). 0x2F represents that by MoveEvent the through mode has been activated; but 0x33 is what's actually checked for collisions. In several cases; 0x33 will be changed to indicate a condition in which an event or the hero is in through mode through other means than a MoveEvent; which can be: an event with an empty page being activated; player pressing Ctrl in test play; hero entering or exiting a vehicle (only very briefly) */
+			route_through = 0x2F,
+			/** ? */
+			anim_paused = 0x30,
+			/** Can go through anything */
+			through = 0x33,
+			/** ? */
+			stop_count = 0x34,
+			/** ? */
+			anim_count = 0x35,
+			/** 2^move_frequency unless it's a random move route - Once stop_count reaches it; the next move command is executed */
+			max_stop_count = 0x36,
+			/** ? */
+			jumping = 0x3D,
+			/** ? */
+			begin_jump_x = 0x3E,
+			/** ? */
+			begin_jump_y = 0x3F,
+			/** Indicates paused movement for an event; set while the player is talking to the event so that it won't run away */
+			pause = 0x47,
+			/** Flag */
+			flying = 0x48,
+			/** ? */
+			sprite_name = 0x49,
+			/** ? */
+			sprite_id = 0x4A,
+			/** Flag whether an event (the hero is also an event) in the current frame processed their movement actions (may also be none). This is required because events are asked every frame to initiate their next movement step if required; but not necessarily in order; because checking passability for an event trying to move onto another tile will trigger any event's movement initiation which is on the target tile (because this way the target event may move away; allowing the other event to move to that tile). This flag ensures that every event processes their possible movements only once per frame even if it was already asked to do so out of order as part of another event's movement initiation. */
+			processed = 0x4B,
+			/** int */
+			flash_red = 0x51,
+			/** int */
+			flash_green = 0x52,
+			/** int */
+			flash_blue = 0x53,
+			/** double */
+			flash_current_level = 0x54,
+			/** int */
+			flash_time_left = 0x55
 		};
 	};
 	struct ChunkSaveMapEvent {
@@ -742,6 +826,8 @@ namespace LSD_Reader {
 			move_route_index = 0x2B,
 			/** Boolean - Repeating move route has been completed at least once */
 			move_route_repeated = 0x2C,
+			/** bool */
+			sprite_transparent = 0x2E,
 			/** Whether the move route (MoveEvent or defined route) activated through mode. Almost the same as 0x33 (through). 0x2F represents that by MoveEvent the through mode has been activated; but 0x33 is what's actually checked for collisions. In several cases; 0x33 will be changed to indicate a condition in which an event or the hero is in through mode through other means than a MoveEvent; which can be: an event with an empty page being activated; player pressing Ctrl in test play; hero entering or exiting a vehicle (only very briefly) */
 			route_through = 0x2F,
 			/** ? */
@@ -780,14 +866,14 @@ namespace LSD_Reader {
 			flash_current_level = 0x54,
 			/** int */
 			flash_time_left = 0x55,
-			/** ? */
-			running = 0x65,
+			/** If true; this event is waiting for foreground execution. */
+			waiting_execution = 0x65,
 			/** Index of custom move route */
 			original_move_route_index = 0x66,
-			/** If true; this event will run after the current running event stops running. FIXME: See issue #174 */
-			pending = 0x67,
+			/** If true; this event was started by the decision key. */
+			triggered_by_decision_key = 0x67,
 			/** chunks */
-			event_data = 0x6C
+			parallel_event_execstate = 0x6C
 		};
 	};
 	struct ChunkSaveMapInfo {
@@ -825,7 +911,7 @@ namespace LSD_Reader {
 	struct ChunkSaveCommonEvent {
 		enum Index {
 			/** chunks */
-			event_data = 0x01
+			parallel_event_execstate = 0x01
 		};
 	};
 	struct ChunkSavePanorama {
@@ -864,10 +950,18 @@ namespace LSD_Reader {
 			map_info = 0x6F,
 			/** Used to store panorama position data. Used by RPG_RT 2k3 1.12 in other versions an empty object. */
 			panorama = 0x70,
-			/** RPG::SaveEventData */
-			events = 0x71,
+			/** RPG::SaveEventExecState */
+			foreground_event_execstate = 0x71,
 			/** array of RPG::SaveCommonEvent */
-			common_events = 0x72
+			common_events = 0x72,
+			/** Additional save data written by EasyRPG Player */
+			easyrpg_data = 0xC8
+		};
+	};
+	struct ChunkSaveEasyRpgData {
+		enum Index {
+			/** Savegame version */
+			version = 0x01
 		};
 	};
 }

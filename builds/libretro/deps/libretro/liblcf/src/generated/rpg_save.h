@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -16,7 +16,8 @@
 #include <vector>
 #include "rpg_saveactor.h"
 #include "rpg_savecommonevent.h"
-#include "rpg_saveeventdata.h"
+#include "rpg_saveeasyrpgdata.h"
+#include "rpg_saveeventexecstate.h"
 #include "rpg_saveinventory.h"
 #include "rpg_savemapinfo.h"
 #include "rpg_savepanorama.h"
@@ -48,9 +49,33 @@ namespace RPG {
 		std::vector<SaveTarget> targets;
 		SaveMapInfo map_info;
 		SavePanorama panorama;
-		SaveEventData events;
+		SaveEventExecState foreground_event_execstate;
 		std::vector<SaveCommonEvent> common_events;
+		SaveEasyRpgData easyrpg_data;
 	};
+
+	inline bool operator==(const Save& l, const Save& r) {
+		return l.title == r.title
+		&& l.system == r.system
+		&& l.screen == r.screen
+		&& l.pictures == r.pictures
+		&& l.party_location == r.party_location
+		&& l.boat_location == r.boat_location
+		&& l.ship_location == r.ship_location
+		&& l.airship_location == r.airship_location
+		&& l.actors == r.actors
+		&& l.inventory == r.inventory
+		&& l.targets == r.targets
+		&& l.map_info == r.map_info
+		&& l.panorama == r.panorama
+		&& l.foreground_event_execstate == r.foreground_event_execstate
+		&& l.common_events == r.common_events
+		&& l.easyrpg_data == r.easyrpg_data;
+	}
+
+	inline bool operator!=(const Save& l, const Save& r) {
+		return !(l == r);
+	}
 }
 
 #endif

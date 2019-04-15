@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -15,10 +15,12 @@
 #include <iosfwd>
 #include <cstring>
 #include <cassert>
+#include <cstdint>
+#include <cinttypes>
 #include <memory>
-#include <stdint.h>
 #include "lcf_options.h"
 #include "reader_util.h"
+#include "encoder.h"
 
 /*
  * Calls SkipDebug() instead of Skip() for debug builds.
@@ -199,10 +201,9 @@ public:
 	 * Encodes a string to UTF-8 using the set encoding
 	 * in the reader constructor.
 	 *
-	 * @param str_to_encode string to encode.
-	 * @return UTF-8 version of string.
+	 * @param str to convert from encoding to UTF-8
 	 */
-	std::string Encode(const std::string& str_to_encode);
+	void Encode(std::string& str);
 
 	/**
 	 * Calculates the size of a compressed integer.
@@ -213,12 +214,12 @@ public:
 	static int IntSize(unsigned int x);
 
 private:
-	/** Name of the encoding. */
-	std::string encoding;
 	/** File-stream managed by this Reader. */
 	std::istream& stream;
 	/** Contains the last set error. */
 	static std::string error_str;
+	/** The internal Encoder */
+	Encoder encoder;
 
 	/**
 	 * Converts a 16bit signed integer to/from little-endian.

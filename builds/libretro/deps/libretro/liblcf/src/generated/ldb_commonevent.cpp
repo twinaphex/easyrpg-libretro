@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -12,21 +12,57 @@
 // Headers
 #include "ldb_reader.h"
 #include "ldb_chunks.h"
-#include "reader_struct.h"
+#include "reader_struct_impl.h"
 
 // Read CommonEvent.
 
-#define LCF_CHUNK_SUFFIX LDB_Reader
-#define LCF_CURRENT_STRUCT CommonEvent
+template <>
+char const* const Struct<RPG::CommonEvent>::name = "CommonEvent";
 
-LCF_STRUCT_FIELDS_BEGIN()
-	LCF_STRUCT_TYPED_FIELD(std::string, name, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, trigger, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(bool, switch_flag, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, switch_id, 0, 0),
-	LCF_STRUCT_SIZE_FIELD(RPG::EventCommand, event_commands, 1, 0),
-	LCF_STRUCT_TYPED_FIELD(std::vector<RPG::EventCommand>, event_commands, 1, 0),
-LCF_STRUCT_FIELDS_END()
+template <>
+Field<RPG::CommonEvent> const* Struct<RPG::CommonEvent>::fields[] = {
+	new TypedField<RPG::CommonEvent, std::string>(
+		&RPG::CommonEvent::name,
+		LDB_Reader::ChunkCommonEvent::name,
+		"name",
+		0,
+		0
+	),
+	new TypedField<RPG::CommonEvent, int32_t>(
+		&RPG::CommonEvent::trigger,
+		LDB_Reader::ChunkCommonEvent::trigger,
+		"trigger",
+		0,
+		0
+	),
+	new TypedField<RPG::CommonEvent, bool>(
+		&RPG::CommonEvent::switch_flag,
+		LDB_Reader::ChunkCommonEvent::switch_flag,
+		"switch_flag",
+		0,
+		0
+	),
+	new TypedField<RPG::CommonEvent, int32_t>(
+		&RPG::CommonEvent::switch_id,
+		LDB_Reader::ChunkCommonEvent::switch_id,
+		"switch_id",
+		0,
+		0
+	),
+	new SizeField<RPG::CommonEvent, RPG::EventCommand>(
+		&RPG::CommonEvent::event_commands,
+		LDB_Reader::ChunkCommonEvent::event_commands_size,
+		1,
+		0
+	),
+	new TypedField<RPG::CommonEvent, std::vector<RPG::EventCommand>>(
+		&RPG::CommonEvent::event_commands,
+		LDB_Reader::ChunkCommonEvent::event_commands,
+		"event_commands",
+		1,
+		0
+	),
+	NULL
+};
 
-#undef LCF_CURRENT_STRUCT
-#undef LCF_CHUNK_SUFFIX
+template class Struct<RPG::CommonEvent>;

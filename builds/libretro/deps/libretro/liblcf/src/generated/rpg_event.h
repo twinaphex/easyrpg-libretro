@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -30,6 +30,17 @@ namespace RPG {
 		int32_t y = 0;
 		std::vector<EventPage> pages;
 	};
+
+	inline bool operator==(const Event& l, const Event& r) {
+		return l.name == r.name
+		&& l.x == r.x
+		&& l.y == r.y
+		&& l.pages == r.pages;
+	}
+
+	inline bool operator!=(const Event& l, const Event& r) {
+		return !(l == r);
+	}
 }
 
 #endif

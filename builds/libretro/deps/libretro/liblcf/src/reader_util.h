@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -109,6 +109,15 @@ namespace ReaderUtil {
 	std::string Recode(const std::string& str_to_encode,
 					   const std::string& src_enc,
 					   const std::string& dst_enc);
+
+	/**
+	 * Converts a UTF-8 string to lowercase and then decomposes it.
+	 * 
+	 * @param str the string to normalize.
+	 * @return the normalized string.
+	 */
+	std::string Normalize(const std::string &str);
+
 
 	/**
 	 * Helper function that returns an element from a vector using a 1-based

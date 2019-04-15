@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -41,6 +41,20 @@ namespace RPG {
 		int32_t d_rate = 50;
 		int32_t e_rate = 0;
 	};
+
+	inline bool operator==(const Attribute& l, const Attribute& r) {
+		return l.name == r.name
+		&& l.type == r.type
+		&& l.a_rate == r.a_rate
+		&& l.b_rate == r.b_rate
+		&& l.c_rate == r.c_rate
+		&& l.d_rate == r.d_rate
+		&& l.e_rate == r.e_rate;
+	}
+
+	inline bool operator!=(const Attribute& l, const Attribute& r) {
+		return !(l == r);
+	}
 }
 
 #endif

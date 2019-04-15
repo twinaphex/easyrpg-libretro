@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -8,10 +8,13 @@
  */
 
 #include "lcf_options.h"
+#include "scope_guard.h"
 
 #ifdef LCF_SUPPORT_ICU
 #   include <unicode/ucsdet.h>
 #   include <unicode/ucnv.h>
+#   include <unicode/normalizer2.h>
+#   include <unicode/unistr.h>
 #else
 #   ifdef _MSC_VER
 #		error MSVC builds require ICU
@@ -19,10 +22,6 @@
 #endif
 
 #ifdef _WIN32
-#   define WIN32_LEAN_AND_MEAN
-#   ifndef NOMINMAX
-#       define NOMINMAX
-#   endif
 #   include <windows.h>
 #else
 #   ifndef LCF_SUPPORT_ICU
@@ -34,7 +33,7 @@
 #if defined(__MORPHOS__) || defined(__amigaos4__)
 #define ICONV_CONST const
 #endif
-
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
@@ -291,68 +290,61 @@ std::string ReaderUtil::Recode(const std::string& str_to_encode, const std::stri
 std::string ReaderUtil::Recode(const std::string& str_to_encode,
                                const std::string& src_enc,
                                const std::string& dst_enc) {
-	std::string src_enc_str = src_enc;
-	std::string dst_enc_str = dst_enc;
 
 	if (src_enc.empty() || dst_enc.empty() || str_to_encode.empty()) {
 		return str_to_encode;
 	}
-	if (atoi(src_enc.c_str()) > 0) {
-		src_enc_str = ReaderUtil::CodepageToEncoding(atoi(src_enc.c_str()));
-	}
-	if (atoi(dst_enc.c_str()) > 0) {
-		dst_enc_str = ReaderUtil::CodepageToEncoding(atoi(dst_enc.c_str()));
-	}
-#ifdef LCF_SUPPORT_ICU
-	UErrorCode status = U_ZERO_ERROR;
-	int size = str_to_encode.size() * 4;
-	UChar* unicode_str = new UChar[size];
-	UConverter *conv;
-	int length;
-	std::string result_str;
 
-	conv = ucnv_open(src_enc_str.c_str(), &status);
+	auto src_cp = atoi(src_enc.c_str());
+	const auto& src_enc_str = src_cp > 0
+		? ReaderUtil::CodepageToEncoding(src_cp)
+		: src_enc;
+
+	auto dst_cp = atoi(dst_enc.c_str());
+	const auto& dst_enc_str = dst_cp > 0
+		? ReaderUtil::CodepageToEncoding(dst_cp)
+		: dst_enc;
+
+#ifdef LCF_SUPPORT_ICU
+	auto status = U_ZERO_ERROR;
+	auto conv_from = ucnv_open(src_enc_str.c_str(), &status);
 
 	if (status != U_ZERO_ERROR && status != U_AMBIGUOUS_ALIAS_WARNING) {
 		fprintf(stderr, "liblcf:  ucnv_open() error for source encoding \"%s\": %s\n", src_enc_str.c_str(), u_errorName(status));
 		return std::string();
 	}
 	status = U_ZERO_ERROR;
+	auto conv_from_sg = makeScopeGuard([&]() { ucnv_close(conv_from); });
 
-	length = ucnv_toUChars(conv, unicode_str, size, str_to_encode.c_str(), -1, &status);
-	ucnv_close(conv);
-	if (status != U_ZERO_ERROR) {
-		fprintf(stderr, "liblcf: ucnv_toUChars() error when encoding \"%s\": %s\n", str_to_encode.c_str(), u_errorName(status));
-		delete[] unicode_str;
-		return std::string();
-	}
+	auto conv_to = ucnv_open(dst_enc_str.c_str(), &status);
 
-	char* result = new char[length * 4];
-
-	conv = ucnv_open(dst_enc_str.c_str(), &status);
 	if (status != U_ZERO_ERROR && status != U_AMBIGUOUS_ALIAS_WARNING) {
-		fprintf(stderr, "liblcf: ucnv_open() error for destination encoding \"%s\": %s\n", dst_enc_str.c_str(), u_errorName(status));
-		delete[] unicode_str;
-		delete[] result;
+		fprintf(stderr, "liblcf:  ucnv_open() error for dest encoding \"%s\": %s\n", dst_enc_str.c_str(), u_errorName(status));
 		return std::string();
 	}
+	auto conv_to_sg = makeScopeGuard([&]() { ucnv_close(conv_to); });
 	status = U_ZERO_ERROR;
 
-	ucnv_fromUChars(conv, result, length * 4, unicode_str, -1, &status);
-	ucnv_close(conv);
-	if (status != U_ZERO_ERROR) {
-		fprintf(stderr, "liblcf: ucnv_fromUChars() error: %s\n", u_errorName(status));
-		delete[] unicode_str;
-		delete[] result;
+	std::string result(str_to_encode.size() * 4, '\0');
+	auto* src = &str_to_encode.front();
+	auto* dst = &result.front();
+
+	ucnv_convertEx(conv_to, conv_from,
+			&dst, dst + result.size(),
+			&src, src + str_to_encode.size(),
+			nullptr, nullptr, nullptr, nullptr,
+			true, true,
+			&status);
+
+	if (U_FAILURE(status)) {
+		fprintf(stderr, "liblcf: ucnv_convertEx() error when encoding \"%s\": %s\n", str_to_encode.c_str(), u_errorName(status));
 		return std::string();
 	}
 
-	result_str = result;
+	result.resize(dst - result.c_str());
+	result.shrink_to_fit();
 
-	delete[] unicode_str;
-	delete[] result;
-
-	return std::string(result_str);
+	return result;
 #else
 	iconv_t cd = iconv_open(dst_enc_str.c_str(), src_enc_str.c_str());
 	if (cd == (iconv_t)-1)
@@ -377,6 +369,35 @@ std::string ReaderUtil::Recode(const std::string& str_to_encode,
 	*q++ = '\0';
 	std::string result(dst);
 	delete[] dst;
+	return result;
+#endif
+}
+
+std::string ReaderUtil::Normalize(const std::string &str) {
+#ifdef LCF_SUPPORT_ICU
+	icu::UnicodeString uni = icu::UnicodeString(str.c_str(), "utf-8").toLower();
+	UErrorCode err = U_ZERO_ERROR;
+	std::string res;
+	const icu::Normalizer2* norm = icu::Normalizer2::getNFKCInstance(err);
+	if (U_FAILURE(err)) {
+		static bool err_reported = false;
+		if (!err_reported) {
+			fprintf(stderr, "Normalizer2::getNFKCInstance failed (%s). \"nrm\" is probably missing in the ICU data file. Unicode normalization will not work!\n", u_errorName(err));
+			err_reported = true;
+		}
+		uni.toUTF8String(res);
+		return res;
+	}
+	icu::UnicodeString f = norm->normalize(uni, err);
+	if (U_FAILURE(err)) {
+		uni.toUTF8String(res);
+	} else {
+		f.toUTF8String(res);
+	}
+	return res;
+#else
+	std::string result = str;
+	std::transform(result.begin(), result.end(), result.begin(), tolower);
 	return result;
 #endif
 }

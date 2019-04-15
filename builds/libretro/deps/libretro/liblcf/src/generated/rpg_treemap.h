@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -41,6 +41,17 @@ namespace RPG {
 		int32_t active_node = 0;
 		Start start;
 	};
+
+	inline bool operator==(const TreeMap& l, const TreeMap& r) {
+		return l.maps == r.maps
+		&& l.tree_order == r.tree_order
+		&& l.active_node == r.active_node
+		&& l.start == r.start;
+	}
+
+	inline bool operator!=(const TreeMap& l, const TreeMap& r) {
+		return !(l == r);
+	}
 }
 
 #endif

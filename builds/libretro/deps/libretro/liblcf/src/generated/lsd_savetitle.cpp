@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -12,27 +12,100 @@
 // Headers
 #include "lsd_reader.h"
 #include "lsd_chunks.h"
-#include "reader_struct.h"
+#include "reader_struct_impl.h"
 
 // Read SaveTitle.
 
-#define LCF_CHUNK_SUFFIX LSD_Reader
-#define LCF_CURRENT_STRUCT SaveTitle
+template <>
+char const* const Struct<RPG::SaveTitle>::name = "SaveTitle";
 
-LCF_STRUCT_FIELDS_BEGIN()
-	LCF_STRUCT_TYPED_FIELD(double, timestamp, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(std::string, hero_name, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, hero_level, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, hero_hp, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(std::string, face1_name, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, face1_id, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(std::string, face2_name, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, face2_id, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(std::string, face3_name, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, face3_id, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(std::string, face4_name, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, face4_id, 0, 0),
-LCF_STRUCT_FIELDS_END()
+template <>
+Field<RPG::SaveTitle> const* Struct<RPG::SaveTitle>::fields[] = {
+	new TypedField<RPG::SaveTitle, double>(
+		&RPG::SaveTitle::timestamp,
+		LSD_Reader::ChunkSaveTitle::timestamp,
+		"timestamp",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, std::string>(
+		&RPG::SaveTitle::hero_name,
+		LSD_Reader::ChunkSaveTitle::hero_name,
+		"hero_name",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, int32_t>(
+		&RPG::SaveTitle::hero_level,
+		LSD_Reader::ChunkSaveTitle::hero_level,
+		"hero_level",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, int32_t>(
+		&RPG::SaveTitle::hero_hp,
+		LSD_Reader::ChunkSaveTitle::hero_hp,
+		"hero_hp",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, std::string>(
+		&RPG::SaveTitle::face1_name,
+		LSD_Reader::ChunkSaveTitle::face1_name,
+		"face1_name",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, int32_t>(
+		&RPG::SaveTitle::face1_id,
+		LSD_Reader::ChunkSaveTitle::face1_id,
+		"face1_id",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, std::string>(
+		&RPG::SaveTitle::face2_name,
+		LSD_Reader::ChunkSaveTitle::face2_name,
+		"face2_name",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, int32_t>(
+		&RPG::SaveTitle::face2_id,
+		LSD_Reader::ChunkSaveTitle::face2_id,
+		"face2_id",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, std::string>(
+		&RPG::SaveTitle::face3_name,
+		LSD_Reader::ChunkSaveTitle::face3_name,
+		"face3_name",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, int32_t>(
+		&RPG::SaveTitle::face3_id,
+		LSD_Reader::ChunkSaveTitle::face3_id,
+		"face3_id",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, std::string>(
+		&RPG::SaveTitle::face4_name,
+		LSD_Reader::ChunkSaveTitle::face4_name,
+		"face4_name",
+		0,
+		0
+	),
+	new TypedField<RPG::SaveTitle, int32_t>(
+		&RPG::SaveTitle::face4_id,
+		LSD_Reader::ChunkSaveTitle::face4_id,
+		"face4_id",
+		0,
+		0
+	),
+	NULL
+};
 
-#undef LCF_CURRENT_STRUCT
-#undef LCF_CHUNK_SUFFIX
+template class Struct<RPG::SaveTitle>;

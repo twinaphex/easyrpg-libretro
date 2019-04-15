@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -50,7 +50,6 @@ void RPG::SaveActor::Setup(int actor_id) {
 	status.resize(Data::states.size());
 	changed_battle_commands = false;
 	class_id = -1;
-	row = -1;
 	two_weapon = actor.two_weapon;
 	lock_equipment = actor.lock_equipment;
 	auto_battle = actor.auto_battle;
@@ -155,6 +154,7 @@ void RPG::Save::Setup() {
 		actors[i - 1].Setup(i);
 	map_info.Setup();
 
+	party_location.move_speed = 4;
 	boat_location.vehicle = RPG::SaveVehicleLocation::VehicleType_skiff;
 	ship_location.vehicle = RPG::SaveVehicleLocation::VehicleType_ship;
 	airship_location.vehicle = RPG::SaveVehicleLocation::VehicleType_airship;
@@ -198,10 +198,12 @@ void RPG::System::Init() {
 }
 
 void RPG::Parameters::Setup(int final_level) {
-	if (maxhp.size() < final_level) maxhp.resize(final_level, 1);
-	if (maxsp.size() < final_level) maxsp.resize(final_level, 0);
-	if (attack.size() < final_level) attack.resize(final_level, 1);
-	if (defense.size() < final_level) defense.resize(final_level, 1);
-	if (spirit.size() < final_level) spirit.resize(final_level, 1);
-	if (agility.size() < final_level) agility.resize(final_level, 1);
+	size_t level = 0;
+	if (final_level > 0) level = final_level;
+	if (maxhp.size() < level) maxhp.resize(level, 1);
+	if (maxsp.size() < level) maxsp.resize(level, 0);
+	if (attack.size() < level) attack.resize(level, 1);
+	if (defense.size() < level) defense.resize(level, 1);
+	if (spirit.size() < level) spirit.resize(level, 1);
+	if (agility.size() < level) agility.resize(level, 1);
 }

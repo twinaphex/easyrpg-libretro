@@ -40,14 +40,14 @@ cpp_types = {
 def lcf_type(field, prefix=True):
     if field.size == True:
         if re.match(r'Count<(.*)>', field.type):
-            return "COUNT"
+            return "Count"
         else:
-            return "SIZE"
+            return "Size"
     if field.type == "DatabaseVersion":
-        return "DATABASE_VERSION"
+        return "DatabaseVersion"
     if field.type == "EmptyBlock":
-        return "EMPTY"
-    return "TYPED"
+        return "Empty"
+    return "Typed"
 
 def cpp_type(ty, prefix=True):
     if ty in cpp_types:
@@ -145,6 +145,11 @@ def filter_unwritten_fields(fields):
     for field in fields:
         if field.type:
             yield field
+
+def filter_size_fields(fields):
+    for field in fields:
+        if not field.size:
+            yield field
 # End of Jinja 2 functions
 
 int_types = {
@@ -195,6 +200,22 @@ def struct_headers(ty, header_map):
 
     return []
 
+def merge_dicts(dicts):
+    # Merges multiple dicts into one
+    out_dict = dicts[0]
+
+    for d in dicts[1:]:
+        for k,v in d.items():
+            if k in out_dict:
+                # Append new values
+                for vv in v:
+                    out_dict[k].append(vv)
+            else:
+                # Insert whole key
+                out_dict[k] = v
+
+    return out_dict
+
 def process_file(filename, namedtup):
     # Mapping is: All elements of the line grouped by the first column
 
@@ -215,30 +236,30 @@ def process_file(filename, namedtup):
 
     return result
 
-def get_structs(filename='structs.csv'):
-    Struct = namedtuple("Struct", "name hasid iscomparable")
+def get_structs(*filenames):
+    Struct = namedtuple("Struct", "name base hasid")
 
-    result = process_file(filename, Struct)
+    results = list(map(lambda x: process_file(x, Struct), filenames))
 
     processed_result = OrderedDict()
 
-    for k, struct in result.items():
+    for k, struct in merge_dicts(results).items():
         processed_result[k] = []
 
         for elem in struct:
-            elem = Struct(elem.name, bool(int(elem.hasid)) if elem.hasid else None, bool(int(elem.iscomparable)))
+            elem = Struct(elem.name, elem.base, bool(int(elem.hasid)) if elem.hasid else None)
             processed_result[k].append(elem)
 
     return processed_result
 
-def get_fields(filename='fields.csv'):
+def get_fields(*filenames):
     Field = namedtuple("Field", "name size type code default presentifdefault is2k3 comment")
 
-    result = process_file(filename, Field)
+    results = list(map(lambda x: process_file(x, Field), filenames))
 
     processed_result = OrderedDict()
 
-    for k, field in result.items():
+    for k, field in merge_dicts(results).items():
         processed_result[k] = []
         for elem in field:
             elem = Field(
@@ -254,24 +275,29 @@ def get_fields(filename='fields.csv'):
 
     return processed_result
 
-def get_enums(filename='enums.csv'):
-    result = process_file(filename, namedtuple("Enum", "entry value index"))
+def get_enums(*filenames):
+    results = list(map(lambda x: process_file(x, namedtuple("Enum", "entry value index")), filenames))
     new_result = OrderedDict()
 
     # Additional processing to group by the Enum Entry
     # Results in e.g. EventCommand -> Code -> List of (Name, Index)
-    for k, v in result.items():
+    for k, v in merge_dicts(results).items():
         new_result[k] = OrderedDict()
         for kk, gg in groupby(v, operator.attrgetter("entry")):
             new_result[k][kk] = list(map(lambda x: (x.value, x.index), gg))
 
     return new_result
 
-def get_flags(filename='flags.csv'):
-    return process_file(filename, namedtuple("Flag", "field is2k3"))
+def get_flags(*filenames):
+    results = list(map(lambda x: process_file(x, namedtuple("Flag", "field is2k3")), filenames))
+    return merge_dicts(results)
 
-def get_setup(filename='setup.csv'):
-    return process_file(filename, namedtuple("Setup", "method headers"))
+def get_setup(*filenames):
+    results = list(map(lambda x: process_file(x, namedtuple("Setup", "method headers")), filenames))
+    return merge_dicts(results)
+
+def get_constants(filename='constants.csv'):
+    return process_file(filename, namedtuple("Constant", "name type value comment"))
 
 def get_headers():
     header_map = dict()
@@ -287,6 +313,11 @@ def get_headers():
         struct_name = struct.name
         if struct_name not in sfields:
             continue
+        struct_result = result.setdefault(struct_name, [])
+
+        struct_base = struct.base
+        if struct_base:
+            struct_result.append('"rpg_{}.h"'.format(struct_base.lower()))
         headers = set()
         for field in sfields[struct_name]:
             ftype = field.type
@@ -297,12 +328,20 @@ def get_headers():
             for s in setup[struct_name]:
                 if s.headers:
                     headers.update([s.headers])
-        result[struct_name] = sorted(x for x in headers if x[0] == '<') + sorted(x for x in headers if x[0] == '"')
+        struct_result += sorted(x for x in headers if x[0] == '<') + sorted(x for x in headers if x[0] == '"')
     return result
 
 def needs_ctor(struct_name):
     return struct_name in setup and any('Init()' in method
                                     for method, hdrs in setup[struct_name])
+
+def is_monotonic_from_0(enum):
+    expected = 0
+    for (val, idx) in enum:
+        if int(idx) != expected:
+            return False
+        expected += 1
+    return True
 
 def generate():
     if not os.path.exists(tmp_dir):
@@ -327,14 +366,16 @@ def generate():
                 with open(filepath, 'w') as f:
                     f.write(lcf_struct_tmpl.render(
                         struct_name=struct.name,
+                        struct_base=struct.base,
                         type=filetype
                     ))
 
-                if needs_ctor(struct.name):
+                if needs_ctor(struct.name) or struct.name in constants:
                     filepath = os.path.join(tmp_dir, 'rpg_%s.cpp' % filename)
                     with open(filepath, 'w') as f:
                         f.write(rpg_source_tmpl.render(
                             struct_name=struct.name,
+                            struct_base=struct.base,
                             filename=filename
                         ))
 
@@ -342,8 +383,8 @@ def generate():
             with open(filepath, 'w') as f:
                 f.write(rpg_header_tmpl.render(
                     struct_name=struct.name,
-                    has_id=struct.hasid,
-                    is_comparable=struct.iscomparable
+                    struct_base=struct.base,
+                    has_id=struct.hasid
                 ))
 
             if struct.name in flags:
@@ -371,14 +412,15 @@ def main(argv):
     if not os.path.exists(dest_dir):
         os.mkdir(dest_dir)
 
-    global structs, sfields, enums, flags, setup, headers
+    global structs, sfields, enums, flags, setup, constants, headers
     global chunk_tmpl, lcf_struct_tmpl, rpg_header_tmpl, rpg_source_tmpl, flags_tmpl, enums_tmpl
 
-    structs = get_structs()
-    sfields = get_fields()
-    enums = get_enums()
-    flags = get_flags()
-    setup = get_setup()
+    structs = get_structs('structs.csv','structs_easyrpg.csv')
+    sfields = get_fields('fields.csv','fields_easyrpg.csv')
+    enums = get_enums('enums.csv')
+    flags = get_flags('flags.csv')
+    setup = get_setup('setup.csv')
+    constants = get_constants()
     headers = get_headers()
 
     # Setup Jinja
@@ -388,10 +430,12 @@ def main(argv):
     env.filters["struct_has_code"] = filter_structs_without_codes
     env.filters["field_is_used"] = filter_unused_fields
     env.filters["field_is_written"] = filter_unwritten_fields
+    env.filters["field_is_not_size"] = filter_size_fields
     env.filters["num_flags"] = num_flags
     env.filters["flag_size"] = flag_size
     env.filters["flag_set"] = flag_set
     env.tests['needs_ctor'] = needs_ctor
+    env.tests['monotonic_from_0'] = is_monotonic_from_0
 
     globals = dict(
         structs=structs,
@@ -399,6 +443,7 @@ def main(argv):
         flags=flags,
         enums=enums,
         setup=setup,
+        constants=constants,
         headers=headers
     )
 

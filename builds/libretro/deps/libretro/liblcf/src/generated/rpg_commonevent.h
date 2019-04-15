@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -29,11 +29,6 @@ namespace RPG {
 			Trigger_parallel = 4,
 			Trigger_call = 5
 		};
-		static constexpr auto kTriggerTags = makeEnumTags<Trigger>(
-			"automatic",
-			"parallel",
-			"call"
-		);
 
 		int ID = 0;
 		std::string name;
@@ -42,6 +37,18 @@ namespace RPG {
 		int32_t switch_id = 1;
 		std::vector<EventCommand> event_commands;
 	};
+
+	inline bool operator==(const CommonEvent& l, const CommonEvent& r) {
+		return l.name == r.name
+		&& l.trigger == r.trigger
+		&& l.switch_flag == r.switch_flag
+		&& l.switch_id == r.switch_id
+		&& l.event_commands == r.event_commands;
+	}
+
+	inline bool operator!=(const CommonEvent& l, const CommonEvent& r) {
+		return !(l == r);
+	}
 }
 
 #endif

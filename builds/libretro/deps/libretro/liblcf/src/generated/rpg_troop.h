@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -32,6 +32,19 @@ namespace RPG {
 		bool appear_randomly = false;
 		std::vector<TroopPage> pages;
 	};
+
+	inline bool operator==(const Troop& l, const Troop& r) {
+		return l.name == r.name
+		&& l.members == r.members
+		&& l.auto_alignment == r.auto_alignment
+		&& l.terrain_set == r.terrain_set
+		&& l.appear_randomly == r.appear_randomly
+		&& l.pages == r.pages;
+	}
+
+	inline bool operator!=(const Troop& l, const Troop& r) {
+		return !(l == r);
+	}
 }
 
 #endif

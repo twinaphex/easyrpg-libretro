@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -24,6 +24,15 @@ namespace RPG {
 		int32_t pan_x = 0;
 		int32_t pan_y = 0;
 	};
+
+	inline bool operator==(const SavePanorama& l, const SavePanorama& r) {
+		return l.pan_x == r.pan_x
+		&& l.pan_y == r.pan_y;
+	}
+
+	inline bool operator!=(const SavePanorama& l, const SavePanorama& r) {
+		return !(l == r);
+	}
 }
 
 #endif

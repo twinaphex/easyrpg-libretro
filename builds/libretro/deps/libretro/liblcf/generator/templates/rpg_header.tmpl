@@ -14,7 +14,7 @@
  * RPG::{{ struct_name }} class.
  */
 namespace RPG {
-	class {{ struct_name }} {
+	class {{ struct_name }} {%- if struct_base %} : public {{ struct_base }} {%- endif %} {
 	public:
 	{%- if struct_name == "Database" %}
 		std::string ldb_header;
@@ -25,6 +25,12 @@ namespace RPG {
 	{%- if struct_name == "Map" %}
 		std::string lmu_header;
 	{%- endif %}
+	{%- if struct_name in constants %}
+	{%- for name, type, value, comment in constants[struct_name] %}
+		// {{ comment }}
+		static constexpr {{ type }} {{ name }} = {{ value }};
+	{%- endfor %}
+	{% endif %}
 	{%- if struct_name in enums %}
 	{%- for name, enum in enums[struct_name].items() %}
 		{%- if name == "Code" %}
@@ -42,11 +48,13 @@ namespace RPG {
 		{%- endfor %}
 		};
 		{%- endif %}
+		{%- if enum is monotonic_from_0 %}
 		static constexpr auto k{{ name }}Tags = makeEnumTags<{{name}}{%- if name == "Code" %}::Index{%- endif %}>(
 		{%- for field in enum %}
 			"{{ field.0 }}"{%- if not loop.last %},{% endif %}
 		{%- endfor %}
 		);
+		{%- endif %}
 	{%- endfor %}
 	{% endif %}
 	{%- if struct_name is needs_ctor %}
@@ -83,23 +91,6 @@ namespace RPG {
 	{%- endif %}
 	{%- endfor %}
 	};
-	{%- if is_comparable %}
-
-	inline bool operator==(const {{ struct_name }}& l, const {{ struct_name }}& r) {
-	{%- for field in fields[struct_name]|field_is_used -%}
-		{% if loop.first %}
-		return
-		{%- else %}
-		&&
-		{%- endif %} l.{{ field.name }} == r.{{ field.name }} {%- if loop.last %};{%- endif %}
-	{%- endfor %}
-	}
-
-	inline bool operator!=(const {{ struct_name }}& l, const {{ struct_name }}& r) {
-		return !(l == r);
-	}
-	{%- endif %}
-
 	{%- for field in fields[struct_name]|field_is_used %}
 	{%- if not field.size %}
 	{%- if field.type.endswith("_Flags") %}
@@ -114,6 +105,20 @@ namespace RPG {
 	{%- endif %}
 	{%- endif %}
 	{%- endfor %}
+
+	inline bool operator==(const {{ struct_name }}& l, const {{ struct_name }}& r) {
+	{%- for field in fields[struct_name]|field_is_used|field_is_not_size -%}
+		{% if loop.first %}
+		return
+		{%- else %}
+		&&
+		{%- endif %} l.{{ field.name }} == r.{{ field.name }} {%- if loop.last %};{%- endif %}
+	{%- endfor %}
+	}
+
+	inline bool operator!=(const {{ struct_name }}& l, const {{ struct_name }}& r) {
+		return !(l == r);
+	}
 }
 
 #endif

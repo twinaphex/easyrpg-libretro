@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -13,66 +13,35 @@
 #define LCF_RPG_SAVEMAPEVENT_H
 
 // Headers
+#include "rpg_savemapeventbase.h"
 #include <stdint.h>
-#include <string>
-#include "enum_tags.h"
 #include "rpg_event.h"
-#include "rpg_moveroute.h"
-#include "rpg_saveeventdata.h"
+#include "rpg_saveeventexecstate.h"
 
 /**
  * RPG::SaveMapEvent class.
  */
 namespace RPG {
-	class SaveMapEvent {
+	class SaveMapEvent : public SaveMapEventBase {
 	public:
 		void Setup(const RPG::Event& event);
-		void Fixup(const RPG::EventPage& page);
-		void UnFixup(const RPG::EventPage& page);
 		int ID = 0;
-		bool active = true;
-		int32_t map_id = -1;
-		int32_t position_x = -1;
-		int32_t position_y = -1;
-		int32_t direction = 2;
-		int32_t sprite_direction = 2;
-		int32_t anim_frame = 1;
-		int32_t transparency = 0;
-		int32_t remaining_step = 0;
-		int32_t move_frequency = 2;
-		int32_t layer = 1;
-		bool overlap_forbidden = false;
-		int32_t animation_type = 1;
-		bool lock_facing = false;
-		int32_t move_speed = -1;
-		MoveRoute move_route;
-		bool move_route_overwrite = false;
-		int32_t move_route_index = 0;
-		bool move_route_repeated = false;
-		bool route_through = false;
-		int32_t anim_paused = 0;
-		bool through = false;
-		int32_t stop_count = 0;
-		int32_t anim_count = 0;
-		int32_t max_stop_count = 0;
-		bool jumping = false;
-		int32_t begin_jump_x = 0;
-		int32_t begin_jump_y = 0;
-		bool pause = false;
-		bool flying = false;
-		std::string sprite_name;
-		int32_t sprite_id = -1;
-		bool processed = false;
-		int32_t flash_red = 100;
-		int32_t flash_green = 100;
-		int32_t flash_blue = 100;
-		double flash_current_level = 0.0;
-		int32_t flash_time_left = 0;
-		bool running = false;
+		bool waiting_execution = false;
 		int32_t original_move_route_index = 0;
-		bool pending = false;
-		SaveEventData event_data;
+		bool triggered_by_decision_key = false;
+		SaveEventExecState parallel_event_execstate;
 	};
+
+	inline bool operator==(const SaveMapEvent& l, const SaveMapEvent& r) {
+		return l.waiting_execution == r.waiting_execution
+		&& l.original_move_route_index == r.original_move_route_index
+		&& l.triggered_by_decision_key == r.triggered_by_decision_key
+		&& l.parallel_event_execstate == r.parallel_event_execstate;
+	}
+
+	inline bool operator!=(const SaveMapEvent& l, const SaveMapEvent& r) {
+		return !(l == r);
+	}
 }
 
 #endif

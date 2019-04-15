@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -120,6 +120,18 @@ namespace RPG {
 		int32_t parameter_b = 0;
 		int32_t parameter_c = 0;
 	};
+
+	inline bool operator==(const MoveCommand& l, const MoveCommand& r) {
+		return l.command_id == r.command_id
+		&& l.parameter_string == r.parameter_string
+		&& l.parameter_a == r.parameter_a
+		&& l.parameter_b == r.parameter_b
+		&& l.parameter_c == r.parameter_c;
+	}
+
+	inline bool operator!=(const MoveCommand& l, const MoveCommand& r) {
+		return !(l == r);
+	}
 }
 
 #endif

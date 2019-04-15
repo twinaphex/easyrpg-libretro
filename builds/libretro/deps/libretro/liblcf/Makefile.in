@@ -140,14 +140,15 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(cmakeconfigdir)" \
-	"$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(pkgincludedir)"
+	"$(DESTDIR)$(mimedbdir)" "$(DESTDIR)$(pkgconfigdir)" \
+	"$(DESTDIR)$(pkgincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 liblcf_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_liblcf_la_OBJECTS = src/liblcf_la-reader_struct.lo \
-	src/liblcf_la-data.lo src/liblcf_la-ini.lo \
-	src/liblcf_la-inireader.lo src/liblcf_la-ldb_equipment.lo \
+am_liblcf_la_OBJECTS = src/liblcf_la-data.lo src/liblcf_la-encoder.lo \
+	src/liblcf_la-ini.lo src/liblcf_la-inireader.lo \
+	src/liblcf_la-ldb_equipment.lo \
 	src/liblcf_la-ldb_eventcommand.lo \
 	src/liblcf_la-ldb_parameters.lo src/liblcf_la-ldb_reader.lo \
 	src/liblcf_la-lmt_reader.lo src/liblcf_la-lmt_rect.lo \
@@ -158,8 +159,8 @@ am_liblcf_la_OBJECTS = src/liblcf_la-reader_struct.lo \
 	src/liblcf_la-rpg_fixup.lo src/liblcf_la-rpg_setup.lo \
 	src/liblcf_la-writer_lcf.lo src/liblcf_la-writer_xml.lo \
 	src/generated/liblcf_la-ldb_actor.lo \
-	src/generated/liblcf_la-ldb_animationcelldata.lo \
 	src/generated/liblcf_la-ldb_animation.lo \
+	src/generated/liblcf_la-ldb_animationcelldata.lo \
 	src/generated/liblcf_la-ldb_animationframe.lo \
 	src/generated/liblcf_la-ldb_animationtiming.lo \
 	src/generated/liblcf_la-ldb_attribute.lo \
@@ -172,10 +173,10 @@ am_liblcf_la_OBJECTS = src/liblcf_la-reader_struct.lo \
 	src/generated/liblcf_la-ldb_class.lo \
 	src/generated/liblcf_la-ldb_commonevent.lo \
 	src/generated/liblcf_la-ldb_database.lo \
-	src/generated/liblcf_la-ldb_enemyaction.lo \
 	src/generated/liblcf_la-ldb_enemy.lo \
-	src/generated/liblcf_la-ldb_itemanimation.lo \
+	src/generated/liblcf_la-ldb_enemyaction.lo \
 	src/generated/liblcf_la-ldb_item.lo \
+	src/generated/liblcf_la-ldb_itemanimation.lo \
 	src/generated/liblcf_la-ldb_learning.lo \
 	src/generated/liblcf_la-ldb_music.lo \
 	src/generated/liblcf_la-ldb_skill.lo \
@@ -188,24 +189,26 @@ am_liblcf_la_OBJECTS = src/liblcf_la-reader_struct.lo \
 	src/generated/liblcf_la-ldb_testbattler.lo \
 	src/generated/liblcf_la-ldb_troop.lo \
 	src/generated/liblcf_la-ldb_troopmember.lo \
-	src/generated/liblcf_la-ldb_trooppagecondition.lo \
 	src/generated/liblcf_la-ldb_trooppage.lo \
+	src/generated/liblcf_la-ldb_trooppagecondition.lo \
 	src/generated/liblcf_la-ldb_variable.lo \
 	src/generated/liblcf_la-lmt_encounter.lo \
 	src/generated/liblcf_la-lmt_mapinfo.lo \
 	src/generated/liblcf_la-lmt_start.lo \
 	src/generated/liblcf_la-lmu_event.lo \
-	src/generated/liblcf_la-lmu_eventpagecondition.lo \
 	src/generated/liblcf_la-lmu_eventpage.lo \
+	src/generated/liblcf_la-lmu_eventpagecondition.lo \
 	src/generated/liblcf_la-lmu_map.lo \
 	src/generated/liblcf_la-lmu_moveroute.lo \
+	src/generated/liblcf_la-lsd_save.lo \
 	src/generated/liblcf_la-lsd_saveactor.lo \
 	src/generated/liblcf_la-lsd_savecommonevent.lo \
-	src/generated/liblcf_la-lsd_save.lo \
-	src/generated/liblcf_la-lsd_saveeventcommands.lo \
-	src/generated/liblcf_la-lsd_saveeventdata.lo \
+	src/generated/liblcf_la-lsd_saveeasyrpgdata.lo \
+	src/generated/liblcf_la-lsd_saveeventexecframe.lo \
+	src/generated/liblcf_la-lsd_saveeventexecstate.lo \
 	src/generated/liblcf_la-lsd_saveinventory.lo \
 	src/generated/liblcf_la-lsd_savemapevent.lo \
+	src/generated/liblcf_la-lsd_savemapeventbase.lo \
 	src/generated/liblcf_la-lsd_savemapinfo.lo \
 	src/generated/liblcf_la-lsd_savepanorama.lo \
 	src/generated/liblcf_la-lsd_savepartylocation.lo \
@@ -217,6 +220,8 @@ am_liblcf_la_OBJECTS = src/liblcf_la-reader_struct.lo \
 	src/generated/liblcf_la-lsd_savevehiclelocation.lo \
 	src/generated/liblcf_la-rpg_chipset.lo \
 	src/generated/liblcf_la-rpg_enums.lo \
+	src/generated/liblcf_la-rpg_savepartylocation.lo \
+	src/generated/liblcf_la-rpg_state.lo \
 	src/generated/liblcf_la-rpg_system.lo
 liblcf_la_OBJECTS = $(am_liblcf_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -227,6 +232,7 @@ liblcf_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(liblcf_la_CXXFLAGS) \
 	$(CXXFLAGS) $(liblcf_la_LDFLAGS) $(LDFLAGS) -o $@
 am_test_runner_OBJECTS = tests/test_runner-time_stamp.$(OBJEXT) \
+	tests/test_runner-flag_set.$(OBJEXT) \
 	tests/test_runner-test_main.$(OBJEXT)
 test_runner_OBJECTS = $(am_test_runner_OBJECTS)
 test_runner_DEPENDENCIES = liblcf.la $(am__DEPENDENCIES_1) \
@@ -250,6 +256,7 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/builds/autoconf/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = src/$(DEPDIR)/liblcf_la-data.Plo \
+	src/$(DEPDIR)/liblcf_la-encoder.Plo \
 	src/$(DEPDIR)/liblcf_la-ini.Plo \
 	src/$(DEPDIR)/liblcf_la-inireader.Plo \
 	src/$(DEPDIR)/liblcf_la-ldb_equipment.Plo \
@@ -264,7 +271,6 @@ am__depfiles_remade = src/$(DEPDIR)/liblcf_la-data.Plo \
 	src/$(DEPDIR)/liblcf_la-lsd_reader.Plo \
 	src/$(DEPDIR)/liblcf_la-reader_flags.Plo \
 	src/$(DEPDIR)/liblcf_la-reader_lcf.Plo \
-	src/$(DEPDIR)/liblcf_la-reader_struct.Plo \
 	src/$(DEPDIR)/liblcf_la-reader_util.Plo \
 	src/$(DEPDIR)/liblcf_la-reader_xml.Plo \
 	src/$(DEPDIR)/liblcf_la-rpg_fixup.Plo \
@@ -316,10 +322,12 @@ am__depfiles_remade = src/$(DEPDIR)/liblcf_la-data.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_save.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_saveactor.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_savecommonevent.Plo \
-	src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventcommands.Plo \
-	src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventdata.Plo \
+	src/generated/$(DEPDIR)/liblcf_la-lsd_saveeasyrpgdata.Plo \
+	src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecframe.Plo \
+	src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecstate.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_saveinventory.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_savemapevent.Plo \
+	src/generated/$(DEPDIR)/liblcf_la-lsd_savemapeventbase.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_savemapinfo.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_savepanorama.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_savepartylocation.Plo \
@@ -331,7 +339,10 @@ am__depfiles_remade = src/$(DEPDIR)/liblcf_la-data.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-lsd_savevehiclelocation.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-rpg_chipset.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-rpg_enums.Plo \
+	src/generated/$(DEPDIR)/liblcf_la-rpg_savepartylocation.Plo \
+	src/generated/$(DEPDIR)/liblcf_la-rpg_state.Plo \
 	src/generated/$(DEPDIR)/liblcf_la-rpg_system.Plo \
+	tests/$(DEPDIR)/test_runner-flag_set.Po \
 	tests/$(DEPDIR)/test_runner-test_main.Po \
 	tests/$(DEPDIR)/test_runner-time_stamp.Po
 am__mv = mv -f
@@ -378,7 +389,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-DATA = $(cmakeconfig_DATA) $(pkgconfig_DATA)
+DATA = $(cmakeconfig_DATA) $(mimedb_DATA) $(pkgconfig_DATA)
 HEADERS = $(pkginclude_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
@@ -515,6 +526,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -571,10 +583,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = --install -I builds/autoconf/m4
 EXTRA_DIST = AUTHORS.md README.md generator \
-	builds/cmake builds/vs2015 builds/Doxyfile
+	CMakeLists.txt builds/cmake mime builds/Doxyfile
 
-pkgconfigdir = ${libdir}/pkgconfig
+pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = builds/liblcf.pc
+mimedbdir = $(datadir)/mime/packages
+mimedb_DATA = mime/liblcf.xml
 cmakeconfigdir = $(libdir)/cmake/liblcf
 cmakeconfig_DATA = \
 	builds/liblcf-config.cmake \
@@ -602,8 +616,8 @@ liblcf_la_LDFLAGS = \
 	-no-undefined
 
 liblcf_la_SOURCES = \
-	src/reader_struct.cpp \
 	src/data.cpp \
+	src/encoder.cpp \
 	src/ini.cpp \
 	src/inireader.cpp \
 	src/ldb_equipment.cpp \
@@ -625,8 +639,8 @@ liblcf_la_SOURCES = \
 	src/writer_lcf.cpp \
 	src/writer_xml.cpp \
 	src/generated/ldb_actor.cpp \
-	src/generated/ldb_animationcelldata.cpp \
 	src/generated/ldb_animation.cpp \
+	src/generated/ldb_animationcelldata.cpp \
 	src/generated/ldb_animationframe.cpp \
 	src/generated/ldb_animationtiming.cpp \
 	src/generated/ldb_attribute.cpp \
@@ -639,10 +653,10 @@ liblcf_la_SOURCES = \
 	src/generated/ldb_class.cpp \
 	src/generated/ldb_commonevent.cpp \
 	src/generated/ldb_database.cpp \
-	src/generated/ldb_enemyaction.cpp \
 	src/generated/ldb_enemy.cpp \
-	src/generated/ldb_itemanimation.cpp \
+	src/generated/ldb_enemyaction.cpp \
 	src/generated/ldb_item.cpp \
+	src/generated/ldb_itemanimation.cpp \
 	src/generated/ldb_learning.cpp \
 	src/generated/ldb_music.cpp \
 	src/generated/ldb_skill.cpp \
@@ -655,24 +669,26 @@ liblcf_la_SOURCES = \
 	src/generated/ldb_testbattler.cpp \
 	src/generated/ldb_troop.cpp \
 	src/generated/ldb_troopmember.cpp \
-	src/generated/ldb_trooppagecondition.cpp \
 	src/generated/ldb_trooppage.cpp \
+	src/generated/ldb_trooppagecondition.cpp \
 	src/generated/ldb_variable.cpp \
 	src/generated/lmt_encounter.cpp \
 	src/generated/lmt_mapinfo.cpp \
 	src/generated/lmt_start.cpp \
 	src/generated/lmu_event.cpp \
-	src/generated/lmu_eventpagecondition.cpp \
 	src/generated/lmu_eventpage.cpp \
+	src/generated/lmu_eventpagecondition.cpp \
 	src/generated/lmu_map.cpp \
 	src/generated/lmu_moveroute.cpp \
+	src/generated/lsd_save.cpp \
 	src/generated/lsd_saveactor.cpp \
 	src/generated/lsd_savecommonevent.cpp \
-	src/generated/lsd_save.cpp \
-	src/generated/lsd_saveeventcommands.cpp \
-	src/generated/lsd_saveeventdata.cpp \
+	src/generated/lsd_saveeasyrpgdata.cpp \
+	src/generated/lsd_saveeventexecframe.cpp \
+	src/generated/lsd_saveeventexecstate.cpp \
 	src/generated/lsd_saveinventory.cpp \
 	src/generated/lsd_savemapevent.cpp \
+	src/generated/lsd_savemapeventbase.cpp \
 	src/generated/lsd_savemapinfo.cpp \
 	src/generated/lsd_savepanorama.cpp \
 	src/generated/lsd_savepartylocation.cpp \
@@ -684,14 +700,16 @@ liblcf_la_SOURCES = \
 	src/generated/lsd_savevehiclelocation.cpp \
 	src/generated/rpg_chipset.cpp \
 	src/generated/rpg_enums.cpp \
-	src/generated/rpg_system.cpp \
-	src/boost/preprocessor/cat.hpp \
-	src/boost/preprocessor/stringize.hpp \
-	src/boost/preprocessor/config/config.hpp
+	src/generated/rpg_savepartylocation.cpp \
+	src/generated/rpg_state.cpp \
+	src/generated/rpg_system.cpp
 
 pkginclude_HEADERS = \
 	src/command_codes.h \
 	src/data.h \
+	src/encoder.h \
+	src/enum_tags.h \
+	src/flag_set.h \
 	src/ini.h \
 	src/inireader.h \
 	src/lcf_options.h \
@@ -702,41 +720,45 @@ pkginclude_HEADERS = \
 	src/lsd_reader.h \
 	src/reader_lcf.h \
 	src/reader_struct.h \
+	src/reader_struct_impl.h \
 	src/reader_util.h \
 	src/reader_xml.h \
+	src/scope_guard.h \
 	src/writer_lcf.h \
 	src/writer_xml.h \
-	src/enum_tags.h \
 	src/generated/ldb_chunks.h \
+	src/generated/ldb_terrain_flags.h \
+	src/generated/ldb_trooppagecondition_flags.h \
 	src/generated/lmt_chunks.h \
 	src/generated/lmu_chunks.h \
+	src/generated/lmu_eventpagecondition_flags.h \
 	src/generated/lsd_chunks.h \
+	src/generated/lsd_savepicture_flags.h \
 	src/generated/rpg_actor.h \
+	src/generated/rpg_animation.h \
 	src/generated/rpg_animationcelldata.h \
 	src/generated/rpg_animationframe.h \
-	src/generated/rpg_animation.h \
 	src/generated/rpg_animationtiming.h \
 	src/generated/rpg_attribute.h \
 	src/generated/rpg_battlecommand.h \
 	src/generated/rpg_battlecommands.h \
+	src/generated/rpg_battleranimation.h \
 	src/generated/rpg_battleranimationdata.h \
 	src/generated/rpg_battleranimationextension.h \
-	src/generated/rpg_battleranimation.h \
 	src/generated/rpg_chipset.h \
 	src/generated/rpg_class.h \
 	src/generated/rpg_commonevent.h \
 	src/generated/rpg_database.h \
 	src/generated/rpg_encounter.h \
-	src/generated/rpg_enemyaction.h \
 	src/generated/rpg_enemy.h \
+	src/generated/rpg_enemyaction.h \
 	src/generated/rpg_equipment.h \
-	src/generated/rpg_eventcommand.h \
 	src/generated/rpg_event.h \
-	src/generated/rpg_eventpagecondition.h \
-	src/generated/lmu_eventpagecondition_flags.h \
+	src/generated/rpg_eventcommand.h \
 	src/generated/rpg_eventpage.h \
-	src/generated/rpg_itemanimation.h \
+	src/generated/rpg_eventpagecondition.h \
 	src/generated/rpg_item.h \
+	src/generated/rpg_itemanimation.h \
 	src/generated/rpg_learning.h \
 	src/generated/rpg_map.h \
 	src/generated/rpg_mapinfo.h \
@@ -745,18 +767,19 @@ pkginclude_HEADERS = \
 	src/generated/rpg_music.h \
 	src/generated/rpg_parameters.h \
 	src/generated/rpg_rect.h \
+	src/generated/rpg_save.h \
 	src/generated/rpg_saveactor.h \
 	src/generated/rpg_savecommonevent.h \
-	src/generated/rpg_saveeventcommands.h \
-	src/generated/rpg_saveeventdata.h \
-	src/generated/rpg_save.h \
+	src/generated/rpg_saveeasyrpgdata.h \
+	src/generated/rpg_saveeventexecframe.h \
+	src/generated/rpg_saveeventexecstate.h \
 	src/generated/rpg_saveinventory.h \
 	src/generated/rpg_savemapevent.h \
+	src/generated/rpg_savemapeventbase.h \
 	src/generated/rpg_savemapinfo.h \
 	src/generated/rpg_savepanorama.h \
 	src/generated/rpg_savepartylocation.h \
 	src/generated/rpg_savepicture.h \
-	src/generated/lsd_savepicture_flags.h \
 	src/generated/rpg_savescreen.h \
 	src/generated/rpg_savesystem.h \
 	src/generated/rpg_savetarget.h \
@@ -770,19 +793,18 @@ pkginclude_HEADERS = \
 	src/generated/rpg_system.h \
 	src/generated/rpg_terms.h \
 	src/generated/rpg_terrain.h \
-	src/generated/ldb_terrain_flags.h \
 	src/generated/rpg_testbattler.h \
 	src/generated/rpg_treemap.h \
 	src/generated/rpg_troop.h \
 	src/generated/rpg_troopmember.h \
-	src/generated/rpg_trooppagecondition.h \
-	src/generated/ldb_trooppagecondition_flags.h \
 	src/generated/rpg_trooppage.h \
+	src/generated/rpg_trooppagecondition.h \
 	src/generated/rpg_variable.h
 
 test_runner_SOURCES = \
 	tests/doctest.h \
 	tests/time_stamp.cpp \
+	tests/flag_set.cpp \
 	tests/test_main.cpp
 
 test_runner_CPPFLAGS = \
@@ -907,9 +929,9 @@ src/$(am__dirstamp):
 src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/$(DEPDIR)
 	@: > src/$(DEPDIR)/$(am__dirstamp)
-src/liblcf_la-reader_struct.lo: src/$(am__dirstamp) \
-	src/$(DEPDIR)/$(am__dirstamp)
 src/liblcf_la-data.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/liblcf_la-encoder.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/liblcf_la-ini.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
@@ -959,10 +981,10 @@ src/generated/$(DEPDIR)/$(am__dirstamp):
 	@: > src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-ldb_actor.lo: src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-ldb_animationcelldata.lo:  \
+src/generated/liblcf_la-ldb_animation.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-ldb_animation.lo:  \
+src/generated/liblcf_la-ldb_animationcelldata.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-ldb_animationframe.lo:  \
@@ -999,15 +1021,15 @@ src/generated/liblcf_la-ldb_commonevent.lo:  \
 src/generated/liblcf_la-ldb_database.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
+src/generated/liblcf_la-ldb_enemy.lo: src/generated/$(am__dirstamp) \
+	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-ldb_enemyaction.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-ldb_enemy.lo: src/generated/$(am__dirstamp) \
+src/generated/liblcf_la-ldb_item.lo: src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-ldb_itemanimation.lo:  \
 	src/generated/$(am__dirstamp) \
-	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-ldb_item.lo: src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-ldb_learning.lo:  \
 	src/generated/$(am__dirstamp) \
@@ -1036,10 +1058,10 @@ src/generated/liblcf_la-ldb_troop.lo: src/generated/$(am__dirstamp) \
 src/generated/liblcf_la-ldb_troopmember.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-ldb_trooppagecondition.lo:  \
+src/generated/liblcf_la-ldb_trooppage.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-ldb_trooppage.lo:  \
+src/generated/liblcf_la-ldb_trooppagecondition.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-ldb_variable.lo:  \
@@ -1054,10 +1076,10 @@ src/generated/liblcf_la-lmt_start.lo: src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-lmu_event.lo: src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-lmu_eventpagecondition.lo:  \
+src/generated/liblcf_la-lmu_eventpage.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-lmu_eventpage.lo:  \
+src/generated/liblcf_la-lmu_eventpagecondition.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-lmu_map.lo: src/generated/$(am__dirstamp) \
@@ -1065,24 +1087,30 @@ src/generated/liblcf_la-lmu_map.lo: src/generated/$(am__dirstamp) \
 src/generated/liblcf_la-lmu_moveroute.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
+src/generated/liblcf_la-lsd_save.lo: src/generated/$(am__dirstamp) \
+	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-lsd_saveactor.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-lsd_savecommonevent.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-lsd_save.lo: src/generated/$(am__dirstamp) \
-	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-lsd_saveeventcommands.lo:  \
+src/generated/liblcf_la-lsd_saveeasyrpgdata.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
-src/generated/liblcf_la-lsd_saveeventdata.lo:  \
+src/generated/liblcf_la-lsd_saveeventexecframe.lo:  \
+	src/generated/$(am__dirstamp) \
+	src/generated/$(DEPDIR)/$(am__dirstamp)
+src/generated/liblcf_la-lsd_saveeventexecstate.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-lsd_saveinventory.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-lsd_savemapevent.lo:  \
+	src/generated/$(am__dirstamp) \
+	src/generated/$(DEPDIR)/$(am__dirstamp)
+src/generated/liblcf_la-lsd_savemapeventbase.lo:  \
 	src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-lsd_savemapinfo.lo:  \
@@ -1116,6 +1144,11 @@ src/generated/liblcf_la-rpg_chipset.lo: src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-rpg_enums.lo: src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
+src/generated/liblcf_la-rpg_savepartylocation.lo:  \
+	src/generated/$(am__dirstamp) \
+	src/generated/$(DEPDIR)/$(am__dirstamp)
+src/generated/liblcf_la-rpg_state.lo: src/generated/$(am__dirstamp) \
+	src/generated/$(DEPDIR)/$(am__dirstamp)
 src/generated/liblcf_la-rpg_system.lo: src/generated/$(am__dirstamp) \
 	src/generated/$(DEPDIR)/$(am__dirstamp)
 
@@ -1128,6 +1161,8 @@ tests/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) tests/$(DEPDIR)
 	@: > tests/$(DEPDIR)/$(am__dirstamp)
 tests/test_runner-time_stamp.$(OBJEXT): tests/$(am__dirstamp) \
+	tests/$(DEPDIR)/$(am__dirstamp)
+tests/test_runner-flag_set.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
 tests/test_runner-test_main.$(OBJEXT): tests/$(am__dirstamp) \
 	tests/$(DEPDIR)/$(am__dirstamp)
@@ -1148,6 +1183,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-data.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-encoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-ini.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-inireader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-ldb_equipment.Plo@am__quote@ # am--include-marker
@@ -1162,7 +1198,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-lsd_reader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-reader_flags.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-reader_lcf.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-reader_struct.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-reader_util.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-reader_xml.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblcf_la-rpg_fixup.Plo@am__quote@ # am--include-marker
@@ -1214,10 +1249,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_save.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_saveactor.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_savecommonevent.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventcommands.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventdata.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_saveeasyrpgdata.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecframe.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecstate.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_saveinventory.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_savemapevent.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_savemapeventbase.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_savemapinfo.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_savepanorama.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_savepartylocation.Plo@am__quote@ # am--include-marker
@@ -1229,7 +1266,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-lsd_savevehiclelocation.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-rpg_chipset.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-rpg_enums.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-rpg_savepartylocation.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-rpg_state.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/generated/$(DEPDIR)/liblcf_la-rpg_system.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_runner-flag_set.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_runner-test_main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_runner-time_stamp.Po@am__quote@ # am--include-marker
 
@@ -1263,19 +1303,19 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
-src/liblcf_la-reader_struct.lo: src/reader_struct.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/liblcf_la-reader_struct.lo -MD -MP -MF src/$(DEPDIR)/liblcf_la-reader_struct.Tpo -c -o src/liblcf_la-reader_struct.lo `test -f 'src/reader_struct.cpp' || echo '$(srcdir)/'`src/reader_struct.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/liblcf_la-reader_struct.Tpo src/$(DEPDIR)/liblcf_la-reader_struct.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/reader_struct.cpp' object='src/liblcf_la-reader_struct.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/liblcf_la-reader_struct.lo `test -f 'src/reader_struct.cpp' || echo '$(srcdir)/'`src/reader_struct.cpp
-
 src/liblcf_la-data.lo: src/data.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/liblcf_la-data.lo -MD -MP -MF src/$(DEPDIR)/liblcf_la-data.Tpo -c -o src/liblcf_la-data.lo `test -f 'src/data.cpp' || echo '$(srcdir)/'`src/data.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/liblcf_la-data.Tpo src/$(DEPDIR)/liblcf_la-data.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/data.cpp' object='src/liblcf_la-data.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/liblcf_la-data.lo `test -f 'src/data.cpp' || echo '$(srcdir)/'`src/data.cpp
+
+src/liblcf_la-encoder.lo: src/encoder.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/liblcf_la-encoder.lo -MD -MP -MF src/$(DEPDIR)/liblcf_la-encoder.Tpo -c -o src/liblcf_la-encoder.lo `test -f 'src/encoder.cpp' || echo '$(srcdir)/'`src/encoder.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/liblcf_la-encoder.Tpo src/$(DEPDIR)/liblcf_la-encoder.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/encoder.cpp' object='src/liblcf_la-encoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/liblcf_la-encoder.lo `test -f 'src/encoder.cpp' || echo '$(srcdir)/'`src/encoder.cpp
 
 src/liblcf_la-ini.lo: src/ini.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/liblcf_la-ini.lo -MD -MP -MF src/$(DEPDIR)/liblcf_la-ini.Tpo -c -o src/liblcf_la-ini.lo `test -f 'src/ini.cpp' || echo '$(srcdir)/'`src/ini.cpp
@@ -1424,19 +1464,19 @@ src/generated/liblcf_la-ldb_actor.lo: src/generated/ldb_actor.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_actor.lo `test -f 'src/generated/ldb_actor.cpp' || echo '$(srcdir)/'`src/generated/ldb_actor.cpp
 
-src/generated/liblcf_la-ldb_animationcelldata.lo: src/generated/ldb_animationcelldata.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_animationcelldata.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_animationcelldata.Tpo -c -o src/generated/liblcf_la-ldb_animationcelldata.lo `test -f 'src/generated/ldb_animationcelldata.cpp' || echo '$(srcdir)/'`src/generated/ldb_animationcelldata.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_animationcelldata.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_animationcelldata.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_animationcelldata.cpp' object='src/generated/liblcf_la-ldb_animationcelldata.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_animationcelldata.lo `test -f 'src/generated/ldb_animationcelldata.cpp' || echo '$(srcdir)/'`src/generated/ldb_animationcelldata.cpp
-
 src/generated/liblcf_la-ldb_animation.lo: src/generated/ldb_animation.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_animation.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_animation.Tpo -c -o src/generated/liblcf_la-ldb_animation.lo `test -f 'src/generated/ldb_animation.cpp' || echo '$(srcdir)/'`src/generated/ldb_animation.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_animation.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_animation.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_animation.cpp' object='src/generated/liblcf_la-ldb_animation.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_animation.lo `test -f 'src/generated/ldb_animation.cpp' || echo '$(srcdir)/'`src/generated/ldb_animation.cpp
+
+src/generated/liblcf_la-ldb_animationcelldata.lo: src/generated/ldb_animationcelldata.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_animationcelldata.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_animationcelldata.Tpo -c -o src/generated/liblcf_la-ldb_animationcelldata.lo `test -f 'src/generated/ldb_animationcelldata.cpp' || echo '$(srcdir)/'`src/generated/ldb_animationcelldata.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_animationcelldata.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_animationcelldata.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_animationcelldata.cpp' object='src/generated/liblcf_la-ldb_animationcelldata.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_animationcelldata.lo `test -f 'src/generated/ldb_animationcelldata.cpp' || echo '$(srcdir)/'`src/generated/ldb_animationcelldata.cpp
 
 src/generated/liblcf_la-ldb_animationframe.lo: src/generated/ldb_animationframe.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_animationframe.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_animationframe.Tpo -c -o src/generated/liblcf_la-ldb_animationframe.lo `test -f 'src/generated/ldb_animationframe.cpp' || echo '$(srcdir)/'`src/generated/ldb_animationframe.cpp
@@ -1522,13 +1562,6 @@ src/generated/liblcf_la-ldb_database.lo: src/generated/ldb_database.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_database.lo `test -f 'src/generated/ldb_database.cpp' || echo '$(srcdir)/'`src/generated/ldb_database.cpp
 
-src/generated/liblcf_la-ldb_enemyaction.lo: src/generated/ldb_enemyaction.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_enemyaction.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_enemyaction.Tpo -c -o src/generated/liblcf_la-ldb_enemyaction.lo `test -f 'src/generated/ldb_enemyaction.cpp' || echo '$(srcdir)/'`src/generated/ldb_enemyaction.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_enemyaction.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_enemyaction.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_enemyaction.cpp' object='src/generated/liblcf_la-ldb_enemyaction.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_enemyaction.lo `test -f 'src/generated/ldb_enemyaction.cpp' || echo '$(srcdir)/'`src/generated/ldb_enemyaction.cpp
-
 src/generated/liblcf_la-ldb_enemy.lo: src/generated/ldb_enemy.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_enemy.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_enemy.Tpo -c -o src/generated/liblcf_la-ldb_enemy.lo `test -f 'src/generated/ldb_enemy.cpp' || echo '$(srcdir)/'`src/generated/ldb_enemy.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_enemy.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_enemy.Plo
@@ -1536,12 +1569,12 @@ src/generated/liblcf_la-ldb_enemy.lo: src/generated/ldb_enemy.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_enemy.lo `test -f 'src/generated/ldb_enemy.cpp' || echo '$(srcdir)/'`src/generated/ldb_enemy.cpp
 
-src/generated/liblcf_la-ldb_itemanimation.lo: src/generated/ldb_itemanimation.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_itemanimation.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_itemanimation.Tpo -c -o src/generated/liblcf_la-ldb_itemanimation.lo `test -f 'src/generated/ldb_itemanimation.cpp' || echo '$(srcdir)/'`src/generated/ldb_itemanimation.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_itemanimation.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_itemanimation.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_itemanimation.cpp' object='src/generated/liblcf_la-ldb_itemanimation.lo' libtool=yes @AMDEPBACKSLASH@
+src/generated/liblcf_la-ldb_enemyaction.lo: src/generated/ldb_enemyaction.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_enemyaction.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_enemyaction.Tpo -c -o src/generated/liblcf_la-ldb_enemyaction.lo `test -f 'src/generated/ldb_enemyaction.cpp' || echo '$(srcdir)/'`src/generated/ldb_enemyaction.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_enemyaction.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_enemyaction.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_enemyaction.cpp' object='src/generated/liblcf_la-ldb_enemyaction.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_itemanimation.lo `test -f 'src/generated/ldb_itemanimation.cpp' || echo '$(srcdir)/'`src/generated/ldb_itemanimation.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_enemyaction.lo `test -f 'src/generated/ldb_enemyaction.cpp' || echo '$(srcdir)/'`src/generated/ldb_enemyaction.cpp
 
 src/generated/liblcf_la-ldb_item.lo: src/generated/ldb_item.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_item.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_item.Tpo -c -o src/generated/liblcf_la-ldb_item.lo `test -f 'src/generated/ldb_item.cpp' || echo '$(srcdir)/'`src/generated/ldb_item.cpp
@@ -1549,6 +1582,13 @@ src/generated/liblcf_la-ldb_item.lo: src/generated/ldb_item.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_item.cpp' object='src/generated/liblcf_la-ldb_item.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_item.lo `test -f 'src/generated/ldb_item.cpp' || echo '$(srcdir)/'`src/generated/ldb_item.cpp
+
+src/generated/liblcf_la-ldb_itemanimation.lo: src/generated/ldb_itemanimation.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_itemanimation.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_itemanimation.Tpo -c -o src/generated/liblcf_la-ldb_itemanimation.lo `test -f 'src/generated/ldb_itemanimation.cpp' || echo '$(srcdir)/'`src/generated/ldb_itemanimation.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_itemanimation.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_itemanimation.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_itemanimation.cpp' object='src/generated/liblcf_la-ldb_itemanimation.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_itemanimation.lo `test -f 'src/generated/ldb_itemanimation.cpp' || echo '$(srcdir)/'`src/generated/ldb_itemanimation.cpp
 
 src/generated/liblcf_la-ldb_learning.lo: src/generated/ldb_learning.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_learning.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_learning.Tpo -c -o src/generated/liblcf_la-ldb_learning.lo `test -f 'src/generated/ldb_learning.cpp' || echo '$(srcdir)/'`src/generated/ldb_learning.cpp
@@ -1634,19 +1674,19 @@ src/generated/liblcf_la-ldb_troopmember.lo: src/generated/ldb_troopmember.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_troopmember.lo `test -f 'src/generated/ldb_troopmember.cpp' || echo '$(srcdir)/'`src/generated/ldb_troopmember.cpp
 
-src/generated/liblcf_la-ldb_trooppagecondition.lo: src/generated/ldb_trooppagecondition.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_trooppagecondition.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_trooppagecondition.Tpo -c -o src/generated/liblcf_la-ldb_trooppagecondition.lo `test -f 'src/generated/ldb_trooppagecondition.cpp' || echo '$(srcdir)/'`src/generated/ldb_trooppagecondition.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_trooppagecondition.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_trooppagecondition.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_trooppagecondition.cpp' object='src/generated/liblcf_la-ldb_trooppagecondition.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_trooppagecondition.lo `test -f 'src/generated/ldb_trooppagecondition.cpp' || echo '$(srcdir)/'`src/generated/ldb_trooppagecondition.cpp
-
 src/generated/liblcf_la-ldb_trooppage.lo: src/generated/ldb_trooppage.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_trooppage.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_trooppage.Tpo -c -o src/generated/liblcf_la-ldb_trooppage.lo `test -f 'src/generated/ldb_trooppage.cpp' || echo '$(srcdir)/'`src/generated/ldb_trooppage.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_trooppage.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_trooppage.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_trooppage.cpp' object='src/generated/liblcf_la-ldb_trooppage.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_trooppage.lo `test -f 'src/generated/ldb_trooppage.cpp' || echo '$(srcdir)/'`src/generated/ldb_trooppage.cpp
+
+src/generated/liblcf_la-ldb_trooppagecondition.lo: src/generated/ldb_trooppagecondition.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_trooppagecondition.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_trooppagecondition.Tpo -c -o src/generated/liblcf_la-ldb_trooppagecondition.lo `test -f 'src/generated/ldb_trooppagecondition.cpp' || echo '$(srcdir)/'`src/generated/ldb_trooppagecondition.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-ldb_trooppagecondition.Tpo src/generated/$(DEPDIR)/liblcf_la-ldb_trooppagecondition.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/ldb_trooppagecondition.cpp' object='src/generated/liblcf_la-ldb_trooppagecondition.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-ldb_trooppagecondition.lo `test -f 'src/generated/ldb_trooppagecondition.cpp' || echo '$(srcdir)/'`src/generated/ldb_trooppagecondition.cpp
 
 src/generated/liblcf_la-ldb_variable.lo: src/generated/ldb_variable.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-ldb_variable.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-ldb_variable.Tpo -c -o src/generated/liblcf_la-ldb_variable.lo `test -f 'src/generated/ldb_variable.cpp' || echo '$(srcdir)/'`src/generated/ldb_variable.cpp
@@ -1683,19 +1723,19 @@ src/generated/liblcf_la-lmu_event.lo: src/generated/lmu_event.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lmu_event.lo `test -f 'src/generated/lmu_event.cpp' || echo '$(srcdir)/'`src/generated/lmu_event.cpp
 
-src/generated/liblcf_la-lmu_eventpagecondition.lo: src/generated/lmu_eventpagecondition.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lmu_eventpagecondition.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lmu_eventpagecondition.Tpo -c -o src/generated/liblcf_la-lmu_eventpagecondition.lo `test -f 'src/generated/lmu_eventpagecondition.cpp' || echo '$(srcdir)/'`src/generated/lmu_eventpagecondition.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lmu_eventpagecondition.Tpo src/generated/$(DEPDIR)/liblcf_la-lmu_eventpagecondition.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lmu_eventpagecondition.cpp' object='src/generated/liblcf_la-lmu_eventpagecondition.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lmu_eventpagecondition.lo `test -f 'src/generated/lmu_eventpagecondition.cpp' || echo '$(srcdir)/'`src/generated/lmu_eventpagecondition.cpp
-
 src/generated/liblcf_la-lmu_eventpage.lo: src/generated/lmu_eventpage.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lmu_eventpage.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lmu_eventpage.Tpo -c -o src/generated/liblcf_la-lmu_eventpage.lo `test -f 'src/generated/lmu_eventpage.cpp' || echo '$(srcdir)/'`src/generated/lmu_eventpage.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lmu_eventpage.Tpo src/generated/$(DEPDIR)/liblcf_la-lmu_eventpage.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lmu_eventpage.cpp' object='src/generated/liblcf_la-lmu_eventpage.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lmu_eventpage.lo `test -f 'src/generated/lmu_eventpage.cpp' || echo '$(srcdir)/'`src/generated/lmu_eventpage.cpp
+
+src/generated/liblcf_la-lmu_eventpagecondition.lo: src/generated/lmu_eventpagecondition.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lmu_eventpagecondition.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lmu_eventpagecondition.Tpo -c -o src/generated/liblcf_la-lmu_eventpagecondition.lo `test -f 'src/generated/lmu_eventpagecondition.cpp' || echo '$(srcdir)/'`src/generated/lmu_eventpagecondition.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lmu_eventpagecondition.Tpo src/generated/$(DEPDIR)/liblcf_la-lmu_eventpagecondition.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lmu_eventpagecondition.cpp' object='src/generated/liblcf_la-lmu_eventpagecondition.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lmu_eventpagecondition.lo `test -f 'src/generated/lmu_eventpagecondition.cpp' || echo '$(srcdir)/'`src/generated/lmu_eventpagecondition.cpp
 
 src/generated/liblcf_la-lmu_map.lo: src/generated/lmu_map.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lmu_map.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lmu_map.Tpo -c -o src/generated/liblcf_la-lmu_map.lo `test -f 'src/generated/lmu_map.cpp' || echo '$(srcdir)/'`src/generated/lmu_map.cpp
@@ -1711,6 +1751,13 @@ src/generated/liblcf_la-lmu_moveroute.lo: src/generated/lmu_moveroute.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lmu_moveroute.lo `test -f 'src/generated/lmu_moveroute.cpp' || echo '$(srcdir)/'`src/generated/lmu_moveroute.cpp
 
+src/generated/liblcf_la-lsd_save.lo: src/generated/lsd_save.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_save.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_save.Tpo -c -o src/generated/liblcf_la-lsd_save.lo `test -f 'src/generated/lsd_save.cpp' || echo '$(srcdir)/'`src/generated/lsd_save.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_save.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_save.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_save.cpp' object='src/generated/liblcf_la-lsd_save.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_save.lo `test -f 'src/generated/lsd_save.cpp' || echo '$(srcdir)/'`src/generated/lsd_save.cpp
+
 src/generated/liblcf_la-lsd_saveactor.lo: src/generated/lsd_saveactor.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_saveactor.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_saveactor.Tpo -c -o src/generated/liblcf_la-lsd_saveactor.lo `test -f 'src/generated/lsd_saveactor.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveactor.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_saveactor.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_saveactor.Plo
@@ -1725,26 +1772,26 @@ src/generated/liblcf_la-lsd_savecommonevent.lo: src/generated/lsd_savecommoneven
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_savecommonevent.lo `test -f 'src/generated/lsd_savecommonevent.cpp' || echo '$(srcdir)/'`src/generated/lsd_savecommonevent.cpp
 
-src/generated/liblcf_la-lsd_save.lo: src/generated/lsd_save.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_save.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_save.Tpo -c -o src/generated/liblcf_la-lsd_save.lo `test -f 'src/generated/lsd_save.cpp' || echo '$(srcdir)/'`src/generated/lsd_save.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_save.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_save.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_save.cpp' object='src/generated/liblcf_la-lsd_save.lo' libtool=yes @AMDEPBACKSLASH@
+src/generated/liblcf_la-lsd_saveeasyrpgdata.lo: src/generated/lsd_saveeasyrpgdata.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_saveeasyrpgdata.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_saveeasyrpgdata.Tpo -c -o src/generated/liblcf_la-lsd_saveeasyrpgdata.lo `test -f 'src/generated/lsd_saveeasyrpgdata.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeasyrpgdata.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_saveeasyrpgdata.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_saveeasyrpgdata.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_saveeasyrpgdata.cpp' object='src/generated/liblcf_la-lsd_saveeasyrpgdata.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_save.lo `test -f 'src/generated/lsd_save.cpp' || echo '$(srcdir)/'`src/generated/lsd_save.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_saveeasyrpgdata.lo `test -f 'src/generated/lsd_saveeasyrpgdata.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeasyrpgdata.cpp
 
-src/generated/liblcf_la-lsd_saveeventcommands.lo: src/generated/lsd_saveeventcommands.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_saveeventcommands.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventcommands.Tpo -c -o src/generated/liblcf_la-lsd_saveeventcommands.lo `test -f 'src/generated/lsd_saveeventcommands.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeventcommands.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventcommands.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventcommands.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_saveeventcommands.cpp' object='src/generated/liblcf_la-lsd_saveeventcommands.lo' libtool=yes @AMDEPBACKSLASH@
+src/generated/liblcf_la-lsd_saveeventexecframe.lo: src/generated/lsd_saveeventexecframe.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_saveeventexecframe.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecframe.Tpo -c -o src/generated/liblcf_la-lsd_saveeventexecframe.lo `test -f 'src/generated/lsd_saveeventexecframe.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeventexecframe.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecframe.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecframe.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_saveeventexecframe.cpp' object='src/generated/liblcf_la-lsd_saveeventexecframe.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_saveeventcommands.lo `test -f 'src/generated/lsd_saveeventcommands.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeventcommands.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_saveeventexecframe.lo `test -f 'src/generated/lsd_saveeventexecframe.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeventexecframe.cpp
 
-src/generated/liblcf_la-lsd_saveeventdata.lo: src/generated/lsd_saveeventdata.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_saveeventdata.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventdata.Tpo -c -o src/generated/liblcf_la-lsd_saveeventdata.lo `test -f 'src/generated/lsd_saveeventdata.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeventdata.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventdata.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventdata.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_saveeventdata.cpp' object='src/generated/liblcf_la-lsd_saveeventdata.lo' libtool=yes @AMDEPBACKSLASH@
+src/generated/liblcf_la-lsd_saveeventexecstate.lo: src/generated/lsd_saveeventexecstate.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_saveeventexecstate.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecstate.Tpo -c -o src/generated/liblcf_la-lsd_saveeventexecstate.lo `test -f 'src/generated/lsd_saveeventexecstate.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeventexecstate.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecstate.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecstate.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_saveeventexecstate.cpp' object='src/generated/liblcf_la-lsd_saveeventexecstate.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_saveeventdata.lo `test -f 'src/generated/lsd_saveeventdata.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeventdata.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_saveeventexecstate.lo `test -f 'src/generated/lsd_saveeventexecstate.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveeventexecstate.cpp
 
 src/generated/liblcf_la-lsd_saveinventory.lo: src/generated/lsd_saveinventory.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_saveinventory.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_saveinventory.Tpo -c -o src/generated/liblcf_la-lsd_saveinventory.lo `test -f 'src/generated/lsd_saveinventory.cpp' || echo '$(srcdir)/'`src/generated/lsd_saveinventory.cpp
@@ -1759,6 +1806,13 @@ src/generated/liblcf_la-lsd_savemapevent.lo: src/generated/lsd_savemapevent.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_savemapevent.cpp' object='src/generated/liblcf_la-lsd_savemapevent.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_savemapevent.lo `test -f 'src/generated/lsd_savemapevent.cpp' || echo '$(srcdir)/'`src/generated/lsd_savemapevent.cpp
+
+src/generated/liblcf_la-lsd_savemapeventbase.lo: src/generated/lsd_savemapeventbase.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_savemapeventbase.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_savemapeventbase.Tpo -c -o src/generated/liblcf_la-lsd_savemapeventbase.lo `test -f 'src/generated/lsd_savemapeventbase.cpp' || echo '$(srcdir)/'`src/generated/lsd_savemapeventbase.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-lsd_savemapeventbase.Tpo src/generated/$(DEPDIR)/liblcf_la-lsd_savemapeventbase.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/lsd_savemapeventbase.cpp' object='src/generated/liblcf_la-lsd_savemapeventbase.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-lsd_savemapeventbase.lo `test -f 'src/generated/lsd_savemapeventbase.cpp' || echo '$(srcdir)/'`src/generated/lsd_savemapeventbase.cpp
 
 src/generated/liblcf_la-lsd_savemapinfo.lo: src/generated/lsd_savemapinfo.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-lsd_savemapinfo.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-lsd_savemapinfo.Tpo -c -o src/generated/liblcf_la-lsd_savemapinfo.lo `test -f 'src/generated/lsd_savemapinfo.cpp' || echo '$(srcdir)/'`src/generated/lsd_savemapinfo.cpp
@@ -1837,6 +1891,20 @@ src/generated/liblcf_la-rpg_enums.lo: src/generated/rpg_enums.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-rpg_enums.lo `test -f 'src/generated/rpg_enums.cpp' || echo '$(srcdir)/'`src/generated/rpg_enums.cpp
 
+src/generated/liblcf_la-rpg_savepartylocation.lo: src/generated/rpg_savepartylocation.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-rpg_savepartylocation.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-rpg_savepartylocation.Tpo -c -o src/generated/liblcf_la-rpg_savepartylocation.lo `test -f 'src/generated/rpg_savepartylocation.cpp' || echo '$(srcdir)/'`src/generated/rpg_savepartylocation.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-rpg_savepartylocation.Tpo src/generated/$(DEPDIR)/liblcf_la-rpg_savepartylocation.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/rpg_savepartylocation.cpp' object='src/generated/liblcf_la-rpg_savepartylocation.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-rpg_savepartylocation.lo `test -f 'src/generated/rpg_savepartylocation.cpp' || echo '$(srcdir)/'`src/generated/rpg_savepartylocation.cpp
+
+src/generated/liblcf_la-rpg_state.lo: src/generated/rpg_state.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-rpg_state.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-rpg_state.Tpo -c -o src/generated/liblcf_la-rpg_state.lo `test -f 'src/generated/rpg_state.cpp' || echo '$(srcdir)/'`src/generated/rpg_state.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-rpg_state.Tpo src/generated/$(DEPDIR)/liblcf_la-rpg_state.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/generated/rpg_state.cpp' object='src/generated/liblcf_la-rpg_state.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -c -o src/generated/liblcf_la-rpg_state.lo `test -f 'src/generated/rpg_state.cpp' || echo '$(srcdir)/'`src/generated/rpg_state.cpp
+
 src/generated/liblcf_la-rpg_system.lo: src/generated/rpg_system.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblcf_la_CPPFLAGS) $(CPPFLAGS) $(liblcf_la_CXXFLAGS) $(CXXFLAGS) -MT src/generated/liblcf_la-rpg_system.lo -MD -MP -MF src/generated/$(DEPDIR)/liblcf_la-rpg_system.Tpo -c -o src/generated/liblcf_la-rpg_system.lo `test -f 'src/generated/rpg_system.cpp' || echo '$(srcdir)/'`src/generated/rpg_system.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/generated/$(DEPDIR)/liblcf_la-rpg_system.Tpo src/generated/$(DEPDIR)/liblcf_la-rpg_system.Plo
@@ -1857,6 +1925,20 @@ tests/test_runner-time_stamp.obj: tests/time_stamp.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/time_stamp.cpp' object='tests/test_runner-time_stamp.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CXXFLAGS) $(CXXFLAGS) -c -o tests/test_runner-time_stamp.obj `if test -f 'tests/time_stamp.cpp'; then $(CYGPATH_W) 'tests/time_stamp.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/time_stamp.cpp'; fi`
+
+tests/test_runner-flag_set.o: tests/flag_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CXXFLAGS) $(CXXFLAGS) -MT tests/test_runner-flag_set.o -MD -MP -MF tests/$(DEPDIR)/test_runner-flag_set.Tpo -c -o tests/test_runner-flag_set.o `test -f 'tests/flag_set.cpp' || echo '$(srcdir)/'`tests/flag_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_runner-flag_set.Tpo tests/$(DEPDIR)/test_runner-flag_set.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/flag_set.cpp' object='tests/test_runner-flag_set.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CXXFLAGS) $(CXXFLAGS) -c -o tests/test_runner-flag_set.o `test -f 'tests/flag_set.cpp' || echo '$(srcdir)/'`tests/flag_set.cpp
+
+tests/test_runner-flag_set.obj: tests/flag_set.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CXXFLAGS) $(CXXFLAGS) -MT tests/test_runner-flag_set.obj -MD -MP -MF tests/$(DEPDIR)/test_runner-flag_set.Tpo -c -o tests/test_runner-flag_set.obj `if test -f 'tests/flag_set.cpp'; then $(CYGPATH_W) 'tests/flag_set.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/flag_set.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_runner-flag_set.Tpo tests/$(DEPDIR)/test_runner-flag_set.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/flag_set.cpp' object='tests/test_runner-flag_set.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CXXFLAGS) $(CXXFLAGS) -c -o tests/test_runner-flag_set.obj `if test -f 'tests/flag_set.cpp'; then $(CYGPATH_W) 'tests/flag_set.cpp'; else $(CYGPATH_W) '$(srcdir)/tests/flag_set.cpp'; fi`
 
 tests/test_runner-test_main.o: tests/test_main.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CXXFLAGS) $(CXXFLAGS) -MT tests/test_runner-test_main.o -MD -MP -MF tests/$(DEPDIR)/test_runner-test_main.Tpo -c -o tests/test_runner-test_main.o `test -f 'tests/test_main.cpp' || echo '$(srcdir)/'`tests/test_main.cpp
@@ -1903,6 +1985,27 @@ uninstall-cmakeconfigDATA:
 	@list='$(cmakeconfig_DATA)'; test -n "$(cmakeconfigdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(cmakeconfigdir)'; $(am__uninstall_files_from_dir)
+install-mimedbDATA: $(mimedb_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(mimedb_DATA)'; test -n "$(mimedbdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(mimedbdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(mimedbdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(mimedbdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(mimedbdir)" || exit $$?; \
+	done
+
+uninstall-mimedbDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(mimedb_DATA)'; test -n "$(mimedbdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(mimedbdir)'; $(am__uninstall_files_from_dir)
 install-pkgconfigDATA: $(pkgconfig_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
@@ -2176,7 +2279,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(cmakeconfigdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(pkgincludedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(cmakeconfigdir)" "$(DESTDIR)$(mimedbdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(pkgincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -2223,6 +2326,7 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libLTLIBRARIES \
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f src/$(DEPDIR)/liblcf_la-data.Plo
+	-rm -f src/$(DEPDIR)/liblcf_la-encoder.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-ini.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-inireader.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-ldb_equipment.Plo
@@ -2237,7 +2341,6 @@ distclean: distclean-am
 	-rm -f src/$(DEPDIR)/liblcf_la-lsd_reader.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-reader_flags.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-reader_lcf.Plo
-	-rm -f src/$(DEPDIR)/liblcf_la-reader_struct.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-reader_util.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-reader_xml.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-rpg_fixup.Plo
@@ -2289,10 +2392,12 @@ distclean: distclean-am
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_save.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveactor.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savecommonevent.Plo
-	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventcommands.Plo
-	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventdata.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeasyrpgdata.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecframe.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecstate.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveinventory.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savemapevent.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savemapeventbase.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savemapinfo.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savepanorama.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savepartylocation.Plo
@@ -2304,7 +2409,10 @@ distclean: distclean-am
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savevehiclelocation.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_chipset.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_enums.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_savepartylocation.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_state.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_system.Plo
+	-rm -f tests/$(DEPDIR)/test_runner-flag_set.Po
 	-rm -f tests/$(DEPDIR)/test_runner-test_main.Po
 	-rm -f tests/$(DEPDIR)/test_runner-time_stamp.Po
 	-rm -f Makefile
@@ -2323,9 +2431,10 @@ info: info-am
 
 info-am:
 
-install-data-am: install-cmakeconfigDATA install-pkgconfigDATA \
-	install-pkgincludeHEADERS
-
+install-data-am: install-cmakeconfigDATA install-mimedbDATA \
+	install-pkgconfigDATA install-pkgincludeHEADERS
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
 
 install-dvi-am:
@@ -2356,6 +2465,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f src/$(DEPDIR)/liblcf_la-data.Plo
+	-rm -f src/$(DEPDIR)/liblcf_la-encoder.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-ini.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-inireader.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-ldb_equipment.Plo
@@ -2370,7 +2480,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/$(DEPDIR)/liblcf_la-lsd_reader.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-reader_flags.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-reader_lcf.Plo
-	-rm -f src/$(DEPDIR)/liblcf_la-reader_struct.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-reader_util.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-reader_xml.Plo
 	-rm -f src/$(DEPDIR)/liblcf_la-rpg_fixup.Plo
@@ -2422,10 +2531,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_save.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveactor.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savecommonevent.Plo
-	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventcommands.Plo
-	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventdata.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeasyrpgdata.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecframe.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveeventexecstate.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_saveinventory.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savemapevent.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savemapeventbase.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savemapinfo.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savepanorama.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savepartylocation.Plo
@@ -2437,7 +2548,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-lsd_savevehiclelocation.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_chipset.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_enums.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_savepartylocation.Plo
+	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_state.Plo
 	-rm -f src/generated/$(DEPDIR)/liblcf_la-rpg_system.Plo
+	-rm -f tests/$(DEPDIR)/test_runner-flag_set.Po
 	-rm -f tests/$(DEPDIR)/test_runner-test_main.Po
 	-rm -f tests/$(DEPDIR)/test_runner-time_stamp.Po
 	-rm -f Makefile
@@ -2457,9 +2571,12 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-cmakeconfigDATA uninstall-libLTLIBRARIES \
-	uninstall-pkgconfigDATA uninstall-pkgincludeHEADERS
-
-.MAKE: all check-am install-am install-strip
+	uninstall-mimedbDATA uninstall-pkgconfigDATA \
+	uninstall-pkgincludeHEADERS
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+.MAKE: all check-am install-am install-data-am install-strip \
+	uninstall-am
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles am--refresh check \
 	check-am check-local clean clean-checkPROGRAMS clean-cscope \
@@ -2470,16 +2587,18 @@ uninstall-am: uninstall-cmakeconfigDATA uninstall-libLTLIBRARIES \
 	distclean-hdr distclean-libtool distclean-tags distcleancheck \
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-cmakeconfigDATA \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-libLTLIBRARIES \
-	install-man install-pdf install-pdf-am install-pkgconfigDATA \
+	install-data install-data-am install-data-hook install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-man install-mimedbDATA \
+	install-pdf install-pdf-am install-pkgconfigDATA \
 	install-pkgincludeHEADERS install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
 	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-cmakeconfigDATA uninstall-libLTLIBRARIES \
+	uninstall-cmakeconfigDATA uninstall-hook \
+	uninstall-libLTLIBRARIES uninstall-mimedbDATA \
 	uninstall-pkgconfigDATA uninstall-pkgincludeHEADERS
 
 .PRECIOUS: Makefile
@@ -2487,6 +2606,14 @@ uninstall-am: uninstall-cmakeconfigDATA uninstall-libLTLIBRARIES \
 
 check-local:
 	$(AM_V_at)./test_runner
+
+install-data-hook:
+@CROSS_COMPILING_TRUE@@ENABLE_UPDATE_MIMEDB_TRUE@	@echo "Cross compiling: Skipping update of mime database"
+@CROSS_COMPILING_FALSE@@ENABLE_UPDATE_MIMEDB_TRUE@	$(UPDATE_MIME_DATABASE) "$(DESTDIR)$(datadir)/mime"
+
+uninstall-hook:
+	rm -f "$(DESTDIR)$(datadir)/mime/application/"*.xml
+	for f in aliases generic-icons globs globs2 icons magic mime.cache subclasses treemagic types version XMLnamespaces; do rm -f "$(DESTDIR)$(datadir)/mime/$${f}"; done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

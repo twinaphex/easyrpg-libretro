@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -12,19 +12,44 @@
 // Headers
 #include "ldb_reader.h"
 #include "ldb_chunks.h"
-#include "reader_struct.h"
+#include "reader_struct_impl.h"
 
 // Read Sound.
 
-#define LCF_CHUNK_SUFFIX LDB_Reader
-#define LCF_CURRENT_STRUCT Sound
+template <>
+char const* const Struct<RPG::Sound>::name = "Sound";
 
-LCF_STRUCT_FIELDS_BEGIN()
-	LCF_STRUCT_TYPED_FIELD(std::string, name, 1, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, volume, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, tempo, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, balance, 0, 0),
-LCF_STRUCT_FIELDS_END()
+template <>
+Field<RPG::Sound> const* Struct<RPG::Sound>::fields[] = {
+	new TypedField<RPG::Sound, std::string>(
+		&RPG::Sound::name,
+		LDB_Reader::ChunkSound::name,
+		"name",
+		1,
+		0
+	),
+	new TypedField<RPG::Sound, int32_t>(
+		&RPG::Sound::volume,
+		LDB_Reader::ChunkSound::volume,
+		"volume",
+		0,
+		0
+	),
+	new TypedField<RPG::Sound, int32_t>(
+		&RPG::Sound::tempo,
+		LDB_Reader::ChunkSound::tempo,
+		"tempo",
+		0,
+		0
+	),
+	new TypedField<RPG::Sound, int32_t>(
+		&RPG::Sound::balance,
+		LDB_Reader::ChunkSound::balance,
+		"balance",
+		0,
+		0
+	),
+	NULL
+};
 
-#undef LCF_CURRENT_STRUCT
-#undef LCF_CHUNK_SUFFIX
+template class Struct<RPG::Sound>;

@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -11,9 +11,9 @@
 
 #include "writer_lcf.h"
 
-LcfWriter::LcfWriter(std::ostream& filestream, std::string encoding) :
-	encoding(encoding),
-	stream(filestream)
+LcfWriter::LcfWriter(std::ostream& filestream, std::string encoding)
+	: stream(filestream)
+	, encoder(std::move(encoding))
 {
 }
 
@@ -22,11 +22,8 @@ LcfWriter::~LcfWriter() {
 }
 
 void LcfWriter::Write(const void *ptr, size_t size, size_t nmemb) {
-#ifdef NDEBUG
 	stream.write(reinterpret_cast<const char*>(ptr), size*nmemb);
-#else
-	assert(stream.write(reinterpret_cast<const char*>(ptr), size*nmemb).good());
-#endif
+	assert(stream.good());
 }
 
 template <>
@@ -126,11 +123,13 @@ uint32_t LcfWriter::Tell() {
 }
 
 bool LcfWriter::IsOk() const {
-	return (stream.good());
+	return stream.good() && encoder.IsOk();
 }
 
-std::string LcfWriter::Decode(const std::string& str_to_encode) {
-	return ReaderUtil::Recode(str_to_encode, "UTF-8", encoding);
+std::string LcfWriter::Decode(const std::string& str) {
+	auto copy = str;
+	encoder.Decode(copy);
+	return copy;
 }
 
 #ifdef WORDS_BIGENDIAN

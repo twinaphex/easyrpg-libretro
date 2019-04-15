@@ -1,5 +1,5 @@
 /*
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -50,6 +50,10 @@ void RPG::SaveActor::Fixup(int actor_id) {
 		face_name = actor.face_name;
 		face_id = actor.face_index;
 	}
+
+	if (status.size() < Data::states.size()) {
+		status.resize(Data::states.size());
+	}
 }
 
 void RPG::SaveActor::UnFixup() {
@@ -71,38 +75,6 @@ void RPG::SaveActor::UnFixup() {
 	if (face_name == actor.face_name && face_id == actor.face_index) {
 		face_name.clear();
 		face_id = 0;
-	}
-}
-
-
-
-void RPG::SaveMapEvent::Fixup(const RPG::EventPage& page) {
-	if (move_frequency == -1) {
-		move_frequency = page.move_frequency;
-	}
-	if (move_speed == -1) {
-		move_speed = page.move_speed;
-	}
-	if (sprite_name.empty()) {
-		sprite_name = page.character_name;
-	}
-	if (sprite_id == -1) {
-		sprite_id = page.character_index;
-	}
-}
-
-void RPG::SaveMapEvent::UnFixup(const RPG::EventPage& page) {
-	if (move_frequency == page.move_frequency) {
-		move_frequency = -1;
-	}
-	if (move_speed == page.move_speed) {
-		move_speed = -1;
-	}
-	if (sprite_name == page.character_name) {
-		sprite_name.clear();
-	}
-	if (sprite_id == page.character_index) {
-		sprite_id = -1;
 	}
 }
 

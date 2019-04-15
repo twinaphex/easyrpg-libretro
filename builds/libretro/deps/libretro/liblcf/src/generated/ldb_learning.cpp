@@ -1,7 +1,7 @@
 /* !!!! GENERATED FILE - DO NOT EDIT !!!!
  * --------------------------------------
  *
- * This file is part of liblcf. Copyright (c) 2018 liblcf authors.
+ * This file is part of liblcf. Copyright (c) 2019 liblcf authors.
  * https://github.com/EasyRPG/liblcf - https://easyrpg.org
  *
  * liblcf is Free/Libre Open Source Software, released under the MIT License.
@@ -12,17 +12,30 @@
 // Headers
 #include "ldb_reader.h"
 #include "ldb_chunks.h"
-#include "reader_struct.h"
+#include "reader_struct_impl.h"
 
 // Read Learning.
 
-#define LCF_CHUNK_SUFFIX LDB_Reader
-#define LCF_CURRENT_STRUCT Learning
+template <>
+char const* const Struct<RPG::Learning>::name = "Learning";
 
-LCF_STRUCT_FIELDS_BEGIN()
-	LCF_STRUCT_TYPED_FIELD(int32_t, level, 0, 0),
-	LCF_STRUCT_TYPED_FIELD(int32_t, skill_id, 0, 0),
-LCF_STRUCT_FIELDS_END()
+template <>
+Field<RPG::Learning> const* Struct<RPG::Learning>::fields[] = {
+	new TypedField<RPG::Learning, int32_t>(
+		&RPG::Learning::level,
+		LDB_Reader::ChunkLearning::level,
+		"level",
+		0,
+		0
+	),
+	new TypedField<RPG::Learning, int32_t>(
+		&RPG::Learning::skill_id,
+		LDB_Reader::ChunkLearning::skill_id,
+		"skill_id",
+		0,
+		0
+	),
+	NULL
+};
 
-#undef LCF_CURRENT_STRUCT
-#undef LCF_CHUNK_SUFFIX
+template class Struct<RPG::Learning>;
