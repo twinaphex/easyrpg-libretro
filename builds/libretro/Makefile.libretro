@@ -29,9 +29,9 @@ CORE_DIR    := $(PWD)/../..
 CMAKE       = cmake
 
 # Version information from git
-GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
-ifneq ($(GIT_VERSION)," unknown")
-##   COMMON_DEFINES += -DGIT_VERSION=\"$(GIT_VERSION)\"
+GIT_VERSION := $(shell git rev-parse --short HEAD || echo unknown)
+ifneq ($(GIT_VERSION),unknown)
+	COMMON_DEFINES_GIT += -DGIT_VERSION=$(GIT_VERSION)
 endif
 
 RETRO_TARGET_IS_LINUX = 0
@@ -215,7 +215,7 @@ else ifeq ($(platform), vita)
 	RETRO_DEPFLAGS = $(__FLAGS)
 	CFLAGS += $(__FLAGS)
 	CXXFLAGS += $(__FLAGS)
-	COMMON_DEFINES = -fno-exceptions -fno-rtti
+	COMMON_DEFINES += -fno-exceptions -fno-rtti
 	STATIC_LINKING = 1
 	RETRO_CROSSCOMPILING = 1
 	RETRO_TARGET_HOST = arm-vita-eabi
@@ -260,57 +260,47 @@ else
 	CFLAGS	       += -D__LIBRETRO__ $(fpic) $(INCDIR) $(COMMON_DEFINES)
 endif
 
+ifeq ($(STATIC_LINKING), 1)
+	BUILD_SHARED_LIBS = OFF
+else
+	BUILD_SHARED_LIBS = ON
+endif
+
+ifeq ($(RETRO_CROSSCOMPILING), 1)
+	BUILD_TOOLCHAIN_CMD = ./2_build_cross_toolchain.sh
+else
+	BUILD_TOOLCHAIN_CMD = ./2_build_toolchain.sh
+endif
+
+ifneq ($(RETRO_DEPFLAGS), 0)
+else
+	DEPCFLAGS := $(CFLAGS)
+	DEPCXXFLAGS := $(CXXFLAGS)
+endif
+
+CFLAGS   += $(COMMON_DEFINES_GIT) -DWANT_FASTWAV
+CXXFLAGS += $(COMMON_DEFINES_GIT) -DWANT_FASTWAV
+
 LDFLAGS        += $(SHARED)
 
 all: $(TARGET)
 $(TARGET):
 	@echo "** BUILDING $(TARGET) FOR PLATFORM $(platform) **"
-ifeq ($(RETRO_CROSSCOMPILING), 1)
-ifneq ($(RETRO_DEPFLAGS), 0)
+
 	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
 	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
 	RETRO_CFLAGS="$(DEPCFLAGS)" RETRO_CXXFLAGS="$(DEPCXXFLAGS)" \
 	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
 	RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" ICU_VERSION="$(ICU_VERSION)" \
-	./2_build_cross_toolchain.sh
-else
-	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
-	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
-	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
-	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_HOST="$(RETRO_TARGET_HOST)" \
-	RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" ICU_VERSION="$(ICU_VERSION)" \
-	./2_build_cross_toolchain.sh
-endif
-else
-ifneq ($(RETRO_DEPFLAGS), 0)
-	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
-	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
-	RETRO_CFLAGS="$(DEPCFLAGS)" RETRO_CXXFLAGS="$(DEPCXXFLAGS)" \
-	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" \
-	./2_build_toolchain.sh
-else
-	cd $(CORE_DIR)/builds/libretro/deps/libretro; \
-	RETRO_CC="$(CC)" RETRO_CXX="$(CXX)" \
-	RETRO_CFLAGS="$(CFLAGS)" RETRO_CXXFLAGS="$(CXXFLAGS)" \
-	RETRO_LDFLAGS="$(LDFLAGS)" RETRO_TARGET_IS_LINUX="$(RETRO_TARGET_IS_LINUX)" \
-	./2_build_toolchain.sh
-endif
-endif
-ifeq ($(STATIC_LINKING), 1)
+	$(BUILD_TOOLCHAIN_CMD)
+
 	cd $(CORE_DIR)/builds/libretro;\
-	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS) -DWANT_FASTWAV" LDFLAGS="$(LDFLAGS)" \
+	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		$(CMAKE) $(CORE_DIR) -DPLAYER_TARGET_PLATFORM=libretro \
-		-DBUILD_SHARED_LIBS=OFF -DCMAKE_FIND_ROOT_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
+		-DBUILD_SHARED_LIBS=$(BUILD_SHARED_LIBS) -DCMAKE_FIND_ROOT_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
 		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF \
 		-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY $(CMAKE_EXTRA_ARGS)
-else
-	cd $(CORE_DIR)/builds/libretro;\
-	CC="$(CC)" CXX="$(CXX)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS) -DWANT_FASTWAV" LDFLAGS="$(LDFLAGS)" \
-		$(CMAKE) $(CORE_DIR) -DPLAYER_TARGET_PLATFORM=libretro \
-		-DBUILD_SHARED_LIBS=ON -DCMAKE_FIND_ROOT_PATH=$(CORE_DIR)/builds/libretro/deps/libretro \
-		-DPLAYER_ENABLE_TESTS=OFF -DPLAYER_WITH_XMP=OFF \
-		-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY $(CMAKE_EXTRA_ARGS)
-endif
+
 	$(CMAKE) --build . -- -j$(COMPILER_CORE_COUNT)
 
 ifeq ($(platform), android)
