@@ -1,10 +1,14 @@
-Thank you for supporting EasyRPG Player.
-Before creating an issue, please verify that your bug still occurs in the "continuous builds" of the Player.
-You can get them at the bottom of our download section: https://easyrpg.org/player/downloads
+---
+name: easyrpg-libretro core issue
+about: I want to submit a libretro core related issue or feature request
+
+---
+
+Thank you for supporting the libretro core for EasyRPG Player.
 
 ---
 Please fill in the following fields before submitting an issue:
-#### Name of the game:
+#### Name of the game (if applicable):
 
 #### Player platform:
 Windows, Linux, Android, ...
