@@ -11,6 +11,14 @@ available at the project website: https://easyrpg.org/
 
 Documentation is available at the documentation wiki: https://wiki.easyrpg.org
 
+## Information for package maintainers
+
+When you want to distribute the libretro-easyrpg package please use the
+upstream repository https://github.com/easyrpg/player for building.
+
+The upstream repository contains everything necessary for building the
+libretro core with CMake using system libraries (see "Building a libretro
+core" below).
 
 ## Requirements
 
