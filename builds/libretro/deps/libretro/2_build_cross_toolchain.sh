@@ -118,4 +118,5 @@ install_lib_cmake $WILDMIDI_DIR $WILDMIDI_ARGS
 #install_lib $OPUS_DIR $OPUS_ARGS
 #install_lib $OPUSFILE_DIR $OPUSFILE_ARGS
 install_lib_icu_cross
+icu_force_data_install
 install_lib liblcf

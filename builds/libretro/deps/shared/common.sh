@@ -169,6 +169,20 @@ function install_lib_icu_cross {
 	popd
 }
 
+function icu_force_data_install {
+        msg "**** Force install ICU data file ****"
+
+        # Disable assembly
+        export PKGDATA_OPTS="-w -v -O $PWD/icu$ICU_VERSION/source/config/pkgdata.inc"
+
+        (cd icu$ICU_VERSION/source/data
+                make clean
+                make
+
+                cp ../lib/libicudata.a "$WORKSPACE/lib/"
+        )
+}
+
 function patches_common {
 	_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
