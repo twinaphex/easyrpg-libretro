@@ -1,6 +1,5 @@
 APP_STL := c++_static
-APP_ABI := armeabi armeabi-v7a
-# x86 arm8-v7a
+APP_ABI := armeabi armeabi-v7a arm64-v8a x86
 #APP_ABI := all
 APP_PLATFORM := android-14
 
