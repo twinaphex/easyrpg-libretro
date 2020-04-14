@@ -44,7 +44,7 @@ void RPG::SaveActor::Fixup(int actor_id) {
 	if (sprite_name.empty()) {
 		sprite_name = actor.character_name;
 		sprite_id = actor.character_index;
-		sprite_flags = actor.transparent ? 3 : 0;
+		transparency = actor.transparent ? 3 : 0;
 	}
 	if (face_name.empty()) {
 		face_name = actor.face_name;
@@ -67,10 +67,10 @@ void RPG::SaveActor::UnFixup() {
 	}
 	if (sprite_name == actor.character_name
 			&& sprite_id == actor.character_index
-			&& sprite_flags == (actor.transparent ? 3 : 0)) {
+			&& transparency == (actor.transparent ? 3 : 0)) {
 		sprite_name.clear();
 		sprite_id = 0;
-		sprite_flags = 0;
+		transparency = 0;
 	}
 	if (face_name == actor.face_name && face_id == actor.face_index) {
 		face_name.clear();
@@ -81,9 +81,6 @@ void RPG::SaveActor::UnFixup() {
 void RPG::SaveSystem::Fixup() {
 	const RPG::System& system = Data::system;
 
-	if (graphics_name.empty()) {
-		graphics_name = system.system_name;
-	}
 	switches.reserve(Data::switches.size());
 	variables.reserve(Data::variables.size());
 	if (battle_music.name.empty()) {
@@ -146,14 +143,6 @@ void RPG::SaveSystem::Fixup() {
 	if (item_se.name.empty()) {
 		item_se = system.item_se;
 	}
-
-	FixInt(message_stretch, system.message_stretch);
-	FixInt(transition_out, system.transition_out);
-	FixInt(transition_in, system.transition_in);
-	FixInt(battle_start_fadeout, system.battle_start_fadeout);
-	FixInt(battle_start_fadein, system.battle_start_fadein);
-	FixInt(battle_end_fadeout, system.battle_end_fadeout);
-	FixInt(battle_end_fadein, system.battle_end_fadein);
 }
 
 void RPG::SaveSystem::UnFixup() {
@@ -169,10 +158,6 @@ void RPG::SaveSystem::UnFixup() {
 		s = {};
 		s.name.clear();
 	};
-
-	if (graphics_name == system.system_name) {
-		graphics_name.clear();
-	}
 
 	if (battle_music == system.battle_music) {
 		reset_bgm(battle_music);
@@ -234,14 +219,6 @@ void RPG::SaveSystem::UnFixup() {
 	if (item_se == system.item_se) {
 		reset_se(item_se);
 	}
-
-	UnFixInt(message_stretch, system.message_stretch);
-	UnFixInt(transition_out, system.transition_out);
-	UnFixInt(transition_in, system.transition_in);
-	UnFixInt(battle_start_fadeout, system.battle_start_fadeout);
-	UnFixInt(battle_start_fadein, system.battle_start_fadein);
-	UnFixInt(battle_end_fadeout, system.battle_end_fadeout);
-	UnFixInt(battle_end_fadein, system.battle_end_fadein);
 }
 
 

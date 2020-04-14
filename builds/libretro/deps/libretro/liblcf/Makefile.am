@@ -21,7 +21,7 @@ liblcf_la_CPPFLAGS = \
 	-I$(srcdir)/src \
 	-I$(srcdir)/src/generated
 liblcf_la_CXXFLAGS = \
-	-std=c++11 \
+	-std=c++14 \
 	$(AM_CXXFLAGS) \
 	$(EXPAT_CFLAGS) \
 	$(ICU_CFLAGS)
@@ -141,6 +141,7 @@ pkginclude_HEADERS = \
 	src/scope_guard.h \
 	src/writer_lcf.h \
 	src/writer_xml.h \
+	src/generated/fwd_struct_impl.h \
 	src/generated/ldb_chunks.h \
 	src/generated/ldb_terrain_flags.h \
 	src/generated/ldb_trooppagecondition_flags.h \
@@ -226,7 +227,7 @@ test_runner_CPPFLAGS = \
 	-I$(srcdir)/src \
 	-I$(srcdir)/src/generated
 test_runner_CXXFLAGS = \
-	-std=c++11 \
+	-std=c++14 \
 	$(EXPAT_CXXFLAGS) \
 	$(ICU_CXXFLAGS)
 test_runner_LDADD = \

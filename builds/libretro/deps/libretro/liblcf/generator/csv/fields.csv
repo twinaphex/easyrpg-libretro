@@ -74,20 +74,20 @@ Attribute,e_rate,f,Int32,0x0F,0,0,0,Integer
 BattleCommand,name,f,String,0x01,'',1,0,String
 BattleCommand,type,f,Enum<BattleCommand_Type>,0x02,0,0,0,Integer
 BattleCommands,placement,f,Enum<BattleCommands_Placement>,0x02,0,0,0,Integer
-BattleCommands,death_handler1,f,Int32,0x04,0,0,0,Integer
+BattleCommands,death_handler_unused,f,Boolean,0x04,0,0,1,Set by the RM2k3 Editor when you enable death handler; but has no effect in RPG_RT.
 BattleCommands,row,f,Enum<BattleCommands_RowShown>,0x06,0,0,0,Integer
 BattleCommands,battle_type,f,Enum<BattleCommands_BattleType>,0x07,0,0,0,Integer
 BattleCommands,unused_display_normal_parameters,f,Boolean,0x09,True,0,0,Unused hidden checkbox Display normal parameters in RPG2003's battle settings tab
 BattleCommands,commands,f,Array<BattleCommand>,0x0A,,1,0,Array - RPG::BattleCommand
-BattleCommands,death_handler2,f,Int32,0x0F,0,0,0,Integer
-BattleCommands,death_event,f,Ref<CommonEvent>,0x10,0,0,0,Integer
+BattleCommands,death_handler,f,Boolean,0x0F,0,0,1,True if a 2k3 random encounter death handler is active
+BattleCommands,death_event,f,Ref<CommonEvent>,0x10,1,0,0,Integer
 BattleCommands,window_size,f,Enum<BattleCommands_WindowSize>,0x14,0,0,0,Integer
 BattleCommands,transparency,f,Enum<BattleCommands_Transparency>,0x18,0,0,0,Integer
-BattleCommands,teleport,f,Boolean,0x19,False,0,0,Integer
-BattleCommands,teleport_id,f,Ref<Map>,0x1A,0,0,0,Integer
-BattleCommands,teleport_x,f,Int32,0x1B,0,0,0,Integer
-BattleCommands,teleport_y,f,Int32,0x1C,0,0,0,Integer
-BattleCommands,teleport_face,f,Enum<BattleCommands_Facing>,0x1D,0,0,0,Integer
+BattleCommands,death_teleport,f,Boolean,0x19,False,0,0,Integer
+BattleCommands,death_teleport_id,f,Ref<Map>,0x1A,1,0,0,Integer
+BattleCommands,death_teleport_x,f,Int32,0x1B,0,0,0,Integer
+BattleCommands,death_teleport_y,f,Int32,0x1C,0,0,0,Integer
+BattleCommands,death_teleport_face,f,Enum<BattleCommands_Facing>,0x1D,0,0,0,Integer
 BattlerAnimationExtension,name,f,String,0x01,'',0,0,String
 BattlerAnimationExtension,battler_name,f,String,0x02,'',0,0,String
 BattlerAnimationExtension,battler_index,f,Int32,0x03,0,0,0,Integer
@@ -708,8 +708,8 @@ SaveTitle,face4_id,f,Int32,0x1C,0,0,0,int: face id
 SaveSystem,scene,f,Enum<SaveSystem_Scene>,0x01,0,1,0,The current Scene for RPG_RT. Legacy field only used by RPG_RT and not by EasyRPG Player. Savegames always have a scene of 5 (filemenu).
 SaveSystem,frame_count,f,Int32,0x0B,0,0,0,
 SaveSystem,graphics_name,f,String,0x15,'',0,0,string
-SaveSystem,message_stretch,f,Int32,0x16,-1,0,0,Integer
-SaveSystem,font_id,f,Int32,0x17,0,0,0,Integer
+SaveSystem,message_stretch,f,Enum<System_Stretch>,0x16,0,0,0,Integer
+SaveSystem,font_id,f,Enum<System_Font>,0x17,0,0,0,Integer
 SaveSystem,switches,t,Count<Boolean>,0x1F,0,0,0,
 SaveSystem,switches,f,Vector<Boolean>,0x20,,1,0,
 SaveSystem,variables,t,Count<Int32>,0x21,0,0,0,
@@ -748,12 +748,12 @@ SaveSystem,actor_damaged_se,f,Sound,0x63,,1,0,
 SaveSystem,dodge_se,f,Sound,0x64,,1,0,
 SaveSystem,enemy_death_se,f,Sound,0x65,,1,0,
 SaveSystem,item_se,f,Sound,0x66,,1,0,
-SaveSystem,transition_out,f,Int8,0x6F,1,1,0,
-SaveSystem,transition_in,f,Int8,0x70,1,1,0,
-SaveSystem,battle_start_fadeout,f,Int8,0x71,1,0,0,
-SaveSystem,battle_start_fadein,f,Int8,0x72,1,0,0,
-SaveSystem,battle_end_fadeout,f,Int8,0x73,1,0,0,
-SaveSystem,battle_end_fadein,f,Int8,0x74,1,0,0,
+SaveSystem,transition_out,f,Int8,0x6F,-1,1,0,
+SaveSystem,transition_in,f,Int8,0x70,-1,1,0,
+SaveSystem,battle_start_fadeout,f,Int8,0x71,-1,1,0,
+SaveSystem,battle_start_fadein,f,Int8,0x72,-1,1,0,
+SaveSystem,battle_end_fadeout,f,Int8,0x73,-1,1,0,
+SaveSystem,battle_end_fadein,f,Int8,0x74,-1,1,0,
 SaveSystem,teleport_allowed,f,Boolean,0x79,True,0,0,
 SaveSystem,escape_allowed,f,Boolean,0x7A,True,0,0,
 SaveSystem,save_allowed,f,Boolean,0x7B,True,0,0,
@@ -793,43 +793,43 @@ SaveScreen,battleanim_global,f,Boolean,0x2F,False,0,0,int - battle animation glo
 SaveScreen,weather,f,Int32,0x30,0,0,0,int
 SaveScreen,weather_strength,f,Int32,0x31,0,0,0,int
 SavePicture,name,f,String,0x01,'',0,0,string
-SavePicture,start_x,f,Double,0x02,0.0,0,0,double
-SavePicture,start_y,f,Double,0x03,0.0,0,0,double
-SavePicture,current_x,f,Double,0x04,0.0,0,0,double
-SavePicture,current_y,f,Double,0x05,0.0,0,0,double
-SavePicture,fixed_to_map,f,Boolean,0x06,False,0,0,bool
-SavePicture,current_magnify,f,Double,0x07,-1.0,0,0,double
-SavePicture,current_top_trans,f,Double,0x08,0.0,0,0,double
-SavePicture,transparency,f,Boolean,0x09,False,0,0,bool
-SavePicture,current_red,f,Double,0x0B,-1.0,0,0,double
-SavePicture,current_green,f,Double,0x0C,-1.0,0,0,double
-SavePicture,current_blue,f,Double,0x0D,-1.0,0,0,double
-SavePicture,current_sat,f,Double,0x0E,-1.0,0,0,double
-SavePicture,effect_mode,f,Int32,0x0F,0,0,0,int
-SavePicture,current_effect,f,Double,0x10,0.0,0,0,double
-SavePicture,current_bot_trans,f,Double,0x12,0.0,0,0,double
-SavePicture,spritesheet_cols,f,Int32,0x13,1,0,0,Spritesheet columns
-SavePicture,spritesheet_rows,f,Int32,0x14,1,0,0,Spritesheet rows
-SavePicture,spritesheet_frame,f,Int32,0x15,0,0,0,Current spritesheet frame
-SavePicture,spritesheet_speed,f,Int32,0x16,0,0,0,Spritesheet speed (X frames per second)
-SavePicture,frames,f,Int32,0x17,0,0,0,Frames since ShowPicture
-SavePicture,spritesheet_play_once,f,Boolean,0x18,False,0,0,True: Play once and destroy; False: Loop spritesheet
+SavePicture,start_x,f,Double,0x02,0.0,0,0,X position where picture was originally shown
+SavePicture,start_y,f,Double,0x03,0.0,0,0,Y position where picture was originally shown
+SavePicture,current_x,f,Double,0x04,0.0,0,0,Current x position of picture
+SavePicture,current_y,f,Double,0x05,0.0,0,0,Current y position of picture
+SavePicture,fixed_to_map,f,Boolean,0x06,False,0,0,If true; picture will scroll with map
+SavePicture,current_magnify,f,Double,0x07,100.0,0,0,Current zoom level of picture.
+SavePicture,current_top_trans,f,Double,0x08,0.0,0,0,Current transparency of picture. In RPG2k3 < 1.12 affects only top half of picture.
+SavePicture,use_transparent_color,f,Boolean,0x09,False,0,0,If false; ignore the transparent color
+SavePicture,current_red,f,Double,0x0B,100.0,0,0,Current red tint
+SavePicture,current_green,f,Double,0x0C,100.0,0,0,Current green tint
+SavePicture,current_blue,f,Double,0x0D,100.0,0,0,Current blue tint.
+SavePicture,current_sat,f,Double,0x0E,100.0,0,0,Current saturation
+SavePicture,effect_mode,f,Enum<SavePicture_Effect>,0x0F,0,0,0,Which effect is active.
+SavePicture,current_effect_power,f,Double,0x10,0.0,0,0,The current power of the active effect.
+SavePicture,current_bot_trans,f,Double,0x12,0.0,0,0,Bottom half transparency. Only has an effect in RPG2k3 < 1.12.
+SavePicture,spritesheet_cols,f,Int32,0x13,1,0,1,Spritesheet columns
+SavePicture,spritesheet_rows,f,Int32,0x14,1,0,1,Spritesheet rows
+SavePicture,spritesheet_frame,f,Int32,0x15,0,0,1,Current spritesheet frame
+SavePicture,spritesheet_speed,f,Int32,0x16,0,0,1,Spritesheet speed (X frames per second)
+SavePicture,frames,f,Int32,0x17,0,0,1,Frames since ShowPicture
+SavePicture,spritesheet_play_once,f,Boolean,0x18,False,0,1,True: Play once and destroy; False: Loop spritesheet
 SavePicture,map_layer,f,Enum<MapLayer>,0x19,7,0,0,Layer to show picture on at the map
 SavePicture,battle_layer,f,Enum<BattleLayer>,0x1A,0,0,0,Layer to show picture on in battle
 SavePicture,flags,f,SavePicture_Flags,0x1B,97,0,0,Bitflag. Persists Map/Battle change/end; Affected by Shake/Flash/Tint
-SavePicture,finish_x,f,Double,0x1F,0.0,0,0,double
-SavePicture,finish_y,f,Double,0x20,0.0,0,0,double
-SavePicture,finish_magnify,f,Int32,0x21,100,0,0,int
-SavePicture,finish_top_trans,f,Int32,0x22,0,0,0,int
-SavePicture,finish_bot_trans,f,Int32,0x23,0,0,0,int
-SavePicture,finish_red,f,Int32,0x29,100,0,0,int
-SavePicture,finish_green,f,Int32,0x2A,100,0,0,int
-SavePicture,finish_blue,f,Int32,0x2B,100,0,0,int
-SavePicture,finish_sat,f,Int32,0x2C,100,0,0,int
-SavePicture,finish_effect,f,Int32,0x2E,0,0,0,int
-SavePicture,time_left,f,Int32,0x33,0,0,0,int
-SavePicture,current_rotation,f,Double,0x34,0.0,0,0,double
-SavePicture,current_waver,f,Int32,0x35,0,0,0,int
+SavePicture,finish_x,f,Double,0x1F,0.0,0,0,Final X position to move picture to.
+SavePicture,finish_y,f,Double,0x20,0.0,0,0,Final Y position to move picture to.
+SavePicture,finish_magnify,f,Int32,0x21,100,0,0,Final zoom level to animate picture to.
+SavePicture,finish_top_trans,f,Int32,0x22,0,0,0,Final top_trans level to animate picture.
+SavePicture,finish_bot_trans,f,Int32,0x23,0,0,0,Final bot_trans level to animate picture.
+SavePicture,finish_red,f,Int32,0x29,100,0,0,Final red tint to animate picture.
+SavePicture,finish_green,f,Int32,0x2A,100,0,0,Final green tint to animate picture.
+SavePicture,finish_blue,f,Int32,0x2B,100,0,0,Final blue tint to animate picture.
+SavePicture,finish_sat,f,Int32,0x2C,100,0,0,Final saturation to animate picture.
+SavePicture,finish_effect_power,f,Int32,0x2E,0,0,0,Final power of the effect to animate picture.
+SavePicture,time_left,f,Int32,0x33,0,0,0,How much time left in picture move / animation effects.
+SavePicture,current_rotation,f,Double,0x34,0.0,0,0,How much the picture is currently rotated.
+SavePicture,current_waver,f,Int32,0x35,0,0,0,Current wave effect for picture.
 SavePartyLocation,boarding,f,Boolean,0x65,False,0,0,
 SavePartyLocation,aboard,f,Boolean,0x66,False,0,0,
 SavePartyLocation,vehicle,f,Enum<SavePartyLocation_VehicleType>,0x67,0,0,0,Vehicle in use
@@ -849,13 +849,13 @@ SavePartyLocation,database_save_count,f,Int32,0x84,0,0,0,?
 SaveVehicleLocation,vehicle,f,Enum<SaveVehicleLocation_VehicleType>,0x65,0,0,0,Which vehicle
 SaveVehicleLocation,remaining_ascent,f,Int32,0x6A,0,0,0,From 0 to 255 - In flying vehicles; remaining distance to ascend
 SaveVehicleLocation,remaining_descent,f,Int32,0x6B,0,0,0,From 0 to 255 - In flying vehicles; remaining distance to descend
-SaveVehicleLocation,sprite2_name,f,String,0x6F,'',0,0,string
-SaveVehicleLocation,sprite2_id,f,Int32,0x70,0,0,0,int
+SaveVehicleLocation,orig_sprite_name,f,String,0x6F,'',0,0,Set by ChangeVehicleGraphic command
+SaveVehicleLocation,orig_sprite_id,f,Int32,0x70,0,0,0,Set by ChangeVehicleGraphic command
 SaveActor,name,f,String,0x01,'',1,0,string
 SaveActor,title,f,String,0x02,'',1,0,string
 SaveActor,sprite_name,f,String,0x0B,'',0,0,string
 SaveActor,sprite_id,f,Int32,0x0C,0,0,0,int
-SaveActor,sprite_flags,f,Int32,0x0D,0,0,0,int
+SaveActor,transparency,f,Int32,0x0D,0,0,0,transparency value. 0 means opaque; 3 is the value used when actor is transparent.
 SaveActor,face_name,f,String,0x15,'',0,0,string
 SaveActor,face_id,f,Int32,0x16,0,0,0,int
 SaveActor,level,f,Int32,0x1F,-1,0,0,int
@@ -882,7 +882,7 @@ SaveActor,lock_equipment,f,Boolean,0x5D,False,0,1,bool
 SaveActor,auto_battle,f,Boolean,0x5E,False,0,1,bool
 SaveActor,super_guard,f,Boolean,0x5F,False,0,1,bool
 SaveActor,battler_animation,f,Ref<BattlerAnimation>,0x60,0,0,1,Integer - RPG2003
-SaveInventory,party_size,f,Int32,0x01,-1,0,0,?
+SaveInventory,party,t,Count<Int16>,0x01,0,1,0,?
 SaveInventory,party,f,Vector<Int16>,0x02,,1,0,?
 SaveInventory,item_ids,t,Count<Int16>,0x0B,0,1,0,?
 SaveInventory,item_ids,f,Vector<Int16>,0x0C,,1,0,short[]: item list
@@ -908,7 +908,7 @@ SaveTarget,map_x,f,Int32,0x02,0,0,0,int
 SaveTarget,map_y,f,Int32,0x03,0,0,0,int
 SaveTarget,switch_on,f,Boolean,0x04,False,0,0,bool
 SaveTarget,switch_id,f,Ref<Switch>,0x05,0,0,0,int
-SaveEventExecFrame,commands,t,EventCommand,0x01,0,0,0,int
+SaveEventExecFrame,commands,t,EventCommand,0x01,0,1,0,int
 SaveEventExecFrame,commands,f,Vector<EventCommand>,0x02,,1,0,event command list
 SaveEventExecFrame,current_command,f,Int32,0x0B,0,0,0,int
 SaveEventExecFrame,event_id,f,Int32,0x0C,0,0,0,0 if it's common event or in other map
@@ -936,7 +936,7 @@ SaveEventExecState,keyinput_2k3left,f,Boolean,0x24,False,0,0,
 SaveEventExecState,keyinput_2k3right,f,Boolean,0x25,False,0,0,
 SaveEventExecState,keyinput_2k3up,f,Boolean,0x26,False,0,0,
 SaveEventExecState,keyinput_timed,f,Boolean,0x29,False,0,0,
-SaveEventExecState,wait_key_enter,f,Boolean,0x2a,False,0,0,Used for a wait command "Wait For Key Input" rm2k3 feature to wait for decision key press.
+SaveEventExecState,wait_key_enter,f,Boolean,0x2a,False,0,0,Used for a wait command WaitForKeyInput rm2k3 feature to wait for decision key press.
 SaveMapEventBase,active,f,Boolean,0x01,True,0,0,Flag
 SaveMapEventBase,map_id,f,Int32,0x0B,0,1,0,?
 SaveMapEventBase,position_x,f,Int32,0x0C,0,1,0,?
@@ -971,9 +971,9 @@ SaveMapEventBase,flying,f,Boolean,0x48,False,0,0,Flag
 SaveMapEventBase,sprite_name,f,String,0x49,'',0,0,?
 SaveMapEventBase,sprite_id,f,Int32,0x4A,0,0,0,?
 SaveMapEventBase,processed,f,Boolean,0x4B,False,0,0,Flag whether an event (the hero is also an event) in the current frame processed their movement actions (may also be none). This is required because events are asked every frame to initiate their next movement step if required; but not necessarily in order; because checking passability for an event trying to move onto another tile will trigger any event's movement initiation which is on the target tile (because this way the target event may move away; allowing the other event to move to that tile). This flag ensures that every event processes their possible movements only once per frame even if it was already asked to do so out of order as part of another event's movement initiation.
-SaveMapEventBase,flash_red,f,Int32,0x51,0,0,0,int
-SaveMapEventBase,flash_green,f,Int32,0x52,0,0,0,int
-SaveMapEventBase,flash_blue,f,Int32,0x53,0,0,0,int
+SaveMapEventBase,flash_red,f,Int32,0x51,-1,0,0,int
+SaveMapEventBase,flash_green,f,Int32,0x52,-1,0,0,int
+SaveMapEventBase,flash_blue,f,Int32,0x53,-1,0,0,int
 SaveMapEventBase,flash_current_level,f,Double,0x54,0.0,0,0,double
 SaveMapEventBase,flash_time_left,f,Int32,0x55,0,0,0,int
 SaveMapEvent,waiting_execution,f,Boolean,0x65,False,0,0,If true; this event is waiting for foreground execution.

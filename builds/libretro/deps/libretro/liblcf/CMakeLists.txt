@@ -24,8 +24,8 @@ if(DOXYGEN_FOUND)
 		COMMENT "Generating API documentation with Doxygen" VERBATIM)
 endif()
 
-# C++11 is required
-set(CMAKE_CXX_STANDARD 11)
+# C++14 is required
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -74,6 +74,7 @@ add_library(lcf
 	src/writer_lcf.h
 	src/writer_xml.cpp
 	src/writer_xml.h
+	src/generated/fwd_struct_impl.h
 	src/generated/ldb_actor.cpp
 	src/generated/ldb_animation.cpp
 	src/generated/ldb_animationcelldata.cpp
@@ -328,7 +329,20 @@ endif()
 
 # tests
 file(GLOB TEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp)
-add_executable(test_runner EXCLUDE_FROM_ALL ${TEST_FILES})
-target_link_libraries(test_runner lcf)
-add_custom_target(check COMMAND ${PROJECT_BINARY_DIR}/test_runner)
-add_dependencies(check test_runner)
+add_executable(test_runner_lcf EXCLUDE_FROM_ALL ${TEST_FILES})
+set_target_properties(test_runner_lcf PROPERTIES OUTPUT_NAME "test_runner")
+target_link_libraries(test_runner_lcf lcf)
+add_custom_target(check_lcf COMMAND test_runner_lcf)
+if(NOT TARGET check)
+	add_custom_target(check)
+endif()
+add_dependencies(check_lcf test_runner_lcf)
+add_dependencies(check check_lcf)
+
+# benchmarks
+file(GLOB BENCH_FILES ${CMAKE_CURRENT_SOURCE_DIR}/bench/*.cpp)
+foreach(i ${BENCH_FILES})
+	get_filename_component(name "${i}" NAME_WE)
+	add_executable(bench_${name} ${i})
+	target_link_libraries(bench_${name} lcf)
+endforeach()

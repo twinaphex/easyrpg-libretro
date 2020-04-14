@@ -25,7 +25,7 @@ void RPG::SaveActor::Setup(int actor_id) {
 	title = actor.title;
 	sprite_name = actor.character_name;
 	sprite_id = actor.character_index;
-	sprite_flags = actor.transparent ? 3 : 0;
+	transparency = actor.transparent ? 3 : 0;
 	face_name = actor.face_name;
 	face_id = actor.face_index;
 	level = actor.initial_level;
@@ -58,7 +58,6 @@ void RPG::SaveActor::Setup(int actor_id) {
 
 void RPG::SaveInventory::Setup() {
 	party = Data::system.party;
-	party_size = party.size();
 }
 
 void RPG::SaveMapEvent::Setup(const RPG::Event& event) {
@@ -92,7 +91,6 @@ void RPG::SaveMapInfo::Setup(const RPG::Map& map) {
 void RPG::SaveSystem::Setup() {
 	const RPG::System& system = Data::system;
 	frame_count = 0;
-	graphics_name = system.system_name;
 	face_name = "";
 	face_id = -1;
 	face_right = false;
@@ -123,14 +121,6 @@ void RPG::SaveSystem::Setup() {
 	dodge_se = system.dodge_se;
 	enemy_death_se = system.enemy_death_se;
 	item_se = system.item_se;
-	transition_out = system.transition_out;
-	transition_in = system.transition_in;
-	battle_start_fadeout = system.battle_start_fadeout;
-	battle_start_fadein = system.battle_start_fadein;
-	battle_end_fadeout = system.battle_end_fadeout;
-	battle_end_fadein = system.battle_end_fadein;
-	message_stretch = system.message_stretch;
-	font_id = system.font_id;
 	teleport_allowed = true;
 	escape_allowed = true;
 	save_allowed = true;
@@ -144,10 +134,6 @@ void RPG::Save::Setup() {
 	system.Setup();
 	screen = RPG::SaveScreen();
 	pictures.clear();
-	pictures.resize(50);
-	for (int i = 1; i <= (int)pictures.size(); i++) {
-		pictures[i - 1].ID = i;
-	}
 	actors.clear();
 	actors.resize(Data::actors.size());
 	for (int i = 1; i <= (int) actors.size(); i++)

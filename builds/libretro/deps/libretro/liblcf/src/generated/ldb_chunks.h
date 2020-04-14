@@ -204,8 +204,8 @@ namespace LDB_Reader {
 		enum Index {
 			/** Integer */
 			placement = 0x02,
-			/** Integer */
-			death_handler1 = 0x04,
+			/** Set by the RM2k3 Editor when you enable death handler; but has no effect in RPG_RT. */
+			death_handler_unused = 0x04,
 			/** Integer */
 			row = 0x06,
 			/** Integer */
@@ -214,8 +214,8 @@ namespace LDB_Reader {
 			unused_display_normal_parameters = 0x09,
 			/** Array - RPG::BattleCommand */
 			commands = 0x0A,
-			/** Integer */
-			death_handler2 = 0x0F,
+			/** True if a 2k3 random encounter death handler is active */
+			death_handler = 0x0F,
 			/** Integer */
 			death_event = 0x10,
 			/** Integer */
@@ -223,15 +223,15 @@ namespace LDB_Reader {
 			/** Integer */
 			transparency = 0x18,
 			/** Integer */
-			teleport = 0x19,
+			death_teleport = 0x19,
 			/** Integer */
-			teleport_id = 0x1A,
+			death_teleport_id = 0x1A,
 			/** Integer */
-			teleport_x = 0x1B,
+			death_teleport_x = 0x1B,
 			/** Integer */
-			teleport_y = 0x1C,
+			death_teleport_y = 0x1C,
 			/** Integer */
-			teleport_face = 0x1D
+			death_teleport_face = 0x1D
 		};
 	};
 	struct ChunkBattlerAnimationExtension {

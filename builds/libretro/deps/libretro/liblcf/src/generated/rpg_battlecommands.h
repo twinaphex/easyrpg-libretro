@@ -82,38 +82,38 @@ namespace RPG {
 		);
 
 		int32_t placement = 0;
-		int32_t death_handler1 = 0;
+		bool death_handler_unused = 0;
 		int32_t row = 0;
 		int32_t battle_type = 0;
 		bool unused_display_normal_parameters = true;
 		std::vector<BattleCommand> commands;
-		int32_t death_handler2 = 0;
-		int32_t death_event = 0;
+		bool death_handler = 0;
+		int32_t death_event = 1;
 		int32_t window_size = 0;
 		int32_t transparency = 0;
-		bool teleport = false;
-		int32_t teleport_id = 0;
-		int32_t teleport_x = 0;
-		int32_t teleport_y = 0;
-		int32_t teleport_face = 0;
+		bool death_teleport = false;
+		int32_t death_teleport_id = 1;
+		int32_t death_teleport_x = 0;
+		int32_t death_teleport_y = 0;
+		int32_t death_teleport_face = 0;
 	};
 
 	inline bool operator==(const BattleCommands& l, const BattleCommands& r) {
 		return l.placement == r.placement
-		&& l.death_handler1 == r.death_handler1
+		&& l.death_handler_unused == r.death_handler_unused
 		&& l.row == r.row
 		&& l.battle_type == r.battle_type
 		&& l.unused_display_normal_parameters == r.unused_display_normal_parameters
 		&& l.commands == r.commands
-		&& l.death_handler2 == r.death_handler2
+		&& l.death_handler == r.death_handler
 		&& l.death_event == r.death_event
 		&& l.window_size == r.window_size
 		&& l.transparency == r.transparency
-		&& l.teleport == r.teleport
-		&& l.teleport_id == r.teleport_id
-		&& l.teleport_x == r.teleport_x
-		&& l.teleport_y == r.teleport_y
-		&& l.teleport_face == r.teleport_face;
+		&& l.death_teleport == r.death_teleport
+		&& l.death_teleport_id == r.death_teleport_id
+		&& l.death_teleport_x == r.death_teleport_x
+		&& l.death_teleport_y == r.death_teleport_y
+		&& l.death_teleport_face == r.death_teleport_face;
 	}
 
 	inline bool operator!=(const BattleCommands& l, const BattleCommands& r) {

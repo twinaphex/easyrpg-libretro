@@ -63,7 +63,7 @@ namespace RPG {
 		int32_t scene = 0;
 		int32_t frame_count = 0;
 		std::string graphics_name;
-		int32_t message_stretch = -1;
+		int32_t message_stretch = 0;
 		int32_t font_id = 0;
 		std::vector<bool> switches;
 		std::vector<int32_t> variables;
@@ -101,12 +101,12 @@ namespace RPG {
 		Sound dodge_se;
 		Sound enemy_death_se;
 		Sound item_se;
-		int8_t transition_out = 1;
-		int8_t transition_in = 1;
-		int8_t battle_start_fadeout = 1;
-		int8_t battle_start_fadein = 1;
-		int8_t battle_end_fadeout = 1;
-		int8_t battle_end_fadein = 1;
+		int8_t transition_out = -1;
+		int8_t transition_in = -1;
+		int8_t battle_start_fadeout = -1;
+		int8_t battle_start_fadein = -1;
+		int8_t battle_end_fadeout = -1;
+		int8_t battle_end_fadein = -1;
 		bool teleport_allowed = true;
 		bool escape_allowed = true;
 		bool save_allowed = true;
