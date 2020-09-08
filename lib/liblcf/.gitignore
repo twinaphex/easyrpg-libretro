@@ -1,0 +1,69 @@
+# autotools build method
+/autom4te.cache/
+/builds/autoconf/
+!/builds/autoconf/m4/m4_ax_pkg_check_modules.m4
+/liblcf-*/
+.deps/
+.libs/
+.dirstamp
+Makefile.in
+aclocal.m4
+config.h
+config.h.in
+config.log
+config.status
+configure
+liblcf-*.tar.*
+libtool
+stamp-h1
+*.la
+*.lo
+
+# cmake build method
+bin/
+builds/liblcf-config.cmake
+CMakeCache.txt
+CMakeFiles/
+*.cmake
+!/builds/cmake/Modules/*.cmake
+CMakeDoxyfile.in
+install_manifest.txt
+Testing/
+
+# msvc / Windows
+*.vcxproj*
+*.sdf
+*.ncb
+*.psess
+*.suo
+*.user
+*.vsp*
+*.lib
+*.exe
+*.exp
+*.ilk
+*.pdb
+
+# ninja
+.ninja_*
+*.ninja
+
+# IntelliJ / CLion
+.idea/
+
+# doxygen generated files
+/doc/
+
+# Python generated files
+*.pyc
+__pycache__/
+
+# other generated files
+Makefile
+*~
+*.a
+*.o
+*.pc
+
+# tests
+test_runner*

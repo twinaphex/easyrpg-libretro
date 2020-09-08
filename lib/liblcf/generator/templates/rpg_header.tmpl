@@ -1,0 +1,124 @@
+{% include "copyright.tmpl" %}
+#ifndef LCF_RPG_{{ struct_name|upper }}_H
+#define LCF_RPG_{{ struct_name|upper }}_H
+
+{%- for header in headers[struct_name] %}
+{%- if loop.first %}
+
+// Headers
+{%- endif %}
+#include {{ header }}
+{%- endfor %}
+
+/**
+ * RPG::{{ struct_name }} class.
+ */
+namespace RPG {
+	class {{ struct_name }} {%- if struct_base %} : public {{ struct_base }} {%- endif %} {
+	public:
+	{%- if struct_name == "Database" %}
+		std::string ldb_header;
+	{%- endif %}
+	{%- if struct_name == "TreeMap" %}
+		std::string lmt_header;
+	{%- endif %}
+	{%- if struct_name == "Map" %}
+		std::string lmu_header;
+	{%- endif %}
+	{%- if struct_name in constants %}
+	{%- for name, type, value, comment in constants[struct_name] %}
+		// {{ comment }}
+		static constexpr {{ type }} {{ name }} = {{ value }};
+	{%- endfor %}
+	{% endif %}
+	{%- if struct_name in enums %}
+	{%- for name, enum in enums[struct_name].items() %}
+		{%- if name == "Code" %}
+		struct {{ name }} {
+			enum Index {
+			{%- for field in enum %}
+				{{ field.0 }} = {{ field.1 }}{%- if not loop.last %},{% endif %}
+			{%- endfor %}
+			};
+		};
+		{%- else %}
+		enum {{ name }} {
+		{%- for field in enum %}
+			{{ name }}_{{ field.0 }} = {{ field.1 }}{%- if not loop.last %},{% endif %}
+		{%- endfor %}
+		};
+		{%- endif %}
+		{%- if enum is monotonic_from_0 %}
+		static constexpr auto k{{ name }}Tags = makeEnumTags<{{name}}{%- if name == "Code" %}::Index{%- endif %}>(
+		{%- for field in enum %}
+			"{{ field.0 }}"{%- if not loop.last %},{% endif %}
+		{%- endfor %}
+		);
+		{%- endif %}
+	{%- endfor %}
+	{% endif %}
+	{%- if struct_name is needs_ctor %}
+		{{ struct_name }}();
+	{%- endif %}
+	{%- for setu in setup[struct_name] %}
+		{{ setu.method }};
+	{%- endfor %}
+	{%- if has_id %}
+		int ID = 0;
+	{%- endif %}
+	{%- for field in fields[struct_name]|field_is_used %}
+	{%- if not field.size %}
+		{%- if field.type.endswith("_Flags") %}
+		struct Flags {
+			union {
+				struct {
+				{%- for flag in flags[struct_name] %}
+					bool {{ flag.field }};
+				{%- endfor %}
+				};
+				std::array<bool, {{ flags[struct_name]|num_flags }}> flags;
+			};
+			//TODO: Should try to switch to member initializers when we upgrade to VS2017.
+			Flags() noexcept
+			{%- for flag in flags[struct_name] %}
+				{%- if loop.first %}:{%- else %},{%- endif %} {{ flag.field }}({{ field|flag_set(loop.index) }})
+			{%- endfor %}
+			{}
+		} {{ field.name }};
+		{%- else %}
+		{{ field.type|cpp_type(prefix=False) }} {{ field.name }}{{ field|pod_default }};
+		{%- endif %}
+	{%- endif %}
+	{%- endfor %}
+	};
+	{%- for field in fields[struct_name]|field_is_used %}
+	{%- if not field.size %}
+	{%- if field.type.endswith("_Flags") %}
+
+	inline bool operator==(const {{ struct_name }}::Flags& l, const {{ struct_name }}::Flags& r) {
+		return l.flags == r.flags;
+	}
+
+	inline bool operator!=(const {{ struct_name }}::Flags& l, const {{ struct_name }}::Flags& r) {
+		return !(l == r);
+	}
+	{%- endif %}
+	{%- endif %}
+	{%- endfor %}
+
+	inline bool operator==(const {{ struct_name }}& l, const {{ struct_name }}& r) {
+	{%- for field in fields[struct_name]|field_is_used|field_is_not_size -%}
+		{% if loop.first %}
+		return
+		{%- else %}
+		&&
+		{%- endif %} l.{{ field.name }} == r.{{ field.name }} {%- if loop.last %};{%- endif %}
+	{%- endfor %}
+	}
+
+	inline bool operator!=(const {{ struct_name }}& l, const {{ struct_name }}& r) {
+		return !(l == r);
+	}
+}
+
+#endif

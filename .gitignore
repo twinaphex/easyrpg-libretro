@@ -100,7 +100,6 @@ __MACOSX
 /*.build/
 
 # legacy
-/lib/liblcf/
 liblcf.pc
 .buildconfig
 
