@@ -30,7 +30,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # lcf library files
-add_library(lcf
+add_library(lcf STATIC
 	src/command_codes.h
 	src/data.cpp
 	src/data.h
@@ -352,11 +352,3 @@ if(NOT TARGET check)
 endif()
 add_dependencies(check_lcf test_runner_lcf)
 add_dependencies(check check_lcf)
-
-# benchmarks
-file(GLOB BENCH_FILES ${CMAKE_CURRENT_SOURCE_DIR}/bench/*.cpp)
-foreach(i ${BENCH_FILES})
-	get_filename_component(name "${i}" NAME_WE)
-	add_executable(bench_${name} ${i})
-	target_link_libraries(bench_${name} lcf)
-endforeach()
