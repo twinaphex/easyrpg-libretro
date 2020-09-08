@@ -85,15 +85,3 @@ download_and_extract $ICU_URL
 # icudata
 rm -f $ICUDATA_FILES
 download_and_extract $ICUDATA_URL
-
-# SDL2
-rm -rf $SDL2_DIR
-download_and_extract $SDL2_URL
-
-# SDL2_mixer
-rm -rf $SDL2_MIXER_DIR
-download_and_extract $SDL2_MIXER_URL
-
-# SDL2_image (only needed for lmu2png tool!)
-rm -rf $SDL2_IMAGE_DIR
-download_and_extract $SDL2_IMAGE_URL

@@ -21,15 +21,6 @@ if [ ! -f .patches-applied ]; then
 
 	cp -rup icu icu-native
 
-	# Patch cpufeatures, hangs in Android 4.0.3
-	patch -Np0 < cpufeatures.patch
-
-	# use android config
-	pushd $SDL2_DIR
-	mv include/SDL_config_android.h include/SDL_config.h
-	mkdir -p jni
-	popd
-
 	touch .patches-applied
 fi
 
@@ -107,11 +98,10 @@ function build() {
 	install_lib_cmake $FLUIDLITE_DIR $FLUIDLITE_ARGS -DENABLE_SF3=ON
 	install_lib_cmake $FMT_DIR $FMT_ARGS
 	install_lib_icu_cross
-	install_lib_sdl "$2"
 }
 
-export NDK_ROOT=$WORKSPACE/android-ndk-r15c
-export SDK_ROOT=$WORKSPACE/android-sdk
+#export NDK_ROOT=$WORKSPACE/android-ndk-r15c
+#export SDK_ROOT=$WORKSPACE/android-sdk
 
 export MAKEFLAGS="-j${nproc:-2}"
 
