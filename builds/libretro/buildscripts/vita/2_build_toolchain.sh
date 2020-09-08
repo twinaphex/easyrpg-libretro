@@ -53,8 +53,8 @@ cd $WORKSPACE
 
 echo "Preparing toolchain"
 
-export VITASDK=$PWD/vitasdk
-export PATH=$PWD/vitasdk/bin:$PATH
+#export VITASDK=$PWD/vitasdk
+export PATH=$VITASDK/bin:$PATH
 
 export PLATFORM_PREFIX=$WORKSPACE
 export TARGET_HOST=arm-vita-eabi
@@ -105,9 +105,6 @@ function install_vdpm() {
 
 install_lib_icu_native
 
-install_vdpm
-install_lib_vita2d
-
 set_build_flags
 install_lib_zlib
 install_lib $LIBPNG_DIR $LIBPNG_ARGS
@@ -128,5 +125,3 @@ install_lib $OPUS_DIR $OPUS_ARGS
 install_lib $OPUSFILE_DIR $OPUSFILE_ARGS
 install_lib_cmake $FMT_DIR $FMT_ARGS
 install_lib_icu_cross
-
-install_shaders
