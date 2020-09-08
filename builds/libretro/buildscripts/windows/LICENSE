@@ -1,0 +1,22 @@
+Please see the LICENSE or COPYING file in the directories of the individual
+library.
+
+In short:
+expat: MIT
+freetype: FreeType License or GPLv2 or later (see docs/LICENSE.TXT)
+harfbuzz: MIT
+icu4c: ICU license
+libmodplug: Public Domain
+libmpg123: LGPLv2.1
+libogg: BSD
+libpng: zlib
+libsndfile: LGPLv2.1
+libvorbis: BSD
+libwildmidi: LGPLv3
+libxmp-lite: MIT
+pixman: MIT
+SDL2: zlib
+SDL2 image: zlib
+SDL2 mixer: zlib
+speexdsp: BSD
+zlib: zlib
