@@ -1,0 +1,45 @@
+.core-defs:
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    JNI_PATH: libretro
+    CORENAME: easyrpg
+    DEPS_VERSION: 1
+
+include:
+  - template: Jobs/Code-Quality.gitlab-ci.yml
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/linux-x64.yml'
+
+stages:
+  - build-prepare
+  - build-shared
+  - build-static
+  - test
+
+libretro-build-linux-x64:
+  extends:
+    - .core-defs
+    - .libretro-linux-x64-make-default
+  variables:
+    DEPS: builds/libretro/buildscripts/linux-static
+    CMAKE_ARGS: "
+        -GNinja
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include"
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-linux-x64"
+    untracked: true
+    paths:
+      - builds/libretro/buildscripts
+  script:
+    - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
+    - pushd ${DEPS}
+    - ./0_build_everything.sh
+    - touch .deps-built.${DEPS_VERSION}
+    - popd
+    - fi
+    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}
+    - cmake --build . --target easyrpg_libretro
+    - strip ${CORENAME}_libretro.so
