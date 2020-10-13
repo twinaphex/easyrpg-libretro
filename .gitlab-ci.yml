@@ -58,8 +58,7 @@ libretro-build-windows-x64-mingw:
         -DPLAYER_BUILD_LIBLCF=ON
         -DCMAKE_IGNORE_PATH=/usr/include
         -DCMAKE_BUILD_TYPE=Release
-        -DCMAKE_TOOLCHAIN_FILE=${DEPS}/mingw-w64-x86_64.cmake
-        -DCMAKE_CXX_FLAGS='-g0 -O2 -fstack-protector'"
+        -DCMAKE_TOOLCHAIN_FILE=${DEPS}/mingw-w64-x86_64.cmake"
   cache:
     key: "$CI_COMMIT_REF_SLUG-mingw"
     untracked: true
@@ -70,7 +69,7 @@ libretro-build-windows-x64-mingw:
     - touch .deps-built.${DEPS_VERSION}
     - popd
     - fi
-    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}
+    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_CXX_FLAGS="-g0 -O2 -fstack-protector"
     - cmake --build . --target easyrpg_libretro -- -j $NUMPROC
 
 .libretro-android-cmake-easyrpg:
@@ -92,7 +91,6 @@ libretro-build-windows-x64-mingw:
     key: "$CI_COMMIT_REF_SLUG-android"
     untracked: true
 #    when: 'always'
-  allow_failure: true
   script:
     - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
     - pushd ${DEPS}
@@ -100,11 +98,12 @@ libretro-build-windows-x64-mingw:
     - touch .deps-built.${DEPS_VERSION}
     - popd
     - fi
-    - PLATFORM_ARGS="-DANDROID_PLATFORM=android-$API_LEVEL -DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ARCH"
+    - PLATFORM_ARGS="-DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ANDROID_ABI"
     - STRIP=$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
-    - cmake $CORE_ARGS -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} $PLATFORM_ARGS . -B$BUILD_DIR
-    - cmake --build $BUILD_DIR --target ${CORENAME}_libretro -- -j $NUMPROC
-    - mv $BUILD_DIR/$LIBNAME $LIBNAME
+    - BUILDDIR=build-$ANDROID_ABI
+    - cmake $CORE_ARGS -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}/${ANDROID_ABI}-toolchain $PLATFORM_ARGS . -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${CORENAME}_libretro.so $LIBNAME
     - $STRIP $LIBNAME
 
 android-armeabi-v7a:

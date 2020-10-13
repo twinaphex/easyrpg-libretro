@@ -27,6 +27,10 @@ export WORKSPACE=$PWD
 
 msg " [4] Preparing libraries"
 
+# zlib
+rm -rf $ZLIB_DIR
+download_and_extract $ZLIB_URL
+
 # libpng
 rm -rf $LIBPNG_DIR
 download_and_extract $LIBPNG_URL

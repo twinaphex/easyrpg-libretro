@@ -61,12 +61,12 @@ function build() {
 
 	export PATH=$OLD_PATH
 	export PLATFORM_PREFIX=$WORKSPACE/$2-toolchain
-	$NDK_ROOT/build/tools/make_standalone_toolchain.py --api=$TARGET_API \
-		--install-dir=$PLATFORM_PREFIX --stl=libc++ --arch=$3
+#	$NDK_ROOT/build/tools/make_standalone_toolchain.py --api=$TARGET_API \
+#		--install-dir=$PLATFORM_PREFIX --stl=libc++ --arch=$3
 
 	export PATH=$PLATFORM_PREFIX/bin:$PATH
 
-	export CFLAGS="-no-integrated-as -g0 -O2 $5"
+	export CFLAGS="-no-integrated-as -g0 -O2 -fPIC $5"
 	export CXXFLAGS="$CFLAGS -DHB_NO_MMAP"
 	export CPPFLAGS="-I$PLATFORM_PREFIX/include -I$NDK_ROOT/sources/android/cpufeatures"
 	export LDFLAGS="-L$PLATFORM_PREFIX/lib"
@@ -80,6 +80,7 @@ function build() {
 		export CXX="ccache $CXX"
 	fi
 
+	install_lib_zlib
 	install_lib $LIBPNG_DIR $LIBPNG_ARGS
 	install_lib $FREETYPE_DIR $FREETYPE_ARGS --without-harfbuzz
 	install_lib $HARFBUZZ_DIR $HARFBUZZ_ARGS
