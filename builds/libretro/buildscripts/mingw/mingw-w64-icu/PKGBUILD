@@ -1,0 +1,157 @@
+# Maintainer: Alexey Pavlov <Alexpux@gmail.com>
+# Contributor: Ray Donnelly <mingw.android@gmail.com>
+# Contributor: wirx6 <wirx654@gmail.com>
+
+_realname=icu
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}" "${MINGW_PACKAGE_PREFIX}-${_realname}-debug-libs")
+pkgver=67.1
+pkgrel=1
+arch=('any')
+pkgdesc="International Components for Unicode library (mingw-w64)"
+arch=('any')
+url="http://site.icu-project.org/home/"
+license=('custom:icu')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+makedepends=("${MINGW_PACKAGE_PREFIX}-gcc")
+# There's no point adding 'debug' to options as both
+# debug and release packages are built regardless.
+options=('!buildflags' 'staticlibs' 'strip')
+source=(#"http://download.icu-project.org/files/icu4c/${pkgver}/icu4c-${pkgver//./_}-src.tgz"
+        https://github.com/unicode-org/icu/releases/download/release-${pkgver//./-}/icu4c-${pkgver//./_}-src.tgz
+        0011-sbin-dir.mingw.patch
+        0012-libprefix.mingw.patch
+        0014-mingwize-pkgdata.mingw.patch
+        0015-debug.mingw.patch
+        0016-icu-pkgconfig.patch
+        0017-icu-config-versioning.patch
+        #0020-workaround-missing-locale.patch
+        0021-mingw-static-libraries-without-s.patch
+        0023-fix-twice-include-platform_make_fragment.patch)
+sha256sums=('94a80cd6f251a53bd2a997f6f1b5ac6653fe791dfab66e1eb0227740fb86d5dc'
+            '4f4787caeccf70607cf0cbde0c005f05f5c6de1543265a927839122405b4054f'
+            'e7ecdafe85e18a4a4b5f29bbfde38776521a848e5b65089a2379b90e59f1592d'
+            'a131b64afbe45ad30d877973f7ff271044ef27409a506c56555663aa271ab011'
+            '0181f9ff8b7dd0a423869d8772da0a4feea64188347eb0dee7eb059aea92131c'
+            '87ebe8962f8c387714f2a697a664a0c49aed2331b988548069d0c211abc36e05'
+            '3cd5a7b6ca87aae3b53c246286e1b4cee6639b3fec69831f8a1f6930cd92c6c3'
+            'd8612f40b1731d9a94290afcf80c896184a2f15b8ae8f23b3643c64f6cabfa2f'
+            '13f5a614c4b322d70de5a5085a0dcf037fb7c1f688f429a0223ea565b3e97035')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  msg2 "Applying $1"
+  patch -Nbp1 -i "${srcdir}"/$1
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}/icu"
+
+  apply_patch_with_msg 0011-sbin-dir.mingw.patch
+  apply_patch_with_msg 0012-libprefix.mingw.patch
+  apply_patch_with_msg 0014-mingwize-pkgdata.mingw.patch
+  apply_patch_with_msg 0015-debug.mingw.patch
+  apply_patch_with_msg 0016-icu-pkgconfig.patch
+  apply_patch_with_msg 0017-icu-config-versioning.patch
+  apply_patch_with_msg 0021-mingw-static-libraries-without-s.patch
+  apply_patch_with_msg 0023-fix-twice-include-platform_make_fragment.patch
+
+  cd source
+  autoreconf -vfi
+}
+
+build() {
+  local -a extra_config
+  CXXFLAGS+=" -DU_USE_STRTOD_L=0" # breaks on Windows XP
+  #CXXFLAGS+=" -D_WIN32_WINNT=0x0601"
+  cd "${srcdir}/icu/"
+
+  for _variant in debug release; do
+    [[ -d build-${CARCH}-${_variant} ]] && rm -rf build-${CARCH}-${_variant}
+    if [ "${_variant}" = "debug" ]; then
+      extra_config=( --enable-debug )
+    else
+      extra_config=( --enable-release )
+    fi
+    cp -rf source build-${CARCH}-${_variant}
+    pushd build-${CARCH}-${_variant}
+    ./configure \
+      --prefix=${MINGW_PREFIX} \
+      --build=${MINGW_CHOST} \
+      --host=${MINGW_CHOST} \
+      --target=${MINGW_CHOST} \
+      --disable-rpath \
+      --enable-shared \
+      --enable-static \
+      --with-data-packaging=dll \
+      "${extra_config[@]}"
+    make -j1
+    popd
+  done
+}
+
+check() {
+  for _variant in debug release; do
+    pushd "${srcdir}/icu/build-${CARCH}-${_variant}"
+    PATH=${srcdir}/icu/build-${CARCH}/bin:${srcdir}/icu/build-${CARCH}/lib:$PATH \
+    make V=1 -k check || true
+    popd
+  done
+}
+
+package_icu() {
+  pushd "${srcdir}/icu/build-${CARCH}-release"
+  make install DESTDIR="${pkgdir}" RM="rm -rf"
+
+  #mv "${pkgdir}${MINGW_PREFIX}"/lib/*.dll "${pkgdir}${MINGW_PREFIX}"/bin/
+  mv "${pkgdir}${MINGW_PREFIX}"/bin/*.a "${pkgdir}${MINGW_PREFIX}"/lib/
+  #pushd "${pkgdir}${MINGW_PREFIX}"/bin > /dev/null
+  #  # remove unversioned DLL symlinks
+  #  find . -regex "[^0-9]+\.dll" -exec rm -rf {} \;
+  #popd > /dev/null
+}
+
+package_icu-debug-libs() {
+  options=('debug' '!strip')
+  pushd "${srcdir}/icu/build-${CARCH}-debug"
+  make install DESTDIR="${pkgdir}" RM="rm -rf"
+
+  #mv "${pkgdir}${MINGW_PREFIX}"/lib/*.dll "${pkgdir}${MINGW_PREFIX}"/bin/
+  mv "${pkgdir}${MINGW_PREFIX}"/bin/*.a "${pkgdir}${MINGW_PREFIX}"/lib/
+  #pushd "${pkgdir}${MINGW_PREFIX}"/bin > /dev/null
+  #  # remove unversioned DLL symlinks
+  #  find . -regex "[^0-9]+\.dll" -exec rm -rf {} \;
+  #popd > /dev/null
+
+  # Remove bits that are also in the main package.
+  # TODO :: Maybe move the pkg-config files to 'd' suffixed variants?
+  rm -rf "${pkgdir}${MINGW_PREFIX}"/{include,sbin,share,lib/pkgconfig}
+  rm -rf "${pkgdir}${MINGW_PREFIX}"/bin/*.exe
+  rm -rf "${pkgdir}${MINGW_PREFIX}"/bin/icu-config
+}
+
+package_mingw-w64-i686-icu() {
+  package_icu
+}
+
+package_mingw-w64-i686-icu-debug-libs() {
+  package_icu-debug-libs
+}
+
+package_mingw-w64-x86_64-icu() {
+  package_icu
+}
+
+package_mingw-w64-x86_64-icu-debug-libs() {
+  package_icu-debug-libs
+}
