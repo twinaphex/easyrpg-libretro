@@ -9,6 +9,8 @@ include:
   - template: Jobs/Code-Quality.gitlab-ci.yml
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-x64.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/android-cmake.yml'
 
 stages:
   - build-prepare
@@ -31,8 +33,7 @@ libretro-build-linux-x64:
   cache:
     key: "$CI_COMMIT_REF_SLUG-linux-x64"
     untracked: true
-    paths:
-      - builds/libretro/buildscripts
+#    when: 'always'
   script:
     - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
     - pushd ${DEPS}
@@ -43,3 +44,38 @@ libretro-build-linux-x64:
     - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}
     - cmake --build . --target easyrpg_libretro
     - strip ${CORENAME}_libretro.so
+
+libretro-build-android-cmake:
+  extends:
+    - .core-defs
+    - .libretro-android-cmake
+  variables:
+    DEPS: builds/libretro/buildscripts/android
+    CORE_ARGS: "
+        -GNinja
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-android"
+    untracked: true
+#    when: 'always'
+  allow_failure: true
+  script:
+    - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
+    - pushd ${DEPS}
+    - ./0_build_everything.sh
+    - touch .deps-built.${DEPS_VERSION}
+    - popd
+    - fi
+    - PLATFORM_ARGS="-DANDROID_PLATFORM=android-$API_LEVEL -DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ARCH"
+    - STRIP=$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
+    - cmake $CORE_ARGS -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} $PLATFORM_ARGS . -B$BUILD_DIR
+    - cmake --build $BUILD_DIR --target ${CORENAME}_libretro
+    - mv $BUILD_DIR/$LIBNAME $LIBNAME
+    - $STRIP $LIBNAME
