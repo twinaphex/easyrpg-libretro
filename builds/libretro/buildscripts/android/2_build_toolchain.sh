@@ -49,7 +49,7 @@ function build() {
 
 	echo "Preparing $1 toolchain"
 
-	export TARGET_API=14
+	export TARGET_API=16
 	if [ "$3" = "arm64" ]; then
 		# Minimum API 21 on ARM64
 		export TARGET_API=21
@@ -66,15 +66,15 @@ function build() {
 
 	export PATH=$PLATFORM_PREFIX/bin:$PATH
 
-	export CFLAGS="-g0 -O2 $5"
+	export CFLAGS="-no-integrated-as -g0 -O2 $5"
 	export CXXFLAGS="$CFLAGS -DHB_NO_MMAP"
 	export CPPFLAGS="-I$PLATFORM_PREFIX/include -I$NDK_ROOT/sources/android/cpufeatures"
 	export LDFLAGS="-L$PLATFORM_PREFIX/lib"
 	unset PKG_CONFIG_PATH
 	export PKG_CONFIG_LIBDIR=$PLATFORM_PREFIX/lib/pkgconfig
 	export TARGET_HOST="$4"
-	export CC="$TARGET_HOST-clang"
-	export CXX="$TARGET_HOST-clang++"
+	export CC="clang -target ${4}${TARGET_API}"
+	export CXX="clang++ -target ${4}${TARGET_API}"
 	if [ "$ENABLE_CCACHE" ]; then
 		export CC="ccache $CC"
 		export CXX="ccache $CXX"
@@ -106,7 +106,7 @@ function build() {
 export MAKEFLAGS="-j${nproc:-2}"
 
 # Setup PATH
-PATH=$PATH:$NDK_ROOT:$SDK_ROOT/tools
+PATH=$NDK_ROOT:$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$SDK_ROOT/tools:$PATH
 
 export OLD_PATH=$PATH
 
@@ -119,7 +119,7 @@ install_lib_icu_native
 export ac_cv_func_mmap_fixed_mapped=yes
 
 # Install standalone toolchain ARMeabi-v7a
-build "ARMeabi-v7a" "armeabi-v7a" "arm" "arm-linux-androideabi" "-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3"
+build "ARMeabi-v7a" "armeabi-v7a" "arm" "armv7a-linux-androideabi" "-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3"
 
 # Install standalone toolchain arm64-v8a
 build "AArch64" "arm64-v8a" "arm64" "aarch64-linux-android" ""
