@@ -73,7 +73,7 @@ libretro-build-windows-x64-mingw:
     - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}
     - cmake --build . --target easyrpg_libretro -- -j $NUMPROC
 
-libretro-build-android-cmake:
+.libretro-android-cmake-easyrpg:
   extends:
     - .core-defs
     - .libretro-android-cmake
@@ -106,3 +106,24 @@ libretro-build-android-cmake:
     - cmake --build $BUILD_DIR --target ${CORENAME}_libretro -- -j $NUMPROC
     - mv $BUILD_DIR/$LIBNAME $LIBNAME
     - $STRIP $LIBNAME
+
+android-armeabi-v7a:
+  extends: .libretro-android-cmake-easyrpg
+  variables:
+    ANDROID_ABI: armeabi-v7a
+
+android-arm64-v8a:
+  extends: .libretro-android-cmake-easyrpg
+  variables:
+    ANDROID_ABI: arm64-v8a
+
+android-x86_64:
+  extends: .libretro-android-cmake-easyrpg
+  variables:
+    ANDROID_ABI: x86
+
+android-x86:
+  extends: .libretro-android-cmake-easyrpg
+  variables:
+    ANDROID_ABI: x86_64
+
