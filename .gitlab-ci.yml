@@ -10,6 +10,8 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-x64.yml'
   - project: 'libretro-infrastructure/ci-templates'
+    file: '/windows-x64-mingw.yml'
+  - project: 'libretro-infrastructure/ci-templates'
     file: '/android-cmake.yml'
 
 stages:
@@ -25,15 +27,14 @@ libretro-build-linux-x64:
   variables:
     DEPS: builds/libretro/buildscripts/linux-static
     CMAKE_ARGS: "
-        -GNinja
         -DBUILD_SHARED_LIBS=ON
         -DPLAYER_TARGET_PLATFORM=libretro
         -DPLAYER_BUILD_LIBLCF=ON
-        -DCMAKE_IGNORE_PATH=/usr/include"
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release"
   cache:
     key: "$CI_COMMIT_REF_SLUG-linux-x64"
     untracked: true
-#    when: 'always'
   script:
     - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
     - pushd ${DEPS}
@@ -42,8 +43,35 @@ libretro-build-linux-x64:
     - popd
     - fi
     - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}
-    - cmake --build . --target easyrpg_libretro
+    - cmake --build . --target easyrpg_libretro -- -j $NUMPROC
     - strip ${CORENAME}_libretro.so
+
+libretro-build-windows-x64-mingw:
+  extends:
+    - .core-defs
+    - .libretro-windows-x64-mingw-make-default
+  variables:
+    DEPS: builds/libretro/buildscripts/mingw
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_TOOLCHAIN_FILE=${DEPS}/mingw-w64-x86_64.cmake
+        -DCMAKE_CXX_FLAGS='-g0 -O2 -fstack-protector'"
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-mingw"
+    untracked: true
+  script:
+    - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
+    - pushd ${DEPS}
+    - ./0_build_everything.sh
+    - touch .deps-built.${DEPS_VERSION}
+    - popd
+    - fi
+    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}
+    - cmake --build . --target easyrpg_libretro -- -j $NUMPROC
 
 libretro-build-android-cmake:
   extends:
@@ -52,7 +80,6 @@ libretro-build-android-cmake:
   variables:
     DEPS: builds/libretro/buildscripts/android
     CORE_ARGS: "
-        -GNinja
         -DBUILD_SHARED_LIBS=ON
         -DPLAYER_TARGET_PLATFORM=libretro
         -DPLAYER_BUILD_LIBLCF=ON
@@ -76,6 +103,6 @@ libretro-build-android-cmake:
     - PLATFORM_ARGS="-DANDROID_PLATFORM=android-$API_LEVEL -DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ARCH"
     - STRIP=$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
     - cmake $CORE_ARGS -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} $PLATFORM_ARGS . -B$BUILD_DIR
-    - cmake --build $BUILD_DIR --target ${CORENAME}_libretro
+    - cmake --build $BUILD_DIR --target ${CORENAME}_libretro -- -j $NUMPROC
     - mv $BUILD_DIR/$LIBNAME $LIBNAME
     - $STRIP $LIBNAME
