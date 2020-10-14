@@ -480,11 +480,7 @@ if(NOT PLAYER_BUILD_EXECUTABLE AND BUILD_SHARED_LIBS)
 endif()
 
 if(ANDROID)
-	enable_language(C)
-	# armeabi-v7a requires this
-	add_library(cpufeatures STATIC
-		${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c)
-	target_link_libraries(${PROJECT_NAME} cpufeatures log)
+	target_link_libraries(${PROJECT_NAME} log)
 endif()
 
 if(WIN32)
