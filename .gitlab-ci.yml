@@ -16,14 +16,53 @@ include:
 
 stages:
   - build-prepare
+  - build-deps-easyrpg
   - build-shared
   - build-static
   - test
+
+# Builds the dependencies required for each target system
+.build-deps-easyrpg:
+  extends:
+    - .core-defs
+  stage: build-deps-easyrpg
+  variables:
+    DEPS: builds/libretro/buildscripts/$PLATFORM_TARGET
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-$PLATFORM_TARGET"
+    untracked: true
+  artifacts:
+    paths:
+      - builds/libretro/buildscripts/
+    expire_in: 1 hour
+  before_script:
+    - '' # Overwrite a potential before script
+  script:
+    - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
+    - pushd ${DEPS}
+    - ./0_build_everything.sh
+    - touch .deps-built.${DEPS_VERSION}
+    - popd
+    - fi
+  after_script:
+    - '' # Overwrite a potential after script
+
+# Linux build
+deps:linux-x64:
+  extends:
+    - .libretro-linux-x64
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: linux-static
 
 libretro-build-linux-x64:
   extends:
     - .core-defs
     - .libretro-linux-x64-make-default
+  dependencies:
+    - deps:linux-x64
+  needs:
+    - deps:linux-x64
   variables:
     DEPS: builds/libretro/buildscripts/linux-static
     CMAKE_ARGS: "
@@ -32,24 +71,27 @@ libretro-build-linux-x64:
         -DPLAYER_BUILD_LIBLCF=ON
         -DCMAKE_IGNORE_PATH=/usr/include
         -DCMAKE_BUILD_TYPE=Release"
-  cache:
-    key: "$CI_COMMIT_REF_SLUG-linux-x64"
-    untracked: true
   script:
-    - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
-    - pushd ${DEPS}
-    - ./0_build_everything.sh
-    - touch .deps-built.${DEPS_VERSION}
-    - popd
-    - fi
     - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}
     - cmake --build . --target easyrpg_libretro -- -j $NUMPROC
     - strip ${CORENAME}_libretro.so
 
+# mingw build (cross)
+deps:mingw:
+  extends:
+    - .libretro-windows-x64-mingw
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: mingw
+    
 libretro-build-windows-x64-mingw:
   extends:
     - .core-defs
     - .libretro-windows-x64-mingw-make-default
+  dependencies:
+    - deps:mingw
+  needs:
+    - deps:mingw
   variables:
     DEPS: builds/libretro/buildscripts/mingw
     CMAKE_ARGS: "
@@ -59,23 +101,26 @@ libretro-build-windows-x64-mingw:
         -DCMAKE_IGNORE_PATH=/usr/include
         -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_TOOLCHAIN_FILE=${DEPS}/mingw-w64-x86_64.cmake"
-  cache:
-    key: "$CI_COMMIT_REF_SLUG-mingw"
-    untracked: true
   script:
-    - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
-    - pushd ${DEPS}
-    - ./0_build_everything.sh
-    - touch .deps-built.${DEPS_VERSION}
-    - popd
-    - fi
     - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_CXX_FLAGS="-g0 -O2 -fstack-protector"
     - cmake --build . --target easyrpg_libretro -- -j $NUMPROC
+
+# Android build
+deps:android:
+  extends:
+    - .libretro-android-cmake
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: android
 
 .libretro-android-cmake-easyrpg:
   extends:
     - .core-defs
     - .libretro-android-cmake
+  dependencies:
+    - deps:android
+  needs:
+    - deps:android
   variables:
     DEPS: builds/libretro/buildscripts/android
     CORE_ARGS: "
@@ -87,17 +132,7 @@ libretro-build-windows-x64-mingw:
         -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
-  cache:
-    key: "$CI_COMMIT_REF_SLUG-android"
-    untracked: true
-#    when: 'always'
   script:
-    - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
-    - pushd ${DEPS}
-    - ./0_build_everything.sh
-    - touch .deps-built.${DEPS_VERSION}
-    - popd
-    - fi
     - PLATFORM_ARGS="-DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ANDROID_ABI"
     - STRIP=$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
     - BUILDDIR=build-$ANDROID_ABI
