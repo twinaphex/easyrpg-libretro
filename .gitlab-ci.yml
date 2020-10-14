@@ -13,6 +13,10 @@ include:
     file: '/windows-x64-mingw.yml'
   - project: 'libretro-infrastructure/ci-templates'
     file: '/android-cmake.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/vita-static.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/libnx-static.yml'
 
 stages:
   - build-prepare
@@ -30,7 +34,8 @@ stages:
     DEPS: builds/libretro/buildscripts/$PLATFORM_TARGET
   cache:
     key: "$CI_COMMIT_REF_SLUG-$PLATFORM_TARGET"
-    untracked: true
+    paths:
+      - builds/libretro/buildscripts/
   artifacts:
     paths:
       - builds/libretro/buildscripts/
@@ -65,8 +70,8 @@ libretro-build-linux-x64:
     - deps:linux-x64
   cache:
     key: "$CI_COMMIT_REF_SLUG-linux-x64-core"
-      paths:
-        - build/
+    paths:
+      - build/
   variables:
     BUILDDIR: build
     DEPS: builds/libretro/buildscripts/linux-static
@@ -100,8 +105,8 @@ libretro-build-windows-x64-mingw:
     - deps:mingw
   cache:
     key: "$CI_COMMIT_REF_SLUG-mingw-core"
-      paths:
-        - build/
+    paths:
+      - build/
   variables:
     BUILDDIR: build
     DEPS: builds/libretro/buildscripts/mingw
@@ -136,8 +141,8 @@ deps:android:
     - deps:android
   cache:
     key: "$CI_COMMIT_REF_SLUG-android-$ANDROID_ABI-core"
-      paths:
-        - build-$ANDROID_ABI/
+    paths:
+      - build-$ANDROID_ABI/
   variables:
     BUILDDIR: build-$ANDROID_ABI
     DEPS: builds/libretro/buildscripts/android
@@ -177,3 +182,96 @@ android-x86:
   extends: .libretro-android-cmake-easyrpg
   variables:
     ANDROID_ABI: x86_64
+
+# Vita build
+deps:vita:
+  extends:
+    - .libretro-vita-static
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: vita
+
+libretro-build-vita:
+  extends:
+    - .core-defs
+    - .libretro-vita-static-retroarch-master
+  dependencies:
+    - deps:vita
+  needs:
+    - deps:vita
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-vita-core"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/vita
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=OFF
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+  script:
+    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
+    - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/vita/lib
+    - ""
+    - wget -O retroarch-precompiled.zip "https://$CI_SERVER_HOST/libretro/RetroArch/-/jobs/artifacts/${STATIC_RETROARCH_BRANCH}/download?job=${STATIC_RETROARCH_JOB_NAME}"
+    - unzip retroarch-precompiled.zip >/dev/null 2>&1
+    - rm -f retroarch-precompiled.zip
+    - mv ${CORENAME}_libretro.a retroarch-precompiled/libretro_vita.a
+    - cd retroarch-precompiled/
+    - make -f Makefile.vita -j10
+    - mv retroarch_vita.self ../${CORENAME}_libretro_vita.self
+    - cd ../
+
+# Switch build
+deps:switch:
+  extends:
+    - .libretro-libnx-static
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: switch
+
+libretro-build-libnx-aarch64:
+  extends:
+    - .core-defs
+    - .libretro-libnx-static-retroarch-master
+  dependencies:
+    - deps:switch
+  needs:
+    - deps:switch
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-switch-core"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/switch
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=OFF
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+  script:
+    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_TOOLCHAIN_FILE=builds/libretro/switch.cmake -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
+    - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/switch/lib
+    - ""
+    - wget -O retroarch-precompiled.zip "https://$CI_SERVER_HOST/libretro/RetroArch/-/jobs/artifacts/${STATIC_RETROARCH_BRANCH}/download?job=${STATIC_RETROARCH_JOB_NAME}"
+    - unzip retroarch-precompiled.zip >/dev/null 2>&1
+    - rm -f retroarch-precompiled.zip
+    - mv ${CORENAME}_libretro.a retroarch-precompiled/libretro_libnx.a
+    - cd retroarch-precompiled/
+    - make -f Makefile.libnx -j10
+    - mv retroarch_switch.nro ../${CORENAME}_libretro_libnx.nro
+    - mv retroarch_switch.elf ../${CORENAME}_libretro_libnx.elf
+    - cd ../

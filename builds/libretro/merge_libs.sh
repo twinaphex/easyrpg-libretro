@@ -11,8 +11,8 @@ if ! test -f "$LIBPATH"; then
   exit 2
 fi
 
-if ! test -f "easyrpg_libretro.a"; then
-  echo "easyrpg_libretro.a not found. Run script from repository root"
+if ! test -f "build/easyrpg_libretro.a"; then
+  echo "build/easyrpg_libretro.a not found. Run script from repository root"
   exit 3
 fi
 
@@ -20,13 +20,13 @@ OUTFILE=easyrpg.mri
 
 set -e
 
-echo "create easyrpg_libretro_merged.a" > $OUTFILE
+echo "create easyrpg_libretro.a" > $OUTFILE
 
 echo "Adding liblcf"
-echo "addlib lib/liblcf/liblcf.a" >> $OUTFILE
+echo "addlib build/lib/liblcf/liblcf.a" >> $OUTFILE
 
 echo "Adding libretro_common"
-echo "addlib builds/libretro/libretro_common.a" >> $OUTFILE
+echo "addlib build/builds/libretro/libretro_common.a" >> $OUTFILE
 
 for lib in \
  expat \
@@ -62,11 +62,12 @@ fi
 done
 
 echo "Adding easyrpg_libretro"
-echo "addlib easyrpg_libretro.a" >> $OUTFILE
+echo "addlib build/libEasyRPG_Player.a" >> $OUTFILE
+echo "addlib build/easyrpg_libretro.a" >> $OUTFILE
 
 echo "save" >> $OUTFILE
 echo "end" >> $OUTFILE
 
 ar -M <easyrpg.mri
 
-echo "Done. Created easyrpg_libretro_merged.a"
+echo "Done. Created easyrpg_libretro.a"
