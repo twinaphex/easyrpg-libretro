@@ -25,9 +25,19 @@ stages:
   - build-static
   - test
 
+# Removes some inherited options that can conflict in some jobs
+# Used by dependency builder and tests
+.easyrpg:cleanup:
+  before_script:
+    - '' # Overwrite a potential before script
+  after_script:
+    - '' # Overwrite a potential after script
+  artifacts: # No artifacts
+
 # Builds the dependencies required for each target system
 .build-deps-easyrpg:
   extends:
+    - .easyrpg:cleanup
     - .core-defs
   stage: build-deps-easyrpg
   variables:
@@ -40,8 +50,6 @@ stages:
     paths:
       - builds/libretro/buildscripts/
     expire_in: 1 hour
-  before_script:
-    - '' # Overwrite a potential before script
   script:
     - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
     - pushd ${DEPS}
@@ -49,8 +57,6 @@ stages:
     - touch .deps-built.${DEPS_VERSION}
     - popd
     - fi
-  after_script:
-    - '' # Overwrite a potential after script
 
 # Linux build
 deps:linux-x64:
@@ -86,6 +92,20 @@ libretro-build-linux-x64:
     - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
     - mv $BUILDDIR/${CORENAME}_libretro.so .
     - strip ${CORENAME}_libretro.so
+
+test:linux-x64:
+  extends:
+    - libretro-build-linux-x64
+    - .easyrpg:cleanup
+  stage: test
+  dependencies:
+    - deps:linux-x64
+  needs:
+    - deps:linux-x64
+    - libretro-build-linux-x64
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -B$BUILDDIR
+    - cmake --build $BUILDDIR --target check -- -j $NUMPROC
 
 # mingw build (cross)
 deps:mingw:
