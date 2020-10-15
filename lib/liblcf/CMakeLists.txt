@@ -31,8 +31,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 # lcf library files
-add_library(lcf)
-
 set(LCF_SOURCES
 	src/data.cpp
 	src/dbarray.cpp
@@ -292,11 +290,14 @@ set(LCF_HEADERS
 	src/lcf/third_party/string_view.h
 )
 
-list(TRANSFORM LCF_SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
-list(TRANSFORM LCF_HEADERS PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
+string(REGEX REPLACE "([^;]+)" "${CMAKE_CURRENT_SOURCE_DIR}/\\1" LCF_SOURCES "${LCF_SOURCES}")
+string(REGEX REPLACE "([^;]+)" "${CMAKE_CURRENT_SOURCE_DIR}/\\1" LCF_HEADERS "${LCF_HEADERS}")
+
 list(APPEND LCF_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/src/lcf/config.h)
 
-target_sources(lcf PRIVATE ${LCF_SOURCES} PUBLIC ${LCF_HEADERS})
+add_library(lcf ${LCF_HEADERS})
+
+target_sources(lcf PRIVATE ${LCF_SOURCES})
 
 # IDE source grouping
 foreach(SG LDB LMT LMU LSD RPG THIRD_PARTY)
