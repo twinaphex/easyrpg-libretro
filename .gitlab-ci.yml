@@ -3,6 +3,7 @@
     GIT_SUBMODULE_STRATEGY: recursive
     JNI_PATH: libretro
     CORENAME: easyrpg
+    TARGETNAME: easyrpg
     DEPS_VERSION: 1
 
 include:
@@ -43,7 +44,7 @@ stages:
   variables:
     DEPS: builds/libretro/buildscripts/$PLATFORM_TARGET
   cache:
-    key: "$CI_COMMIT_REF_SLUG-$PLATFORM_TARGET"
+    key: "easyrpg-deps-$PLATFORM_TARGET"
     paths:
       - builds/libretro/buildscripts/
   artifacts:
@@ -75,7 +76,7 @@ libretro-build-linux-x64:
   needs:
     - deps:linux-x64
   cache:
-    key: "$CI_COMMIT_REF_SLUG-linux-x64-core"
+    key: "$CI_COMMIT_REF_SLUG-linux-x64"
     paths:
       - build/
   variables:
@@ -89,8 +90,8 @@ libretro-build-linux-x64:
         -DCMAKE_BUILD_TYPE=Release"
   script:
     - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -B$BUILDDIR
-    - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
-    - mv $BUILDDIR/${CORENAME}_libretro.so .
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.so ${CORENAME}_libretro.so
     - strip ${CORENAME}_libretro.so
 
 test:linux-x64:
@@ -124,7 +125,7 @@ libretro-build-windows-x64-mingw:
   needs:
     - deps:mingw
   cache:
-    key: "$CI_COMMIT_REF_SLUG-mingw-core"
+    key: "$CI_COMMIT_REF_SLUG-mingw"
     paths:
       - build/
   variables:
@@ -139,8 +140,8 @@ libretro-build-windows-x64-mingw:
         -DCMAKE_TOOLCHAIN_FILE=${DEPS}/mingw-w64-x86_64.cmake"
   script:
     - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_CXX_FLAGS="-g0 -O2 -fstack-protector" -B$BUILDDIR
-    - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
-    - mv $BUILDDIR/${CORENAME}_libretro.dll .
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.dll ${CORENAME}_libretro.dll
     - strip ${CORENAME}_libretro.dll
 
 # Android build
@@ -160,7 +161,7 @@ deps:android:
   needs:
     - deps:android
   cache:
-    key: "$CI_COMMIT_REF_SLUG-android-$ANDROID_ABI-core"
+    key: "$CI_COMMIT_REF_SLUG-android-$ANDROID_ABI"
     paths:
       - build-$ANDROID_ABI/
   variables:
@@ -179,8 +180,8 @@ deps:android:
     - PLATFORM_ARGS="-DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ANDROID_ABI"
     - STRIP=$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
     - cmake . $CORE_ARGS -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}/${ANDROID_ABI}-toolchain $PLATFORM_ARGS -B$BUILDDIR
-    - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
-    - mv $BUILDDIR/${CORENAME}_libretro.so $LIBNAME
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.so $LIBNAME
     - $STRIP $LIBNAME
 
 android-armeabi-v7a:
@@ -220,7 +221,7 @@ libretro-build-vita:
   needs:
     - deps:vita
   cache:
-    key: "$CI_COMMIT_REF_SLUG-vita-core"
+    key: "$CI_COMMIT_REF_SLUG-vita-static"
     paths:
       - build/
   variables:
@@ -237,13 +238,13 @@ libretro-build-vita:
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
   script:
     - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake -B$BUILDDIR
-    - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
     - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/vita/lib
     - ""
     - wget -O retroarch-precompiled.zip "https://$CI_SERVER_HOST/libretro/RetroArch/-/jobs/artifacts/${STATIC_RETROARCH_BRANCH}/download?job=${STATIC_RETROARCH_JOB_NAME}"
     - unzip retroarch-precompiled.zip >/dev/null 2>&1
     - rm -f retroarch-precompiled.zip
-    - mv ${CORENAME}_libretro.a retroarch-precompiled/libretro_vita.a
+    - mv ${TARGETNAME}_libretro.a retroarch-precompiled/libretro_vita.a
     - cd retroarch-precompiled/
     - make -f Makefile.vita -j10
     - mv retroarch_vita.self ../${CORENAME}_libretro_vita.self
@@ -266,7 +267,7 @@ libretro-build-libnx-aarch64:
   needs:
     - deps:switch
   cache:
-    key: "$CI_COMMIT_REF_SLUG-switch-core"
+    key: "$CI_COMMIT_REF_SLUG-libnx-static"
     paths:
       - build/
   variables:
@@ -283,13 +284,13 @@ libretro-build-libnx-aarch64:
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
   script:
     - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_TOOLCHAIN_FILE=builds/libretro/switch.cmake -B$BUILDDIR
-    - cmake --build $BUILDDIR --target ${CORENAME}_libretro -- -j $NUMPROC
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
     - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/switch/lib
     - ""
     - wget -O retroarch-precompiled.zip "https://$CI_SERVER_HOST/libretro/RetroArch/-/jobs/artifacts/${STATIC_RETROARCH_BRANCH}/download?job=${STATIC_RETROARCH_JOB_NAME}"
     - unzip retroarch-precompiled.zip >/dev/null 2>&1
     - rm -f retroarch-precompiled.zip
-    - mv ${CORENAME}_libretro.a retroarch-precompiled/libretro_libnx.a
+    - mv ${TARGETNAME}_libretro.a retroarch-precompiled/libretro_libnx.a
     - cd retroarch-precompiled/
     - make -f Makefile.libnx -j10
     - mv retroarch_switch.nro ../${CORENAME}_libretro_libnx.nro
