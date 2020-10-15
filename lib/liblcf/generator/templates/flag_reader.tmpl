@@ -1,0 +1,30 @@
+{% include "copyright.tmpl" %}
+/*
+ * Headers
+ */
+#include "lcf/{{ type }}/reader.h"
+#include "lcf/{{ type }}/chunks.h"
+#include "reader_struct.h"
+
+namespace lcf {
+
+// Read {{ struct_name }}.
+
+template <>
+char const* const Flags<rpg::{{ struct_name }}::Flags>::name = "{{ struct_name }}_Flags";
+
+template <>
+decltype(Flags<rpg::{{ struct_name }}::Flags>::flag_names) Flags<rpg::{{ struct_name }}::Flags>::flag_names = {
+{%- for flag in flags[struct_name] %}
+	"{{ flag.field }}"{%- if not loop.last %}, {%- endif %}
+{%- endfor %}
+};
+
+template <>
+decltype(Flags<rpg::{{ struct_name }}::Flags>::flags_is2k3) Flags<rpg::{{ struct_name }}::Flags>::flags_is2k3 = {
+{%- for flag in flags[struct_name] %}
+	{{ flag.is2k3 }}{%- if not loop.last %}, {%- endif %}
+{%- endfor %}
+};
+
+} //namespace lcf
