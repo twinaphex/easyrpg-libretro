@@ -50,7 +50,9 @@ for lib in \
  speexdsp \
  samplerate \
  opusfile \
- opus;do
+ opus \
+ fmt \
+ fluidlite;do
 
 LIBPATH="$1/lib$lib.a"
  
