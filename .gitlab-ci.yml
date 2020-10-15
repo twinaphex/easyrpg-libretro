@@ -2,7 +2,7 @@
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
     JNI_PATH: libretro
-    CORENAME: easyrpg
+    CORENAME: easyrpg_testing
     TARGETNAME: easyrpg
     DEPS_VERSION: 1
 
