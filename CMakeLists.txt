@@ -460,7 +460,6 @@ elseif(${PLAYER_TARGET_PLATFORM} STREQUAL "psvita")
 		src/platform/psvita/psp2_clock.h
 		src/platform/psvita/psp2_ui.cpp
 		src/platform/psvita/psp2_ui.h)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC PSP2)
 elseif(${PLAYER_TARGET_PLATFORM} STREQUAL "switch")
 	target_sources(${PROJECT_NAME} PRIVATE
 		src/platform/switch/switch_audio.cpp
@@ -469,9 +468,14 @@ elseif(${PLAYER_TARGET_PLATFORM} STREQUAL "switch")
 		src/platform/switch/switch_clock.h
 		src/platform/switch/switch_ui.cpp
 		src/platform/switch/switch_ui.h)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC __SWITCH__)
 else()
 	message(FATAL_ERROR "Invalid target platform")
+endif()
+
+if(VITA)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC PSP2)
+elseif(NSWITCH)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC __SWITCH__)
 endif()
 
 if(NOT PLAYER_BUILD_EXECUTABLE AND BUILD_SHARED_LIBS)
