@@ -14,32 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with EasyRPG Player. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "libretro_clock.h"
 
-#ifndef EP_PLATFORM_CLOCK_H
-#define EP_PLATFORM_CLOCK_H
+#ifdef USE_LIBRETRO
+constexpr bool LibretroClock::is_steady;
 
-#include <chrono>
-#include <type_traits>
-#include <thread>
-
-#if defined(USE_LIBRETRO)
-#include "platform/libretro/libretro_clock.h"
-using Platform_Clock = LibretroClock;
-#elif defined(_3DS)
-#include "platform/3ds/3ds_clock.h"
-using Platform_Clock = CtrClock;
-#elif defined(GEKKO)
-#include "platform/wii/wii_clock.h"
-using Platform_Clock = WiiClock;
-#elif defined(__SWITCH__)
-#include "platform/switch/switch_clock.h"
-using Platform_Clock = NxClock;
-#elif defined(PSP2)
-#include "platform/psvita/psp2_clock.h"
-using Platform_Clock = Psp2Clock;
-#else
-#include "std_clock.h"
-using Platform_Clock = StdClock;
-#endif
-
+retro_usec_t LibretroClock::time_in_microseconds = 0;
 #endif
