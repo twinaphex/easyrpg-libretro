@@ -115,7 +115,7 @@ deps:mingw:
     - .build-deps-easyrpg
   variables:
     PLATFORM_TARGET: mingw
-    
+
 libretro-build-windows-x64-mingw:
   extends:
     - .core-defs
@@ -220,6 +220,10 @@ libretro-build-vita:
     - deps:vita
   needs:
     - deps:vita
+    - project: libretro/RetroArch
+      job: ${STATIC_RETROARCH_JOB_NAME}
+      ref: ${STATIC_RETROARCH_BRANCH}
+      artifacts: true
   cache:
     key: "$CI_COMMIT_REF_SLUG-vita-static"
     paths:
@@ -241,9 +245,6 @@ libretro-build-vita:
     - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
     - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/vita/lib
     - ""
-    - wget -O retroarch-precompiled.zip "https://$CI_SERVER_HOST/libretro/RetroArch/-/jobs/artifacts/${STATIC_RETROARCH_BRANCH}/download?job=${STATIC_RETROARCH_JOB_NAME}"
-    - unzip retroarch-precompiled.zip >/dev/null 2>&1
-    - rm -f retroarch-precompiled.zip
     - mv ${TARGETNAME}_libretro.a retroarch-precompiled/libretro_vita.a
     - cd retroarch-precompiled/
     - make -f Makefile.vita -j10
@@ -266,6 +267,10 @@ libretro-build-libnx-aarch64:
     - deps:switch
   needs:
     - deps:switch
+    - project: libretro/RetroArch
+      job: ${STATIC_RETROARCH_JOB_NAME}
+      ref: ${STATIC_RETROARCH_BRANCH}
+      artifacts: true
   cache:
     key: "$CI_COMMIT_REF_SLUG-libnx-static"
     paths:
@@ -287,9 +292,6 @@ libretro-build-libnx-aarch64:
     - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
     - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/switch/lib
     - ""
-    - wget -O retroarch-precompiled.zip "https://$CI_SERVER_HOST/libretro/RetroArch/-/jobs/artifacts/${STATIC_RETROARCH_BRANCH}/download?job=${STATIC_RETROARCH_JOB_NAME}"
-    - unzip retroarch-precompiled.zip >/dev/null 2>&1
-    - rm -f retroarch-precompiled.zip
     - mv ${TARGETNAME}_libretro.a retroarch-precompiled/libretro_libnx.a
     - cd retroarch-precompiled/
     - make -f Makefile.libnx -j10
