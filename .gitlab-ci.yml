@@ -1,3 +1,11 @@
+
+# DESCRIPTION: GitLab CI/CD for libRetro (NOT FOR GitLab-proper)
+
+##############################################################################
+################################# BOILERPLATE ################################
+##############################################################################
+
+# Core definitions
 .core-defs:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -6,6 +14,7 @@
     TARGETNAME: easyrpg
     DEPS_VERSION: 1
 
+# Inclusion templates, required for the build to work
 include:
   - template: Jobs/Code-Quality.gitlab-ci.yml
   - project: 'libretro-infrastructure/ci-templates'
@@ -13,12 +22,15 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/windows-x64-mingw.yml'
   - project: 'libretro-infrastructure/ci-templates'
+    file: '/windows-i686-mingw.yml'
+  - project: 'libretro-infrastructure/ci-templates'
     file: '/android-cmake.yml'
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
   - project: 'libretro-infrastructure/ci-templates'
     file: '/libnx-static.yml'
 
+# Stages for building
 stages:
   - build-prepare
   - build-deps-easyrpg
@@ -33,6 +45,8 @@ stages:
     - '' # Overwrite a potential before script
   after_script:
     - '' # Overwrite a potential after script
+  needs: # No needs
+  dependencies: # No dependencies
   artifacts: # No artifacts
 
 # Builds the dependencies required for each target system
@@ -115,6 +129,7 @@ deps:mingw:
     - .build-deps-easyrpg
   variables:
     PLATFORM_TARGET: mingw
+    TARGET_HOST: x86_64-w64-mingw32.static
 
 libretro-build-windows-x64-mingw:
   extends:
@@ -137,7 +152,51 @@ libretro-build-windows-x64-mingw:
         -DPLAYER_BUILD_LIBLCF=ON
         -DCMAKE_IGNORE_PATH=/usr/include
         -DCMAKE_BUILD_TYPE=Release
-        -DCMAKE_TOOLCHAIN_FILE=${DEPS}/mingw-w64-x86_64.cmake"
+        -DCMAKE_TOOLCHAIN_FILE=${DEPS}/mingw-w64-x86_64.cmake
+        -DDISABLE_XML=ON"
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_CXX_FLAGS="-g0 -O2 -fstack-protector" -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.dll ${CORENAME}_libretro.dll
+    - strip ${CORENAME}_libretro.dll
+
+deps:mingw32:
+  extends:
+    - .libretro-windows-i686-mingw
+    - .build-deps-easyrpg
+  cache:
+    key: "easyrpg-deps-${PLATFORM_TARGET}32"
+    paths:
+      - builds/libretro/buildscripts/
+  variables:
+    PLATFORM_TARGET: mingw
+    TARGET_HOST: i686-w64-mingw32.static
+
+# FIXME: Figure out why Wildmidi gives a linker error
+libretro-build-windows-i686-mingw:
+  extends:
+    - .core-defs
+    - .libretro-windows-i686-mingw-make-default
+  dependencies:
+    - deps:mingw32
+  needs:
+    - deps:mingw32
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-mingw32"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/mingw
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_TOOLCHAIN_FILE=${DEPS}/mingw-w64-i686.cmake
+        -DDISABLE_XML=ON
+        -DPLAYER_WITH_WILDMIDI=OFF"
   script:
     - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_CXX_FLAGS="-g0 -O2 -fstack-protector" -B$BUILDDIR
     - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
