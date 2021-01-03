@@ -1,5 +1,8 @@
 set(CMAKE_SYSTEM_NAME Windows)
-set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
+set(TOOLCHAIN_PREFIX x86_64-w64-mingw32.static)
+set(CMAKE_SYSTEM_PROCESSOR amd64)
+
+set(CMAKE_SIZEOF_VOID_P 8)
 
 # cross compilers to use for C, C++ and Fortran
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)

@@ -1,0 +1,467 @@
+
+# DESCRIPTION: GitLab CI/CD for libRetro (NOT FOR GitLab-proper)
+
+##############################################################################
+################################# BOILERPLATE ################################
+##############################################################################
+
+# FIXME for macOS and iOS
+# CMake expects the build path to stay constant but because of concurrency
+# they get the paths /0 and /1 randomly which breaks the build :(
+# Build directory is wiped as a workaround for now
+
+# Core definitions
+.core-defs:
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    JNI_PATH: libretro
+    CORENAME: easyrpg
+    TARGETNAME: easyrpg
+    DEPS_VERSION: 10
+
+# Inclusion templates, required for the build to work
+include:
+  - template: Jobs/Code-Quality.gitlab-ci.yml
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/linux-x64.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/windows-x64-mingw.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/windows-i686-mingw.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/osx-x64.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/android-cmake.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/ios9.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/vita-static.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/libnx-static.yml'
+
+# Stages for building
+stages:
+  - build-prepare
+  - build-deps-easyrpg
+  - build-shared
+  - build-static
+  - test
+
+# Removes some inherited options that can conflict in some jobs
+# Used by dependency builder and tests
+.easyrpg:cleanup:
+  before_script:
+    - '' # Overwrite a potential before script
+  after_script:
+    - '' # Overwrite a potential after script
+  needs: # No needs
+  dependencies: # No dependencies
+  artifacts: # No artifacts
+
+# Builds the dependencies required for each target system
+.build-deps-easyrpg:
+  extends:
+    - .easyrpg:cleanup
+    - .core-defs
+  stage: build-deps-easyrpg
+  variables:
+    DEPS: builds/libretro/buildscripts/$PLATFORM_TARGET
+  cache:
+    key: "easyrpg-deps-$PLATFORM_TARGET"
+    paths:
+      - builds/libretro/buildscripts/
+  artifacts:
+    paths:
+      - builds/libretro/buildscripts/
+    expire_in: 1 hour
+  script:
+    - if [ ! -f ${DEPS}/.deps-built.${DEPS_VERSION} ]; then
+    - pushd ${DEPS}
+    - ./0_build_everything.sh
+    - touch .deps-built.${DEPS_VERSION}
+    - popd
+    - fi
+
+# Linux build
+deps:linux-x64:
+  extends:
+    - .libretro-linux-x64
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: linux-static
+
+libretro-build-linux-x64:
+  extends:
+    - .core-defs
+    - .libretro-linux-x64-make-default
+  dependencies:
+    - deps:linux-x64
+  needs:
+    - deps:linux-x64
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-linux-x64"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/linux-static
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release"
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.so ${CORENAME}_libretro.so
+    - strip ${CORENAME}_libretro.so
+
+test:linux-x64:
+  extends:
+    - libretro-build-linux-x64
+    - .easyrpg:cleanup
+  stage: test
+  dependencies:
+    - deps:linux-x64
+  needs:
+    - deps:linux-x64
+    - libretro-build-linux-x64
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -B$BUILDDIR
+    - cmake --build $BUILDDIR --target check -- -j $NUMPROC
+
+# mingw build (cross)
+deps:mingw:
+  extends:
+    - .libretro-windows-x64-mingw
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: mingw
+    TARGET_HOST: x86_64-w64-mingw32.static
+
+libretro-build-windows-x64:
+  extends:
+    - .core-defs
+    - .libretro-windows-x64-mingw-make-default
+  dependencies:
+    - deps:mingw
+  needs:
+    - deps:mingw
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-mingw"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/mingw
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_TOOLCHAIN_FILE=${DEPS}/x86_64-w64-mingw32.static.cmake
+        -DLIBLCF_WITH_XML=OFF"
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_CXX_FLAGS="-g0 -O2 -fstack-protector" -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.dll ${CORENAME}_libretro.dll
+    - strip ${CORENAME}_libretro.dll
+
+deps:mingw32:
+  extends:
+    - .libretro-windows-i686-mingw
+    - .build-deps-easyrpg
+  cache:
+    key: "easyrpg-deps-${PLATFORM_TARGET}32"
+    paths:
+      - builds/libretro/buildscripts/
+  variables:
+    PLATFORM_TARGET: mingw
+    TARGET_HOST: i686-w64-mingw32.static
+
+libretro-build-windows-i686:
+  extends:
+    - .core-defs
+    - .libretro-windows-i686-mingw-make-default
+  dependencies:
+    - deps:mingw32
+  needs:
+    - deps:mingw32
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-mingw32"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/mingw
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_TOOLCHAIN_FILE=${DEPS}/i686-w64-mingw32.static.cmake
+        -DLIBLCF_WITH_XML=OFF"
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_CXX_FLAGS="-g0 -O2 -fstack-protector" -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.dll ${CORENAME}_libretro.dll
+    - strip ${CORENAME}_libretro.dll
+
+# macOS build
+deps:osx:
+  tags:
+    - macosx-packaging
+  extends:
+    - .libretro-osx-x64
+    - .build-deps-easyrpg
+  cache:
+    key: "easyrpg-deps-${PLATFORM_TARGET}"
+    paths:
+      - builds/libretro/buildscripts/
+  variables:
+    PLATFORM_TARGET: osx
+
+libretro-build-osx-x64:
+  tags:
+    - macosx-packaging
+  extends:
+    - .core-defs
+    - .libretro-osx-x64-make-default
+  dependencies:
+    - deps:osx
+  needs:
+    - deps:osx
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-osx"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/osx
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
+        -DCMAKE_OSX_ARCHITECTURES=x86_64"
+  script:
+    - rm -rf $BUILDDIR
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.dylib ${CORENAME}_libretro.dylib
+
+test:osx-x64:
+  extends:
+    - libretro-build-osx-x64
+    - .easyrpg:cleanup
+  stage: test
+  dependencies:
+    - deps:osx
+  needs:
+    - deps:osx
+    - libretro-build-osx-x64
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -B$BUILDDIR
+    - cmake --build $BUILDDIR --target check -- -j $NUMPROC
+
+# Android build
+deps:android:
+  extends:
+    - .libretro-android-cmake
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: android
+
+.libretro-android-cmake-easyrpg:
+  extends:
+    - .core-defs
+    - .libretro-android-cmake
+  dependencies:
+    - deps:android
+  needs:
+    - deps:android
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-android-$ANDROID_ABI"
+    paths:
+      - build-$ANDROID_ABI/
+  variables:
+    BUILDDIR: build-$ANDROID_ABI
+    DEPS: builds/libretro/buildscripts/android
+    CORE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+  script:
+    - PLATFORM_ARGS="-DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ANDROID_ABI"
+    - STRIP=$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
+    - PREFIX="${PWD}/${DEPS}/${ANDROID_ABI}-toolchain"
+    - cmake . $CORE_ARGS -DCMAKE_PREFIX_PATH=${PREFIX} $PLATFORM_ARGS -B$BUILDDIR -DZLIB_LIBRARY=${PREFIX}/lib/libz.a
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.so $LIBNAME
+    - $STRIP $LIBNAME
+
+android-armeabi-v7a:
+  extends: .libretro-android-cmake-easyrpg
+  variables:
+    ANDROID_ABI: armeabi-v7a
+
+android-arm64-v8a:
+  extends: .libretro-android-cmake-easyrpg
+  variables:
+    ANDROID_ABI: arm64-v8a
+
+android-x86_64:
+  extends: .libretro-android-cmake-easyrpg
+  variables:
+    ANDROID_ABI: x86
+
+android-x86:
+  extends: .libretro-android-cmake-easyrpg
+  variables:
+    ANDROID_ABI: x86_64
+
+# iOS build
+deps:ios:
+  tags:
+    - macosx-packaging
+  extends:
+    - .libretro-ios9
+    - .build-deps-easyrpg
+  cache:
+    key: "easyrpg-deps-${PLATFORM_TARGET}"
+    paths:
+      - builds/libretro/buildscripts/
+  variables:
+    PLATFORM_TARGET: ios
+
+libretro-build-ios9:
+  tags:
+    - macosx-packaging
+  extends:
+    - .core-defs
+    - .libretro-ios9-make-default
+  dependencies:
+    - deps:ios
+  needs:
+    - deps:ios
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-ios"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/ios
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_SYSTEM_NAME=iOS
+        -DCMAKE_OSX_SYSROOT=iphoneos
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=7.0"
+  script:
+    - rm -rf $BUILDDIR
+    - cmake . ${CMAKE_ARGS} -DCMAKE_OSX_ARCHITECTURES="armv7;arm64" -DCMAKE_FIND_ROOT_PATH=${PWD}/${DEPS} -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.dylib ${CORENAME}_libretro_ios.dylib
+
+# Vita build
+deps:vita:
+  extends:
+    - .libretro-vita-static
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: vita
+
+libretro-build-vita:
+  extends:
+    - .core-defs
+    - .libretro-vita-static-retroarch-master
+  needs:
+    - deps:vita
+    - project: libretro/RetroArch
+      job: ${STATIC_RETROARCH_JOB_NAME}
+      ref: ${STATIC_RETROARCH_BRANCH}
+      artifacts: true
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-vita-static"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/vita
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=OFF
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+  script:
+    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/vita/lib
+    - ""
+    - mv ${TARGETNAME}_libretro.a retroarch-precompiled/libretro_vita.a
+    - cd retroarch-precompiled/
+    - make -f Makefile.vita -j10
+    - mv retroarch_vita.self ../${CORENAME}_libretro_vita.self
+    - cd ../
+
+# Switch build
+deps:switch:
+  extends:
+    - .libretro-libnx-static
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: switch
+
+libretro-build-libnx-aarch64:
+  extends:
+    - .core-defs
+    - .libretro-libnx-static-retroarch-master
+  needs:
+    - deps:switch
+    - project: libretro/RetroArch
+      job: ${STATIC_RETROARCH_JOB_NAME}
+      ref: ${STATIC_RETROARCH_BRANCH}
+      artifacts: true
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-libnx-static"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/switch
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=OFF
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+  script:
+    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_TOOLCHAIN_FILE=builds/libretro/switch.cmake -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/switch/lib
+    - ""
+    - mv ${TARGETNAME}_libretro.a retroarch-precompiled/libretro_libnx.a
+    - cd retroarch-precompiled/
+    - make -f Makefile.libnx -j10
+    - mv retroarch_switch.nro ../${CORENAME}_libretro_libnx.nro
+    - mv retroarch_switch.elf ../${CORENAME}_libretro_libnx.elf
+    - cd ../

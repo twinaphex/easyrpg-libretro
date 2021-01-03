@@ -46,11 +46,11 @@ cd $WORKSPACE
 echo "Preparing toolchain"
 
 export PLATFORM_PREFIX=$WORKSPACE
-export TARGET_HOST=x86_64-w64-mingw32
-export PKG_CONFIG_PATH=$PLATFORM_PREFIX/lib/pkgconfig
-export PKG_CONFIG_LIBDIR=$PKG_CONFIG_PATH
+export PKG_CONFIG=/usr/bin/pkg-config
+export PKG_CONFIG_LIBDIR=$PLATFORM_PREFIX/lib/pkgconfig
+unset PKG_CONFIG_PATH
 export MAKEFLAGS="-j${nproc:-2}"
-export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=$PWD/mingw-w64-x86_64.cmake"
+export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=$PWD/$TARGET_HOST.cmake"
 
 function set_build_flags {
 	export CC="$TARGET_HOST-gcc"
