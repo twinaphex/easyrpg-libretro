@@ -238,7 +238,8 @@ deps:android:
   script:
     - PLATFORM_ARGS="-DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ANDROID_ABI"
     - STRIP=$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
-    - cmake . $CORE_ARGS -DCMAKE_PREFIX_PATH=${PWD}/${DEPS}/${ANDROID_ABI}-toolchain $PLATFORM_ARGS -B$BUILDDIR
+    - PREFIX="${PWD}/${DEPS}/${ANDROID_ABI}-toolchain"
+    - cmake . $CORE_ARGS -DCMAKE_PREFIX_PATH=${PREFIX} $PLATFORM_ARGS -B$BUILDDIR -DZLIB_LIBRARY=${PREFIX}/lib/libz.a
     - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
     - mv $BUILDDIR/${TARGETNAME}_libretro.so $LIBNAME
     - $STRIP $LIBNAME
