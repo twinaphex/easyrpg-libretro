@@ -24,6 +24,8 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/windows-i686-mingw.yml'
   - project: 'libretro-infrastructure/ci-templates'
+    file: '/osx-x64.yml'
+  - project: 'libretro-infrastructure/ci-templates'
     file: '/android-cmake.yml'
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
@@ -131,7 +133,7 @@ deps:mingw:
     PLATFORM_TARGET: mingw
     TARGET_HOST: x86_64-w64-mingw32.static
 
-libretro-build-windows-x64-mingw:
+libretro-build-windows-x64:
   extends:
     - .core-defs
     - .libretro-windows-x64-mingw-make-default
@@ -173,7 +175,7 @@ deps:mingw32:
     TARGET_HOST: i686-w64-mingw32.static
 
 # FIXME: Figure out why Wildmidi gives a linker error
-libretro-build-windows-i686-mingw:
+libretro-build-windows-i686:
   extends:
     - .core-defs
     - .libretro-windows-i686-mingw-make-default
@@ -202,6 +204,60 @@ libretro-build-windows-i686-mingw:
     - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
     - mv $BUILDDIR/${TARGETNAME}_libretro.dll ${CORENAME}_libretro.dll
     - strip ${CORENAME}_libretro.dll
+
+# macOS build
+deps:osx:
+  extends:
+    - .libretro-osx-x64
+    - .build-deps-easyrpg
+  cache:
+    key: "easyrpg-deps-${PLATFORM_TARGET}"
+    paths:
+      - builds/libretro/buildscripts/
+  variables:
+    PLATFORM_TARGET: osx
+
+libretro-build-osx-x64:
+  extends:
+    - .core-defs
+    - .libretro-osx-x64-make-default
+  dependencies:
+    - deps:osx
+  needs:
+    - deps:osx
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-osx"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/osx
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=ON
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
+        -DOSX_ARCHITECTURES=x86_64"
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - mv $BUILDDIR/${TARGETNAME}_libretro.dylib ${CORENAME}_libretro.dylib
+
+test:osx-x64:
+  extends:
+    - libretro-build-osx-x64
+    - .easyrpg:cleanup
+  stage: test
+  dependencies:
+    - deps:osx
+  needs:
+    - deps:osx
+    - libretro-build-osx-x64
+  script:
+    - cmake . ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -B$BUILDDIR
+    - cmake --build $BUILDDIR --target check -- -j $NUMPROC
 
 # Android build
 deps:android:
