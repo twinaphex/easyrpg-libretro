@@ -30,6 +30,8 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
   - project: 'libretro-infrastructure/ci-templates'
+    file: '/wii-static.yml'
+  - project: 'libretro-infrastructure/ci-templates'
     file: '/libnx-static.yml'
 
 # Stages for building
@@ -365,6 +367,55 @@ libretro-build-vita:
     - cd retroarch-precompiled/
     - make -f Makefile.vita -j10
     - mv retroarch_vita.self ../${CORENAME}_libretro_vita.self
+    - cd ../
+
+
+# Wii build
+deps:wii:
+  extends:
+    - .libretro-wii-static
+    - .build-deps-easyrpg
+  variables:
+    PLATFORM_TARGET: wii
+
+libretro-build-wii:
+  extends:
+    - .core-defs
+    - .libretro-wii-static-retroarch-master
+  dependencies:
+    - deps:wii
+  needs:
+    - deps:wii
+    - project: libretro/RetroArch
+      job: ${STATIC_RETROARCH_JOB_NAME}
+      ref: ${STATIC_RETROARCH_BRANCH}
+      artifacts: true
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-wii-static"
+    paths:
+      - build/
+  variables:
+    BUILDDIR: build
+    DEPS: builds/libretro/buildscripts/wii
+    CMAKE_ARGS: "
+        -DBUILD_SHARED_LIBS=OFF
+        -DPLAYER_TARGET_PLATFORM=libretro
+        -DPLAYER_BUILD_LIBLCF=ON
+        -DCMAKE_IGNORE_PATH=/usr/include
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
+        -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+  script:
+    - cmake ${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${PWD}/${DEPS} -DCMAKE_TOOLCHAIN_FILE=builds/libretro/wii.cmake -B$BUILDDIR
+    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+    - ./builds/libretro/merge_libs.sh builds/libretro/buildscripts/wii/lib
+    - ""
+    - mv ${TARGETNAME}_libretro.a retroarch-precompiled/libretro_wii.a
+    - cd retroarch-precompiled/
+    - make -f Makefile.wii -j$NUMPROC EXTERNAL_LIBOGC=1 GX_PTHREAD_LEGACY=0 LIBRETRO=${CORENAME}
+    - mv retroarch_switch.nro ../${CORENAME}_libretro_libnx.nro
+    - mv retroarch_wii.dol ../${CORENAME}_libretro_wii.dol
     - cd ../
 
 # Switch build
