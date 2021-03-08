@@ -88,3 +88,15 @@ install_lib $OPUSFILE_DIR $OPUSFILE_ARGS
 install_lib_cmake $FMT_DIR $FMT_ARGS $TOOLCHAIN_FILE
 install_lib_icu_cross
 
+# ICU: Force datafile build
+echo "ICU: Force Build data file"
+
+export PKGDATA_OPTS="-w -v -O $PWD/icu/source/config/pkgdata.inc"
+
+(cd icu/source/data
+	make clean
+	make
+)
+
+cp icu/source/lib/libicudt.a lib/
+
