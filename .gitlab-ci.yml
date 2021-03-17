@@ -381,8 +381,6 @@ libretro-build-vita:
   extends:
     - .core-defs
     - .libretro-vita-static-retroarch-master
-  dependencies:
-    - deps:vita
   needs:
     - deps:vita
     - project: libretro/RetroArch
@@ -428,8 +426,6 @@ libretro-build-libnx-aarch64:
   extends:
     - .core-defs
     - .libretro-libnx-static-retroarch-master
-  dependencies:
-    - deps:switch
   needs:
     - deps:switch
     - project: libretro/RetroArch
