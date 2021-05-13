@@ -61,9 +61,9 @@ if [ ! -f .patches-applied ]; then
 	patch -Np0 < icu-pkg_genc.patch
 
 	# Patch SDL+SDL_mixer
-	patch -d $SDL_DIR --binary -Np1 < $SCRIPT_DIR/sdl-wii.patch
+	#patch -d $SDL_DIR --binary -Np1 < $SCRIPT_DIR/sdl-wii.patch
 	# newlib fix until resolved upstream
-	patch -d $SDL_DIR --binary -Np1 < $SCRIPT_DIR/sdl-wii-fix-build.patch
+	#patch -d $SDL_DIR --binary -Np1 < $SCRIPT_DIR/sdl-wii-fix-build.patch
 
 	touch .patches-applied
 fi
@@ -135,5 +135,5 @@ install_lib $OPUSFILE_DIR $OPUSFILE_ARGS
 install_lib_cmake $FMT_DIR $FMT_ARGS
 install_lib_icu_cross
 
-install_lib_sdl
-install_lib_sdlmixer
+#install_lib_sdl
+#install_lib_sdlmixer

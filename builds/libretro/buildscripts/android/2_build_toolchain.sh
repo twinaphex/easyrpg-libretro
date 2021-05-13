@@ -22,10 +22,10 @@ if [ ! -f .patches-applied ]; then
 	cp -rup icu icu-native
 
 	# use android config
-	pushd $SDL2_DIR
-	mv include/SDL_config_android.h include/SDL_config.h
-	mkdir -p jni
-	popd
+	#pushd $SDL2_DIR
+	#mv include/SDL_config_android.h include/SDL_config.h
+	#mkdir -p jni
+	#popd
 
 	touch .patches-applied
 fi
@@ -103,11 +103,11 @@ function build() {
 	install_lib_cmake $FLUIDLITE_DIR $FLUIDLITE_ARGS -DENABLE_SF3=ON
 	install_lib_cmake $FMT_DIR $FMT_ARGS
 	install_lib_icu_cross
-	install_lib_sdl "$2"
+	#install_lib_sdl "$2"
 }
 
-export SDK_ROOT=$WORKSPACE/android-sdk
-export NDK_ROOT=$SDK_ROOT/ndk/21.4.7075529
+#export SDK_ROOT=$WORKSPACE/android-sdk
+#export NDK_ROOT=$SDK_ROOT/ndk/21.4.7075529
 
 export MAKEFLAGS="-j${nproc:-2}"
 

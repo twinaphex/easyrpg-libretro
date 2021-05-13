@@ -20,9 +20,9 @@ msg " [1] Installing Vita SDK"
 export VITASDK=$PWD/vitasdk
 export URL="https://github.com/vitasdk/autobuilds/releases/download/master-linux-v1455/vitasdk-x86_64-linux-gnu-2021-04-07_18-41-35.tar.bz2"
 
-mkdir -p vitasdk
-curl -sSLR -o vitasdk-nightly.tar.bz2 "$URL"
-tar xf "vitasdk-nightly.tar.bz2" -C $VITASDK --strip-components=1
+#mkdir -p vitasdk
+#curl -sSLR -o vitasdk-nightly.tar.bz2 "$URL"
+#tar xf "vitasdk-nightly.tar.bz2" -C $VITASDK --strip-components=1
 
 msg " [2] Downloading generic libraries"
 
@@ -103,13 +103,3 @@ rm -f $ICUDATA_FILES
 download_and_extract $ICUDATA_URL
 
 msg " [3] Downloading platform libraries"
-
-# libvitashaders
-rm -rf vitashaders
-download_and_extract_shaders
-
-git_clone https://github.com/vitasdk/vdpm
-
-git_clone https://github.com/vitasdk/vita-headers
-
-git_clone https://github.com/frangarcj/vita2dlib
