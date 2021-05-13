@@ -17,7 +17,7 @@
     JNI_PATH: libretro
     CORENAME: easyrpg
     TARGETNAME: easyrpg
-    DEPS_VERSION: 3
+    DEPS_VERSION: 5
 
 # Inclusion templates, required for the build to work
 include:
@@ -214,6 +214,8 @@ libretro-build-windows-i686:
 
 # macOS build
 deps:osx:
+  tags:
+    - macosx-packaging
   extends:
     - .libretro-osx-x64
     - .build-deps-easyrpg
@@ -225,6 +227,8 @@ deps:osx:
     PLATFORM_TARGET: osx
 
 libretro-build-osx-x64:
+  tags: 
+    - macosx-packaging
   extends:
     - .core-defs
     - .libretro-osx-x64-make-default
@@ -330,6 +334,8 @@ android-x86:
 
 # iOS build
 deps:ios:
+  tags: 
+    - macosx-packaging
   extends:
     - .libretro-ios9
     - .build-deps-easyrpg
@@ -341,6 +347,8 @@ deps:ios:
     PLATFORM_TARGET: ios
 
 libretro-build-ios9:
+  tags: 
+    - macosx-packaging
   extends:
     - .core-defs
     - .libretro-ios9-make-default
