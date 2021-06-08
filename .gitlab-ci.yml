@@ -12,7 +12,7 @@
     JNI_PATH: libretro
     CORENAME: easyrpg
     TARGETNAME: easyrpg
-    DEPS_VERSION: 4
+    DEPS_VERSION: 10
 
 # Inclusion templates, required for the build to work
 include:
