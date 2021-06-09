@@ -328,6 +328,7 @@ android-x86:
 
 # iOS build
 deps:ios:
+  tags:
     - macosx-packaging
   extends:
     - .libretro-ios9
@@ -340,6 +341,7 @@ deps:ios:
     PLATFORM_TARGET: ios
 
 libretro-build-ios9:
+  tags:
     - macosx-packaging
   extends:
     - .core-defs
