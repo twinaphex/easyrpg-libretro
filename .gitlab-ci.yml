@@ -17,7 +17,7 @@
     JNI_PATH: libretro
     CORENAME: easyrpg
     TARGETNAME: easyrpg
-    DEPS_VERSION: 5
+    DEPS_VERSION: 7
 
 # Inclusion templates, required for the build to work
 include:
@@ -32,8 +32,8 @@ include:
     file: '/osx-x64.yml'
   - project: 'libretro-infrastructure/ci-templates'
     file: '/android-cmake.yml'
-  - project: 'libretro-infrastructure/ci-templates'
-    file: '/ios9.yml'
+#  - project: 'libretro-infrastructure/ci-templates'
+#    file: '/ios9.yml'
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
   - project: 'libretro-infrastructure/ci-templates'
@@ -333,49 +333,49 @@ android-x86:
     ANDROID_ABI: x86_64
 
 # iOS build
-deps:ios:
-  tags: 
-    - macosx-packaging
-  extends:
-    - .libretro-ios9
-    - .build-deps-easyrpg
-  cache:
-    key: "easyrpg-deps-${PLATFORM_TARGET}"
-    paths:
-      - builds/libretro/buildscripts/
-  variables:
-    PLATFORM_TARGET: ios
+#deps:ios:
+#  tags: 
+#    - macosx-packaging
+#  extends:
+#    - .libretro-ios9
+#    - .build-deps-easyrpg
+#  cache:
+#    key: "easyrpg-deps-${PLATFORM_TARGET}"
+#    paths:
+#      - builds/libretro/buildscripts/
+#  variables:
+#    PLATFORM_TARGET: ios
 
-libretro-build-ios9:
-  tags: 
-    - macosx-packaging
-  extends:
-    - .core-defs
-    - .libretro-ios9-make-default
-  dependencies:
-    - deps:ios
-  needs:
-    - deps:ios
-  cache:
-    key: "$CI_COMMIT_REF_SLUG-ios"
-    paths:
-      - build/
-  variables:
-    BUILDDIR: build
-    DEPS: builds/libretro/buildscripts/ios
-    CMAKE_ARGS: "
-        -DBUILD_SHARED_LIBS=ON
-        -DPLAYER_TARGET_PLATFORM=libretro
-        -DPLAYER_BUILD_LIBLCF=ON
-        -DCMAKE_BUILD_TYPE=Release
-        -DCMAKE_SYSTEM_NAME=iOS
-        -DCMAKE_OSX_SYSROOT=iphoneos
-        -DCMAKE_OSX_DEPLOYMENT_TARGET=7.0"
-  script:
-    - rm -rf $BUILDDIR
-    - cmake . ${CMAKE_ARGS} -DCMAKE_OSX_ARCHITECTURES="armv7;arm64" -DCMAKE_FIND_ROOT_PATH=${PWD}/${DEPS} -B$BUILDDIR
-    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
-    - mv $BUILDDIR/${TARGETNAME}_libretro.dylib ${CORENAME}_libretro_ios.dylib
+#libretro-build-ios9:
+#  tags: 
+#    - macosx-packaging
+#  extends:
+#    - .core-defs
+#    - .libretro-ios9-make-default
+#  dependencies:
+#    - deps:ios
+#  needs:
+#    - deps:ios
+#  cache:
+#    key: "$CI_COMMIT_REF_SLUG-ios"
+#    paths:
+#      - build/
+#  variables:
+#    BUILDDIR: build
+#    DEPS: builds/libretro/buildscripts/ios
+#    CMAKE_ARGS: "
+#        -DBUILD_SHARED_LIBS=ON
+#        -DPLAYER_TARGET_PLATFORM=libretro
+#        -DPLAYER_BUILD_LIBLCF=ON
+#        -DCMAKE_BUILD_TYPE=Release
+#        -DCMAKE_SYSTEM_NAME=iOS
+#        -DCMAKE_OSX_SYSROOT=iphoneos
+#        -DCMAKE_OSX_DEPLOYMENT_TARGET=7.0"
+#  script:
+#    - rm -rf $BUILDDIR
+#    - cmake . ${CMAKE_ARGS} -DCMAKE_OSX_ARCHITECTURES="armv7;arm64" -DCMAKE_FIND_ROOT_PATH=${PWD}/${DEPS} -B$BUILDDIR
+#    - cmake --build $BUILDDIR --target ${TARGETNAME}_libretro -- -j $NUMPROC
+#    - mv $BUILDDIR/${TARGETNAME}_libretro.dylib ${CORENAME}_libretro_ios.dylib
 
 # Vita build
 deps:vita:
